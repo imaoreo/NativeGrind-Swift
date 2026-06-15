@@ -3,6 +3,17 @@ import NativeGrindCore
 
 @main
 struct MyApp: App {
+    
+    init() {
+        Task {
+            await APIClient.shared.setup(
+                timezone: "Europe/London",
+                language: "en-gb",
+                deviceId: "E812B63B-F645-4C58-8FAB-40F457BAF456"
+            )
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -12,13 +23,13 @@ struct MyApp: App {
 
 struct ContentView: View {
     @State private var router = NavigationRouter()
-    @State private var isAuthenticated = false
+    @StateObject private var sessionManager = SessionManager.shared
     @State private var currentProtectedTab: ProtectedRoute = .browse
     @State private var currentUnprotectedTab: UnprotectedRoute = .login
     
     var body: some View {
         Group {
-            if isAuthenticated {
+            if sessionManager.isAuthenticated {
                 // ==========================================
                 // PROTECTED FLOW
                 // ==========================================
