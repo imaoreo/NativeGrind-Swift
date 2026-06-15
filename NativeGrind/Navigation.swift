@@ -38,7 +38,7 @@ extension ProtectedRoute: View {
     var body: some View {
         switch self {
         case .browse:
-            Text("Browse")
+            BrowseView()
         case .messages:
             Text("Messages")
         }
