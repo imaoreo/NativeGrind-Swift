@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// Supported HTTP Methods
 public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
@@ -32,7 +31,11 @@ public enum RequestError: LocalizedError {
     }
 }
 
-public class APIClient {
+public actor APIClient {
+    public static let shared = APIClient()
+    
+    private init() {}
+    
     private var session: URLSession? = nil
     
     private func buildAcceptLanguageHeader(for languageCode: String) -> String {
@@ -51,10 +54,9 @@ public class APIClient {
     
     /// Setup the Request Agent
     /// - Parameters:
-    ///  - token: This will be the auth token including the Grindr3 at the start
     ///  - timezone: The timezone of the use in the format "Continent/City" e.g., ("Europe/Madrid")
     ///  - language: The language of the user in the format "en-US"
-    public func setup(token: String, timezone: String, language: String, deviceId: String) {
+    public func setup(timezone: String, language: String, deviceId: String) {
         // Convert "en-US" to "en_US"
         let locale = language.replacingOccurrences(of: "-", with: "_")
             
@@ -65,7 +67,7 @@ public class APIClient {
         
         let deviceInfoHeader = "\(deviceId);appStore;2;8565768192;2796x1290"
         
-        var headers: [AnyHashable: String] = [
+        let headers: [AnyHashable: String] = [
             "Accept": "application/json",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": acceptLanguageHeader,
@@ -75,10 +77,6 @@ public class APIClient {
             "User-Agent": "Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)",
             "L-Locale": locale,
         ]
-        
-        if !token.isEmpty {
-            headers["Authorization"] = token // Token should start with Grindr3
-        }
         
         configuration.httpAdditionalHeaders = headers
 
@@ -137,7 +135,20 @@ public class APIClient {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
-        if !isAuthed {
+        if isAuthed {
+            let token = await MainActor.run {
+                KeychainManager.shared.getToken()
+            }
+            
+            if let validToken = token {
+                request.setValue(validToken, forHTTPHeaderField: "Authorization")
+            } else {
+                // Route wants auth, but no toke
+                throw RequestError.uninitializedSession
+            }
+                
+        } else {
+            // Explicitly clear the header for non-authed routes just in case
             request.setValue(nil, forHTTPHeaderField: "Authorization")
         }
             
@@ -163,13 +174,13 @@ public class APIClient {
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable>(_ route: APIRouter, as type: T.Type) async throws -> T {
+    public func request<T: Decodable & Sendable>(_ endpoint: Endpoint<T>) async throws -> T {
         let (data, response) = try await sendRequest(
-            method: route.method,
-            url: route.fullURLString,
-            queryItems: route.queryItems,
-            body: route.body,
-            isAuthed: route.isAuthedRoute
+            method: endpoint.method,
+            url: endpoint.fullURLString,
+            queryItems: endpoint.queryItems,
+            body: endpoint.body,
+            isAuthed: endpoint.isAuthedRoute
         )
         
         // Check for valid HTTP status codes (200-299)
@@ -177,7 +188,7 @@ public class APIClient {
             throw RequestError.invalidResponse
         }
         
-        // Decode data and return the decoded object
+        // Decode and Return
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
     }
