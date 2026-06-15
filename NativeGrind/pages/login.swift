@@ -7,6 +7,7 @@
 
 import SwiftUI
 import NativeGrindCore
+import GoogleSignIn
 
 struct LoginView: View {
     
@@ -19,6 +20,45 @@ struct LoginView: View {
         #else
             return 500
         #endif
+    }
+    
+    private func handleGoogleSignIn() {
+        #if os(macOS)
+            guard let presentingWindow = NSApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? NSApplication.shared.windows.first else {
+                print("No Active Window on MacOS")
+                return
+            }
+            
+            let presentationAnchor = presentingWindow
+        #else
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let rootViewController = windowScene.windows.first?.rootViewController else {
+                print("No Active Window on iOS")
+                return
+            }
+            
+            let presentationAnchor = rootViewController
+        #endif
+
+        GIDSignIn.sharedInstance.signIn(withPresenting: presentationAnchor) { signInResult, error in
+            if let error = error {
+                print("Authentication failed: \(error.localizedDescription)")
+                return
+            }
+
+            guard let user = signInResult?.user else {
+                print("No valid user found.")
+                return
+            }
+            
+            let accessToken = user.accessToken.tokenString
+            print("Google Sign-In successful. Access Token: \(accessToken)")
+
+
+            Task {
+                await SessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
+            }
+        }
     }
     
     var body: some View {
@@ -105,7 +145,7 @@ struct LoginView: View {
                 .buttonStyle(.plain)
                 
                 Button(action: {
-                    // Handle Google login logic here
+                    handleGoogleSignIn()
                 }) {
                     HStack(spacing: 12) {
                         Image("GoogleLogo")
@@ -123,7 +163,6 @@ struct LoginView: View {
                 }
                 .buttonStyle(.plain)
                 
-                // Facebook Sign In
                 Button(action: {
                     // Handle Facebook login logic here
                 }) {
