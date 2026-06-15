@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NativeGrindCore
 
 struct LoginView: View {
     
@@ -43,12 +44,6 @@ struct LoginView: View {
             .padding(.horizontal, 16)
             
             VStack(
-                spacing: 10
-            ) {
-                
-            }
-            
-            VStack(
                 spacing: 16
             ) {
                 
@@ -68,7 +63,7 @@ struct LoginView: View {
             }
             
             Button(action: {
-                // Handle login logic here
+                
             }) {
                 Text("Login")
                     .font(.headline)
@@ -80,51 +75,76 @@ struct LoginView: View {
             }
             .buttonStyle(.plain)
             
-            Divider()
+            HStack {
+                VStack { Divider() }
+                Text("OR")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                VStack { Divider() }
+            }
+            .padding(.vertical, 8)
             
-            HStack() {
+
+            VStack(spacing: 12) {
+                
                 Button(action: {
-                    // Handle login logic here
+                    // Handle Apple login logic here
                 }) {
-                    Image(systemName: "applelogo")
-                        .font(.title3)
-                        .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
-                        .padding()
-                        .background(.black)
-                        .cornerRadius(10)
+                    HStack(spacing: 12) {
+                        Image(systemName: "applelogo")
+                            .font(.system(size: 20))
+                        Text("Sign in with Apple")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.black)
+                    .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
                 
                 Button(action: {
-                    // Handle login logic here
+                    // Handle Google login logic here
                 }) {
-                    Image(systemName: "applelogo")
-                        .font(.title3)
-                        .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
-                        .padding()
-                        .background(.black)
-                        .cornerRadius(10)
+                    HStack(spacing: 12) {
+                        Image("GoogleLogo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                        Text("Sign in with Google")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
                 
+                // Facebook Sign In
                 Button(action: {
-                    // Handle login logic here
+                    // Handle Facebook login logic here
                 }) {
-                    Image(systemName: "applelogo")
-                        .font(.title3)
-                        .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
-                        .padding()
-                        .background(.black)
-                        .cornerRadius(10)
+                    HStack(spacing: 12) {
+                        Image("FacebookLogo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                        Text("Sign in with Facebook")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(red: 9/255, green: 102/255, blue: 255/255)) // Facebook Blue
+                    .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
             }
             
             Spacer()
-
         }
         .padding(24)
         .frame(maxWidth: containerWidth, maxHeight: .infinity)

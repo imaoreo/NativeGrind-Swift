@@ -5,6 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "NativeGrindCore",
+    platforms: [
+        .watchOS(.v10),
+        .iOS(.v17),
+        .macOS(.v14),
+        .tvOS(.v17),
+        .visionOS(.v2)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
