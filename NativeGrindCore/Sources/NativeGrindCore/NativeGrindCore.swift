@@ -6,8 +6,6 @@
 //
 
 public class NativeGrindCore {
-    private var apiClient: APIClient = APIClient()
-
     public func test() -> String {
         return "Hello Pizza"
     }
