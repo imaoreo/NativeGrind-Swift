@@ -30,6 +30,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "000000000000000100000000"
                BuildableName = "NativeGrind.app"
+               BlueprintName = "NativeGrind"
                ReferencedContainer = "container:NativeGrind.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
