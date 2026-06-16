@@ -1,0 +1,87 @@
+name: Deploy Multi-Target Documentation
+
+on:
+  push:
+    branches:
+      - main 
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Select Latest Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app 
+
+      - name: Clear Previous Build Artifacts
+        run: rm -rf ./docs-out && mkdir -p ./docs-out
+
+      - name: Build Docs for NativeGrind
+        run: |
+          xcodebuild docbuild -scheme "NativeGrind" -derivedDataPath ./build/NativeGrind
+          find ./build/NativeGrind -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/app --hosting-base-path "${{ github.event.repository.name }}/app" \;
+
+      # NativeGrindCore
+      - name: Build Docs for NativeGrindCore
+        run: |
+          xcodebuild docbuild -scheme "NativeGrindCore" -derivedDataPath ./build/NativeGrindCore
+          find ./build/NativeGrindCore -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/core --hosting-base-path "${{ github.event.repository.name }}/core" \;
+
+      # NativeGrind Watch
+      - name: Build Docs for NativeGrind Watch
+        run: |
+          xcodebuild docbuild -scheme "WatchNativeGrind Watch App" -destination "generic/platform=watchOS" -derivedDataPath ./build/NativeGrindWatch
+          find ./build/NativeGrindWatch -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/watch --hosting-base-path "${{ github.event.repository.name }}/watch" \;
+
+      # Landing Page
+      - name: Create Root Landing Page
+        run: |
+          cat << 'EOF' > ./docs-out/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>NativeGrind Developer Documentation</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1c1c1e; color: #f5f5f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                  .container { text-align: center; max-width: 600px; }
+                  h1 { color: #fff; margin-bottom: 30px; }
+                  .card { background: #2c2c2e; padding: 20px; border-radius: 12px; margin: 15px 0; text-decoration: none; color: #0a84ff; display: block; font-weight: bold; transition: background 0.2s; border: 1px solid #3a3a3c; }
+                  .card:hover { background: #3a3a3c; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>NativeGrind Documentation Portal</h1>
+                  <a class="card" href="./app/documentation/nativegrind">NativeGrind iOS App Docs</a>
+                  <a class="card" href="./core/documentation/nativegrindcore">NativeGrindCore Framework Docs</a>
+                  <a class="card" href="./watch/documentation/nativegrindwatch">NativeGrind Watch Docs</a>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Static Assets Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs-out
+
+  deploy-docs:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
