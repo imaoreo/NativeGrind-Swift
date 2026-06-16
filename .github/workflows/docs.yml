@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Latest Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app 
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
 
       - name: Clear Previous Build Artifacts
         run: rm -rf ./docs-out && mkdir -p ./docs-out
