@@ -22,6 +22,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: List Available Xcode Versions
+        run: ls -d /Applications/Xcode*
+
       - name: Select Latest Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.3.app
 
