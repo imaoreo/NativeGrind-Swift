@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
-		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
+		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
+		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
 		F8B876C52FDA4DB60027450C /* WatchNativeGrind Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };

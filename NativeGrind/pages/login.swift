@@ -7,7 +7,9 @@
 
 import SwiftUI
 import NativeGrindCore
+#if !os(tvOS)
 import GoogleSignIn
+#endif
 
 struct LoginView: View {
     
@@ -22,6 +24,7 @@ struct LoginView: View {
         #endif
     }
     
+    #if !os(tvOS)
     private func handleGoogleSignIn() {
         #if os(macOS)
             guard let presentingWindow = NSApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? NSApplication.shared.windows.first else {
@@ -60,6 +63,7 @@ struct LoginView: View {
             }
         }
     }
+    #endif
     
     var body: some View {
         VStack(
@@ -144,6 +148,7 @@ struct LoginView: View {
                 }
                 .buttonStyle(.plain)
                 
+                #if !os(tvOS)
                 Button(action: {
                     handleGoogleSignIn()
                 }) {
@@ -162,6 +167,7 @@ struct LoginView: View {
                     .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
+                #endif
                 
                 Button(action: {
                     // Handle Facebook login logic here
