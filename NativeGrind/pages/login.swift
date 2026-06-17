@@ -65,6 +65,12 @@ struct LoginView: View {
     }
     #endif
     
+    private func handleEmailSignIn() {
+        Task {
+            await SessionManager.shared.authenticateWithEmail(email: username, password: password)
+        }
+    }
+    
     var body: some View {
         VStack(
             spacing: 24
@@ -107,7 +113,7 @@ struct LoginView: View {
             }
             
             Button(action: {
-                
+                handleEmailSignIn()
             }) {
                 Text("Login")
                     .font(.headline)
