@@ -77,11 +77,10 @@ jobs:
         run: |
           APP_DOC_PATH=$(find ./docs-out/app/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/app||')
           CORE_DOC_PATH=$(find ./docs-out/core/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/core||')
-          WATCH_DOC_PATH=$(find ./docs-out/watch/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/watch||')
 
           APP_HREF="${APP_DOC_PATH:-/documentation/nativegrind}"
           CORE_HREF="${CORE_DOC_PATH:-/documentation/nativegrindcore}"
-          WATCH_HREF="${WATCH_DOC_PATH:-/documentation/watchnativegrind_watch_app}"
+          WATCH_HREF="/documentation/watchnativegrind_watch_app"
 
           cat << EOF > ./docs-out/index.html
           <!DOCTYPE html>
