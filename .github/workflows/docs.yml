@@ -22,9 +22,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: List Available Xcode Versions
-        run: ls -d /Applications/Xcode*
-
       - name: Select Latest Xcode
         run: sudo xcode-select -s /Applications/Xcode_26.3.app
 
@@ -33,19 +30,19 @@ jobs:
 
       - name: Build Docs for NativeGrind
         run: |
-          xcodebuild docbuild -scheme "NativeGrind" -derivedDataPath ./build/NativeGrind
+          xcodebuild docbuild -scheme "NativeGrind" -derivedDataPath ./build/NativeGrind CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
           find ./build/NativeGrind -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/app --hosting-base-path "${{ github.event.repository.name }}/app" \;
 
       # NativeGrindCore
       - name: Build Docs for NativeGrindCore
         run: |
-          xcodebuild docbuild -scheme "NativeGrindCore" -derivedDataPath ./build/NativeGrindCore
+          xcodebuild docbuild -scheme "NativeGrindCore" -derivedDataPath ./build/NativeGrindCore CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
           find ./build/NativeGrindCore -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/core --hosting-base-path "${{ github.event.repository.name }}/core" \;
 
       # NativeGrind Watch
       - name: Build Docs for NativeGrind Watch
         run: |
-          xcodebuild docbuild -scheme "WatchNativeGrind Watch App" -destination "generic/platform=watchOS" -derivedDataPath ./build/NativeGrindWatch
+          xcodebuild docbuild -scheme "WatchNativeGrind Watch App" -destination "generic/platform=watchOS" -derivedDataPath ./build/NativeGrindWatch CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
           find ./build/NativeGrindWatch -type d -name "*.doccarchive" -exec xcrun docc process-archive transform-for-static-hosting {} --output-path ./docs-out/watch --hosting-base-path "${{ github.event.repository.name }}/watch" \;
 
       # Landing Page
