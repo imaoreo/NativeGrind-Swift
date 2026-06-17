@@ -11,7 +11,7 @@
 		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
-		F8B876C52FDA4DB60027450C /* WatchNativeGrind Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F8B876C52FDA4DB60027450C /* WatchNativeGrind Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -234,7 +234,6 @@
 /* Begin PBXTargetDependency section */
 		F8B876C42FDA4DB60027450C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilter = ios;
 			target = F8B876BA2FDA4DB50027450C /* WatchNativeGrind Watch App */;
 			targetProxy = F8B876C32FDA4DB60027450C /* PBXContainerItemProxy */;
 		};
@@ -376,11 +375,13 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "NativeGrind" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NativeGrind/NativeGrind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LQCQTAV3UW;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
@@ -436,11 +437,13 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "NativeGrind" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				CODE_SIGN_ENTITLEMENTS = NativeGrind/NativeGrind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LQCQTAV3UW;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
