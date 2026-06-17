@@ -61,7 +61,7 @@ jobs:
       - name: Build Docs for NativeGrind Watch
         run: |
           set -euo pipefail
-          xcodebuild docbuild -scheme "WatchNativeGrind Watch App" -destination "generic/platform=watchOS" -derivedDataPath ./build/NativeGrindWatch CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO WATCHOS_DEPLOYMENT_TARGET=10.0
+          xcodebuild docbuild -scheme "WatchNativeGrind Watch App" -destination "generic/platform=watchOS" -derivedDataPath ./build/NativeGrindWatch CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO WATCHOS_DEPLOYMENT_TARGET=10.0 MACOSX_DEPLOYMENT_TARGET=14.0
           WATCH_ARCHIVE="./build/NativeGrindWatch/Build/Products/Debug-watchos/WatchNativeGrind Watch App.doccarchive"
           if [ ! -d "$WATCH_ARCHIVE" ]; then
             WATCH_ARCHIVE=$(find ./build/NativeGrindWatch -type d -name "WatchNativeGrind Watch App.doccarchive" | head -1)
