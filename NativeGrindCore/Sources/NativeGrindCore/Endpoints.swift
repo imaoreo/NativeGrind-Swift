@@ -14,6 +14,7 @@ public struct Endpoint<Response: Decodable> {
     public let queryItems: [String: String]?
     public let body: [String: Any]?
     public let isAuthedRoute: Bool
+    public let networkHandlers: [networkHandler]
     
     private var baseURL: String {
         return "https://grindr.mobi"
@@ -38,7 +39,10 @@ public extension Endpoint {
                 "password": password,
                 "token": ""
             ],
-            isAuthedRoute: false
+            isAuthedRoute: false,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Loggin Error", level: .error, match: .matchBoth)
+            ]
         )
     }
     
@@ -51,7 +55,8 @@ public extension Endpoint {
                 "thirdPartyToken": token,
                 "thirdPartyVendor": 2
             ],
-            isAuthedRoute: false
+            isAuthedRoute: false,
+            networkHandlers: []
         )
     }
     
@@ -62,7 +67,8 @@ public extension Endpoint {
             method: .get,
             queryItems: nil,
             body: nil,
-            isAuthedRoute: false
+            isAuthedRoute: false,
+            networkHandlers: []
         )
     }
     
@@ -72,7 +78,8 @@ public extension Endpoint {
             method: .get,
             queryItems: nil,
             body: nil,
-            isAuthedRoute: false
+            isAuthedRoute: false,
+            networkHandlers: []
         )
     }
     
@@ -114,7 +121,8 @@ public extension Endpoint {
             method: .post,
             queryItems: queryItems,
             body: filteredBody,
-            isAuthedRoute: true
+            isAuthedRoute: true,
+            networkHandlers: []
         )
     }
     
@@ -126,7 +134,8 @@ public extension Endpoint {
             method: .get,
             queryItems: nil,
             body: nil,
-            isAuthedRoute: true
+            isAuthedRoute: true,
+            networkHandlers: []
         )
     }
 }

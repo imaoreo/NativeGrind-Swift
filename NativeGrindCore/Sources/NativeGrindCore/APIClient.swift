@@ -174,22 +174,85 @@ public actor APIClient {
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable & Sendable>(_ endpoint: Endpoint<T>) async throws -> T {
-        let (data, response) = try await sendRequest(
-            method: endpoint.method,
-            url: endpoint.fullURLString,
-            queryItems: endpoint.queryItems,
-            body: endpoint.body,
-            isAuthed: endpoint.isAuthedRoute
-        )
-        
-        // Check for valid HTTP status codes (200-299)
-        guard (200...299).contains(response.statusCode) else {
-            throw RequestError.invalidResponse
+    public func request<T: Decodable & Sendable>(_ endpoint: Endpoint<T>) async throws -> T? {
+        do {
+            let (data, response) = try await sendRequest(
+                method: endpoint.method,
+                url: endpoint.fullURLString,
+                queryItems: endpoint.queryItems,
+                body: endpoint.body,
+                isAuthed: endpoint.isAuthedRoute
+            )
+            
+            // Handle failure HTTP statuses (outside 200...299)
+            guard (200...299).contains(response.statusCode) else {
+                
+                var handledByCustomHandler = false
+                
+                // Go through all the network handlers
+                for handler in endpoint.networkHandlers {
+                    let statusCodeMatches = (handler.code == response.statusCode)
+                    
+                    // extract the json and see if it matches
+                    var jsonMatches = false
+                    if let location = handler.jsonLocation,
+                       let expectedValue = handler.jsonLocationValue,
+                       let serverJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                       let actualValue = serverJSON[location] as? String {
+                        jsonMatches = actualValue.localizedCaseInsensitiveContains(expectedValue)
+                    }
+                    
+                    // See if it's a match using the matching ruels
+                    let isMatch: Bool
+                    switch handler.match {
+                        case .statusCodeOnly:
+                            isMatch = statusCodeMatches
+                        case .jsonContentOnly:
+                            isMatch = jsonMatches
+                        case .matchBoth:
+                            isMatch = statusCodeMatches && jsonMatches
+                        case .mathchEither:
+                            isMatch = statusCodeMatches || jsonMatches
+                    }
+                    
+                    if isMatch {
+                        // Show Toast if match
+                        let toastStyle = handler.level == .error ? ToastStyle.error : ToastStyle.warn
+                        let toastHeader = handler.header
+                        let toastMessage = handler.message
+                        
+                        await MainActor.run {
+                            ToastManager.shared.show(
+                                style: toastStyle,
+                                header: toastHeader,
+                                message: toastMessage
+                            )
+                        }
+                        handledByCustomHandler = true
+                        break
+                    }
+                }
+                
+                // Generic response if there is no custom handler that matches it
+                if !handledByCustomHandler {
+                    let fallbackMsg = String(data: data, encoding: .utf8) ?? "Unknown server response profile."
+                    await MainActor.run {
+                        ToastManager.shared.show(
+                            style: .error,
+                            header: "Error (\(response.statusCode))",
+                            message: fallbackMsg
+                        )
+                    }
+                }
+                
+                return nil;
+            }
+            
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+            
+        } catch {
+            throw error
         }
-        
-        // Decode and Return
-        let decoder = JSONDecoder()
-        return try decoder.decode(T.self, from: data)
     }
 }

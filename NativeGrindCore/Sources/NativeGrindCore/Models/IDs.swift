@@ -24,6 +24,6 @@ public struct ProfileID: Decodable, Equatable, Sendable {
         
         let result = try await APIClient.shared.request(.getProfile(profileId: rawValue))
         
-        return result.profiles.first
+        return result?.profiles.first
     }
 }
