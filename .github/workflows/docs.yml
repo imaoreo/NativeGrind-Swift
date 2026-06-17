@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-docs:
-    runs-on: macos
+    runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
