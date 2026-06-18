@@ -12,8 +12,27 @@
 				<string>com.googleusercontent.apps.1036042917246-aiep8hjgls1skgem6k3plu6q8gbmbts6</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>amp13bf9ff407df95ddc244f76-21174e90-8751-11e5-bc85-00d0fea82624</string>
+				<string>fb1273378622718674</string>
+			</array>
+		</dict>
 	</array>
+	<key>FacebookAppID</key>
+	<string>1273378622718674</string>
+	<key>FacebookClientToken</key>
+	<string>5E7F55711E7D210666590F7E11617E720C7A5200131046707714752A750F4B70</string>
+	<key>FacebookDisplayName</key>
+	<string>Grindr</string>
 	<key>GIDClientID</key>
 	<string>1036042917246-aiep8hjgls1skgem6k3plu6q8gbmbts6.apps.googleusercontent.com</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+	</array>
 </dict>
 </plist>

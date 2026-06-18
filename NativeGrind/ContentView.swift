@@ -1,9 +1,43 @@
 import SwiftUI
 import NativeGrindCore
+#if os(iOS)
+import FBSDKCoreKit
+import UIKit
+#endif
+
+#if os(iOS)
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
+        ApplicationDelegate.shared.application(
+            application,
+            didFinishLaunchingWithOptions: launchOptions
+        )
+
+        Settings.shared.appID = Bundle.main.object(forInfoDictionaryKey: "FacebookAppID") as? String
+        Settings.shared.clientToken = Bundle.main.object(forInfoDictionaryKey: "FacebookClientToken") as? String
+        Settings.shared.displayName = Bundle.main.object(forInfoDictionaryKey: "FacebookDisplayName") as? String
+        return true
+    }
+
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+    ) -> Bool {
+        ApplicationDelegate.shared.application(app, open: url, options: options)
+    }
+}
+#endif
 
 @main
 struct MyApp: App {
     @State private var router = NavigationRouter()
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
     
     init() {
         Task {
@@ -20,6 +54,15 @@ struct MyApp: App {
             ContentView()
                 .withToastOverlay()
                 .environment(router)
+                #if os(iOS)
+                .onOpenURL { url in
+                    _ = ApplicationDelegate.shared.application(
+                        UIApplication.shared,
+                        open: url,
+                        options: [:]
+                    )
+                }
+                #endif
         }
     }
 }

@@ -9,6 +9,8 @@ import SwiftUI
 import NativeGrindCore
 #if !os(tvOS)
 import GoogleSignIn
+import FacebookLogin
+import FBSDKCoreKit
 #endif
 
 struct LoginView: View {
@@ -64,6 +66,35 @@ struct LoginView: View {
             }
         }
     }
+    
+    private func handleFacebookSignIn() {
+            let loginManager = LoginManager()
+            
+            // Use standard profile/email authorization scopes
+            loginManager.logIn(permissions: ["public_profile", "email"], from: nil) { result, error in
+                if let error = error {
+                    print("Facebook Authentication failed: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let result = result, !result.isCancelled else {
+                    print("User cancelled Facebook configuration flow.")
+                    return
+                }
+                
+                guard let accessToken = AccessToken.current?.tokenString else {
+                    print("Failed to retrieve an active Facebook access token string.")
+                    return
+                }
+                
+                print("Facebook Sign-In successful. Access Token: \(accessToken)")
+                
+                Task {
+                    // Pass the verified client token to your backend session orchestrator
+                    //await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
+                }
+            }
+        }
     #endif
     
     private func handleEmailSignIn() {
@@ -177,7 +208,7 @@ struct LoginView: View {
                 #endif
                 
                 Button(action: {
-                    // Handle Facebook login logic here
+                    handleFacebookSignIn()
                 }) {
                     HStack(spacing: 12) {
                         Image("FacebookLogo")
