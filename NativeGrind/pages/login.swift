@@ -15,6 +15,7 @@ struct LoginView: View {
     
     @State private var username = ""
     @State private var password = ""
+    @Environment(NavigationRouter.self) private var router
     
     private var containerWidth: CGFloat {
         #if os(tvOS)
@@ -138,7 +139,7 @@ struct LoginView: View {
             VStack(spacing: 12) {
                 
                 Button(action: {
-                    // Handle Apple login logic here
+                    router.selectedUnprotectedTab = .loginWithToken
                 }) {
                     HStack(spacing: 12) {
                         Image(systemName: "applelogo")

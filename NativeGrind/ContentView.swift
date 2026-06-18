@@ -3,6 +3,7 @@ import NativeGrindCore
 
 @main
 struct MyApp: App {
+    @State private var router = NavigationRouter()
     
     init() {
         Task {
@@ -18,23 +19,26 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
                 .withToastOverlay()
+                .environment(router)
         }
     }
 }
 
 struct ContentView: View {
-    @State private var router = NavigationRouter()
     @StateObject private var sessionManager = SessionManager.shared
     @State private var currentProtectedTab: ProtectedRoute = .browse
     @State private var currentUnprotectedTab: UnprotectedRoute = .login
     
+    @Environment(NavigationRouter.self) private var router
+    
     var body: some View {
+        @Bindable var router = router
         Group {
             if sessionManager.isAuthenticated {
                 // ==========================================
                 // PROTECTED FLOW
                 // ==========================================
-                TabView(selection: $currentProtectedTab) {
+                TabView(selection: $router.selectedProtectedTab) {
                     
                     NavigationStack(path: $router.protectedPath) {
                         ProtectedRoute.browse
@@ -47,7 +51,7 @@ struct ContentView: View {
                     }
                     .tag(ProtectedRoute.browse)
                     
-                    NavigationStack {
+                    NavigationStack(path: $router.protectedPath) {
                         ProtectedRoute.messages
                             .navigationDestination(for: ProtectedRoute.self) { route in
                                 route
@@ -64,7 +68,7 @@ struct ContentView: View {
                 // ==========================================
                 // UNPROTECTED FLOW
                 // ==========================================
-                TabView(selection: $currentUnprotectedTab) {
+                TabView(selection: $router.selectedUnprotectedTab) {
                     
                     NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.login
@@ -99,7 +103,7 @@ struct ContentView: View {
                     }
                     .tag(UnprotectedRoute.loginWithToken)
                     
-                    NavigationStack {
+                    NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.register
                             .navigationDestination(for: UnprotectedRoute.self) { route in
                                 route
