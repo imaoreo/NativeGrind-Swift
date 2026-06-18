@@ -11,18 +11,7 @@
 		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
-		F8B876C52FDA4DB60027450C /* WatchNativeGrind Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		F8B876C32FDA4DB60027450C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 000000000000000000000000 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F8B876BA2FDA4DB50027450C;
-			remoteInfo = "WatchNativeGrind Watch App";
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		F8B876C92FDA4DB60027450C /* Embed Watch Content */ = {
@@ -30,7 +19,6 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolder = Product;
 			files = (
-				F8B876C52FDA4DB60027450C /* WatchNativeGrind Watch App.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 		};
@@ -38,8 +26,8 @@
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* NativeGrind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NativeGrind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F89018EC2FE4237A0001FBDA /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "WatchNativeGrind Watch App.app"; path = "/Users/jaybr/Downloads/NativeGrind-Swift-main/build/Debug-watchos/WatchNativeGrind Watch App.app"; sourceTree = "<absolute>"; };
 		F8AF4B582FDF62F6009A8974 /* NativeGrindCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NativeGrindCore; sourceTree = "<group>"; };
-		F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNativeGrind Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -94,6 +82,7 @@
 				F8B876BC2FDA4DB50027450C /* WatchNativeGrind Watch App */,
 				F849CA8F2FDB145E004AF778 /* Frameworks */,
 				000000000000000000000020 /* Products */,
+				F8646B152FE423880017A03C /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -101,7 +90,6 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* NativeGrind.app */,
-				F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -111,6 +99,13 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F8646B152FE423880017A03C /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -126,9 +121,6 @@
 				F8B876C92FDA4DB60027450C /* Embed Watch Content */,
 			);
 			buildRules = (
-			);
-			dependencies = (
-				F8B876C42FDA4DB60027450C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* NativeGrind */,
@@ -161,7 +153,7 @@
 				F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */,
 			);
 			productName = "WatchNativeGrind Watch App";
-			productReference = F8B876BB2FDA4DB50027450C /* WatchNativeGrind Watch App.app */;
+			productReference = F89018EC2FE4237A0001FBDA /* WatchNativeGrind Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -230,15 +222,6 @@
 			);
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		F8B876C42FDA4DB60027450C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			platformFilter = ios;
-			target = F8B876BA2FDA4DB50027450C /* WatchNativeGrind Watch App */;
-			targetProxy = F8B876C32FDA4DB60027450C /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000011000000 /* Debug configuration for PBXProject "NativeGrind" */ = {
@@ -509,7 +492,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.estopia.NativeGrind;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = dev.imaoreo.NativeGrind;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -519,7 +503,7 @@
 					"$(PROJECT_DIR)/NativeGrindCore/.build/out/Products/Debug",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = net.estopia.NativeGrind;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.imaoreo.NativeGrind.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -546,7 +530,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = net.estopia.NativeGrind;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = dev.imaoreo.NativeGrind;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -556,7 +541,7 @@
 					"$(PROJECT_DIR)/NativeGrindCore/.build/out/Products/Debug",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = net.estopia.NativeGrind;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.imaoreo.NativeGrind.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
