@@ -69,8 +69,6 @@ struct MyApp: App {
 
 struct ContentView: View {
     @StateObject private var sessionManager = SessionManager.shared
-    @State private var currentProtectedTab: ProtectedRoute = .browse
-    @State private var currentUnprotectedTab: UnprotectedRoute = .login
     
     @Environment(NavigationRouter.self) private var router
     
