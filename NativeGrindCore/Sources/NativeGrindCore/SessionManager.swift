@@ -65,7 +65,10 @@ public final class SessionManager: ObservableObject {
         }
     }
 
-
+    public func authenticateWithToken(token: String) {
+        KeychainManager.shared.saveToken(token)
+        self.isAuthenticated = true
+    }
     
     /// Clears credentials and tears down the active state
     public func logout() {

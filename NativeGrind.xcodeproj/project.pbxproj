@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
-		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
+		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
+		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
-		F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */; };
-		F8BEB9C22FE4629800E9D5D5 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */; };
+		F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */; };
+		F8BEB9C22FE4629800E9D5D5 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */

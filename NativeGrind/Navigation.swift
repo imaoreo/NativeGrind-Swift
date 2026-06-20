@@ -25,7 +25,7 @@ extension UnprotectedRoute: View {
         case .login:
             LoginView()
         case .loginWithToken:
-            Text("Login with token")
+            LoginWithTokenView()
         case .register:
             Text("Register")
         case .resetPassword:
