@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
-		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, xros, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
+		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
+		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
+		F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */; };
+		F8BEB9C22FE4629800E9D5D5 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,8 +28,8 @@
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* NativeGrind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NativeGrind.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F89018EC2FE4237A0001FBDA /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "WatchNativeGrind Watch App.app"; path = "/Users/jaybr/Downloads/NativeGrind-Swift-main/build/Debug-watchos/WatchNativeGrind Watch App.app"; sourceTree = "<absolute>"; };
 		F8AF4B582FDF62F6009A8974 /* NativeGrindCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NativeGrindCore; sourceTree = "<group>"; };
+		F8BEB9A72FE4523600E9D5D5 /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNativeGrind Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -60,9 +62,11 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				F8BEB9C22FE4629800E9D5D5 /* FacebookLogin in Frameworks */,
 				F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */,
 				F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */,
 				F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */,
+				F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */,
 			);
 		};
 		F8B876B82FDA4DB50027450C /* Frameworks */ = {
@@ -90,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* NativeGrind.app */,
+				F8BEB9A72FE4523600E9D5D5 /* WatchNativeGrind Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,6 +135,8 @@
 				F8AF4B592FDF6328009A8974 /* NativeGrindCore */,
 				F8A33AF92FDF8331006DFD1F /* GoogleSignIn */,
 				F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */,
+				F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */,
+				F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */,
 			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* NativeGrind.app */;
@@ -153,7 +160,7 @@
 				F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */,
 			);
 			productName = "WatchNativeGrind Watch App";
-			productReference = F89018EC2FE4237A0001FBDA /* WatchNativeGrind Watch App.app */;
+			productReference = F8BEB9A72FE4523600E9D5D5 /* WatchNativeGrind Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -185,6 +192,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F8A33AF82FDF8331006DFD1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				F8BEB9BE2FE4629800E9D5D5 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -595,6 +603,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		F8BEB9BE2FE4629800E9D5D5 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 18.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -615,6 +631,16 @@
 		F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NativeGrindCore;
+		};
+		F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8BEB9BE2FE4629800E9D5D5 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+		F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8BEB9BE2FE4629800E9D5D5 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookLogin;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,8 +1,43 @@
 import SwiftUI
 import NativeGrindCore
+#if os(iOS)
+import FBSDKCoreKit
+import UIKit
+#endif
+
+#if os(iOS)
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
+        ApplicationDelegate.shared.application(
+            application,
+            didFinishLaunchingWithOptions: launchOptions
+        )
+
+        Settings.shared.appID = Bundle.main.object(forInfoDictionaryKey: "FacebookAppID") as? String
+        Settings.shared.clientToken = Bundle.main.object(forInfoDictionaryKey: "FacebookClientToken") as? String
+        Settings.shared.displayName = Bundle.main.object(forInfoDictionaryKey: "FacebookDisplayName") as? String
+        return true
+    }
+
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+    ) -> Bool {
+        ApplicationDelegate.shared.application(app, open: url, options: options)
+    }
+}
+#endif
 
 @main
 struct MyApp: App {
+    @State private var router = NavigationRouter()
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
     
     init() {
         Task {
@@ -18,23 +53,33 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
                 .withToastOverlay()
+                .environment(router)
+                #if os(iOS)
+                .onOpenURL { url in
+                    _ = ApplicationDelegate.shared.application(
+                        UIApplication.shared,
+                        open: url,
+                        options: [:]
+                    )
+                }
+                #endif
         }
     }
 }
 
 struct ContentView: View {
-    @State private var router = NavigationRouter()
     @StateObject private var sessionManager = SessionManager.shared
-    @State private var currentProtectedTab: ProtectedRoute = .browse
-    @State private var currentUnprotectedTab: UnprotectedRoute = .login
+    
+    @Environment(NavigationRouter.self) private var router
     
     var body: some View {
+        @Bindable var router = router
         Group {
             if sessionManager.isAuthenticated {
                 // ==========================================
                 // PROTECTED FLOW
                 // ==========================================
-                TabView(selection: $currentProtectedTab) {
+                TabView(selection: $router.selectedProtectedTab) {
                     
                     NavigationStack(path: $router.protectedPath) {
                         ProtectedRoute.browse
@@ -47,7 +92,7 @@ struct ContentView: View {
                     }
                     .tag(ProtectedRoute.browse)
                     
-                    NavigationStack {
+                    NavigationStack(path: $router.protectedPath) {
                         ProtectedRoute.messages
                             .navigationDestination(for: ProtectedRoute.self) { route in
                                 route
@@ -64,7 +109,7 @@ struct ContentView: View {
                 // ==========================================
                 // UNPROTECTED FLOW
                 // ==========================================
-                TabView(selection: $currentUnprotectedTab) {
+                TabView(selection: $router.selectedUnprotectedTab) {
                     
                     NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.login
@@ -97,9 +142,9 @@ struct ContentView: View {
                     .tabItem {
                         Label("Reset Password", systemImage: "person.badge.key")
                     }
-                    .tag(UnprotectedRoute.loginWithToken)
+                    .tag(UnprotectedRoute.resetPassword)
                     
-                    NavigationStack {
+                    NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.register
                             .navigationDestination(for: UnprotectedRoute.self) { route in
                                 route
@@ -110,7 +155,6 @@ struct ContentView: View {
                     }
                     .tag(UnprotectedRoute.register)
                 }
-                .accentColor(.green) // Green accent color for auth states
             }
         }
         .environment(router)

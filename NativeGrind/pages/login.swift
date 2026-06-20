@@ -7,15 +7,20 @@
 
 import SwiftUI
 import NativeGrindCore
-#if !os(tvOS)
+#if !os(tvOS) && !os(visionOS)
 import GoogleSignIn
+#endif
+#if os(iOS)
+import FacebookLogin
+import FBSDKCoreKit
 #endif
 
 struct LoginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    
+    @Environment(NavigationRouter.self) private var router
+
     private var containerWidth: CGFloat {
         #if os(tvOS)
             return 700
@@ -24,14 +29,22 @@ struct LoginView: View {
         #endif
     }
     
-    #if !os(tvOS)
+    private var textSize: Font.TextStyle {
+        #if os(tvOS)
+            return .title3
+        #else
+            return .title
+        #endif
+    }
+
+    #if !os(tvOS) && !os(visionOS)
     private func handleGoogleSignIn() {
         #if os(macOS)
             guard let presentingWindow = NSApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? NSApplication.shared.windows.first else {
                 print("No Active Window on MacOS")
                 return
             }
-            
+
             let presentationAnchor = presentingWindow
         #else
             guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -39,7 +52,7 @@ struct LoginView: View {
                 print("No Active Window on iOS")
                 return
             }
-            
+
             let presentationAnchor = rootViewController
         #endif
 
@@ -53,10 +66,9 @@ struct LoginView: View {
                 print("No valid user found.")
                 return
             }
-            
-            let accessToken = user.accessToken.tokenString
-            print("Google Sign-In successful. Access Token: \(accessToken)")
 
+            let accessToken = user.accessToken.tokenString
+            print("Google Sign-In successful.")
 
             Task {
                 await SessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
@@ -64,46 +76,73 @@ struct LoginView: View {
         }
     }
     #endif
-    
+
+    #if os(iOS)
+    private func handleFacebookSignIn() {
+        let loginManager = LoginManager()
+
+        loginManager.logIn(permissions: ["public_profile", "email"], from: nil) { result, error in
+            if let error = error {
+                print("Facebook Authentication failed: \(error.localizedDescription)")
+                return
+            }
+
+            guard let result = result, !result.isCancelled else {
+                print("User cancelled Facebook configuration flow.")
+                return
+            }
+            
+            guard let accessToken = result.authenticationToken?.tokenString else {
+                print("Failed to retrieve an active Facebook access token string.")
+                return
+            }
+
+            print("Facebook Sign-In successful.")
+
+            Task {
+                await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
+            }
+        }
+    }
+    #endif
+
     private func handleEmailSignIn() {
         Task {
             await SessionManager.shared.authenticateWithEmail(email: username, password: password)
         }
     }
-    
+
     var body: some View {
         VStack(
             spacing: 24
         ) {
-            
             Spacer()
-            
+
             VStack(
                 spacing: 10
-            ){
+            ) {
                 Text("Please Login To NativeGrind")
-                    .font(.system(.title, design: .rounded))
+                    .font(.system(textSize, design: .rounded))
                     .bold()
                     .multilineTextAlignment(.center)
-                
+
                 Text("Welcome Back! Please enter your credentials to access your account.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 16)
-            
+
             VStack(
                 spacing: 16
             ) {
-                
                 TextField("Email", text: $username)
                     .textFieldStyle(.plain)
                     .padding()
                     .background(.ultraThinMaterial)
                     .cornerRadius(10)
                     .textContentType(.emailAddress)
-                
+
                 SecureField("Password", text: $password)
                     .textFieldStyle(.plain)
                     .padding()
@@ -111,7 +150,7 @@ struct LoginView: View {
                     .cornerRadius(10)
                     .textContentType(.password)
             }
-            
+
             Button(action: {
                 handleEmailSignIn()
             }) {
@@ -124,7 +163,7 @@ struct LoginView: View {
                     .cornerRadius(10)
             }
             .buttonStyle(.plain)
-            
+
             HStack {
                 VStack { Divider() }
                 Text("OR")
@@ -133,12 +172,12 @@ struct LoginView: View {
                 VStack { Divider() }
             }
             .padding(.vertical, 8)
-            
 
-            VStack(spacing: 12) {
-                
+            VStack(
+                spacing: 12
+            ) {
                 Button(action: {
-                    // Handle Apple login logic here
+                    router.selectedUnprotectedTab = .loginWithToken
                 }) {
                     HStack(spacing: 12) {
                         Image(systemName: "applelogo")
@@ -153,8 +192,8 @@ struct LoginView: View {
                     .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
-                
-                #if !os(tvOS)
+
+                #if !os(tvOS) && !os(visionOS)
                 Button(action: {
                     handleGoogleSignIn()
                 }) {
@@ -174,9 +213,10 @@ struct LoginView: View {
                 }
                 .buttonStyle(.plain)
                 #endif
-                
+
+                #if os(iOS)
                 Button(action: {
-                    // Handle Facebook login logic here
+                    handleFacebookSignIn()
                 }) {
                     HStack(spacing: 12) {
                         Image("FacebookLogo")
@@ -189,17 +229,17 @@ struct LoginView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(red: 9/255, green: 102/255, blue: 255/255)) // Facebook Blue
+                    .background(Color(red: 9/255, green: 102/255, blue: 255/255))
                     .cornerRadius(10)
                 }
                 .buttonStyle(.plain)
+                #endif
             }
-            
+
             Spacer()
         }
         .padding(24)
         .frame(maxWidth: containerWidth, maxHeight: .infinity)
-        
     }
 }
 

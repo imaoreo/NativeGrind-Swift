@@ -84,7 +84,7 @@ public actor APIClient {
     }
 
 
-    /// Executes a network request matching native iOS packet structures
+    /// Executes a network request
     /// - Parameters:
     ///   - method: HTTP verb (GET, POST, etc.)
     ///   - path: The endpoint path (e.g., `/v1/auth/login`)
@@ -143,12 +143,12 @@ public actor APIClient {
             if let validToken = token {
                 request.setValue(validToken, forHTTPHeaderField: "Authorization")
             } else {
-                // Route wants auth, but no toke
+                // Route requires auth but there is no token stored
                 throw RequestError.uninitializedSession
             }
                 
         } else {
-            // Explicitly clear the header for non-authed routes just in case
+            // clear header for unauthed routes
             request.setValue(nil, forHTTPHeaderField: "Authorization")
         }
             

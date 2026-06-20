@@ -25,7 +25,7 @@ extension UnprotectedRoute: View {
         case .login:
             LoginView()
         case .loginWithToken:
-            Text("Login with token")
+            LoginWithTokenView()
         case .register:
             Text("Register")
         case .resetPassword:
@@ -47,6 +47,9 @@ extension ProtectedRoute: View {
 
 @Observable
 final class NavigationRouter {
+    var selectedUnprotectedTab: UnprotectedRoute = .login
+    var selectedProtectedTab: ProtectedRoute = .browse
+    
     var unprotectedPath: [UnprotectedRoute] = []
     var protectedPath: [ProtectedRoute] = []
     
@@ -77,5 +80,7 @@ final class NavigationRouter {
     func reset() {
         unprotectedPath.removeAll()
         protectedPath.removeAll()
+        selectedUnprotectedTab = .login
+        selectedProtectedTab = .browse
     }
 }

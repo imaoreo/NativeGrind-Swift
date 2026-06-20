@@ -54,7 +54,7 @@ public final class ErrorManager: ObservableObject {
         let newEntry = LogEntry(level: level, prefix: prefix, message: message)
         self.logs.append(newEntry)
         
-        // Prints out to XCode }
+        // Prints out to XCode
         let consoleString = "[\(level.rawValue)] \(prefix): \(message)"
         switch level {
             case .error: print("🔴 \(consoleString)")

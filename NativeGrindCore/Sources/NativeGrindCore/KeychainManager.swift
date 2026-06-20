@@ -16,34 +16,34 @@ public final class KeychainManager {
     
     private init() {}
     
-    /// Saves or updates the authentication token in the secure Keychain
+    /// Saves or updates the authentication token in Keychain
     @discardableResult
     public func saveToken(_ token: String) -> Bool {
         guard let data = token.data(using: .utf8) else { return false }
         
-        // 1. Prepare the query to look for an existing token
+        // Prepare query to check if there is a token
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
         
-        // 2. Check if the item already exists
+        // check if it exists
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         
         if status == errSecSuccess {
-            // Attributes to update
+            // update the item
             let attributesToUpdate: [String: Any] = [
                 kSecValueData as String: data
             ]
-            // Update the existing item
+
             let updateStatus = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
             return updateStatus == errSecSuccess
         } else {
-            // 3. Item doesn't exist, create a brand new one
+            // create a new item
             var newItem = query
             newItem[kSecValueData as String] = data
-            // Restrict read access until the device is explicitly unlocked by the user
+            // security to make sure the token can only be accessed after the device has been unlocked
             newItem[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
             
             let addStatus = SecItemAdd(newItem as CFDictionary, nil)
@@ -71,7 +71,7 @@ public final class KeychainManager {
         return String(data: data, encoding: .utf8)
     }
     
-    /// Deletes the token from the Keychain (used during logout)
+    /// Deletes the token from the Keychain
     @discardableResult
     public func deleteToken() -> Bool {
         let query: [String: Any] = [
