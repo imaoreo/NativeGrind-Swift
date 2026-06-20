@@ -28,6 +28,14 @@ struct LoginView: View {
             return 500
         #endif
     }
+    
+    private var textSize: Font.TextStyle {
+        #if os(tvOS)
+            return .title3
+        #else
+            return .large
+        #endif
+    }
 
     #if !os(tvOS) && !os(visionOS)
     private func handleGoogleSignIn() {
@@ -114,7 +122,7 @@ struct LoginView: View {
                 spacing: 10
             ) {
                 Text("Please Login To NativeGrind")
-                    .font(.system(.title, design: .rounded))
+                    .font(.system(textSize, design: .rounded))
                     .bold()
                     .multilineTextAlignment(.center)
 
