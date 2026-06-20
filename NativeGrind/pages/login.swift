@@ -33,7 +33,7 @@ struct LoginView: View {
         #if os(tvOS)
             return .title3
         #else
-            return .large
+            return .title
         #endif
     }
 

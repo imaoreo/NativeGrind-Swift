@@ -83,5 +83,5 @@ struct LoginWithTokenView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginWithTokenView()
 }

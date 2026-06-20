@@ -144,7 +144,7 @@ struct ContentView: View {
                     .tabItem {
                         Label("Reset Password", systemImage: "person.badge.key")
                     }
-                    .tag(UnprotectedRoute.loginWithToken)
+                    .tag(UnprotectedRoute.resetPassword)
                     
                     NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.register
