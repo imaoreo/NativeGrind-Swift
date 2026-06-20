@@ -20,16 +20,17 @@ struct LoginWithTokenView: View {
         #endif
     }
 
-    private func handleTokenSignIn() {
-        // Just splits the Grindr3 as we only want the sessionId
-        if (token.contains("Grindr3")) {
-                token = String(token.split(separator: " ")[1])
-        }
-        
-        Task {
-            SessionManager.shared.authenticateWithToken(token: token)
+private func handleTokenSignIn() {
+    // If the token is prefixed with "Grindr3 ", extract the sessionId portion.
+    if token.hasPrefix("Grindr3 ") {
+        let parts = token.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+        if parts.count == 2 {
+            token = String(parts[1])
         }
     }
+
+    SessionManager.shared.authenticateWithToken(token: token)
+}
 
     var body: some View {
         VStack(spacing: 24) {
