@@ -68,7 +68,7 @@ struct LoginView: View {
             }
 
             let accessToken = user.accessToken.tokenString
-            print("Google Sign-In successful. Access Token: \(accessToken)")
+            print("Google Sign-In successful.")
 
             Task {
                 await SessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
@@ -97,7 +97,7 @@ struct LoginView: View {
                 return
             }
 
-            print("Facebook Sign-In successful. Access Token: \(accessToken)")
+            print("Facebook Sign-In successful.")
 
             Task {
                 await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)

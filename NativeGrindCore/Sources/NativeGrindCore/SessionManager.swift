@@ -25,7 +25,7 @@ public final class SessionManager: ObservableObject {
     public func checkCurrentAuthStatus() {
         if let existingToken = keychain.getToken() {
             // We need to add a check here to make sure token is still valid
-            ErrorManager.shared.log("SessionManager", "Existing token found: \(existingToken)")
+            ErrorManager.shared.log("SessionManager", "Existing token found")
             self.isAuthenticated = true
         } else {
             self.isAuthenticated = false
