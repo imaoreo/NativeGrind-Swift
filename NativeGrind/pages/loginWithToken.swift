@@ -51,7 +51,8 @@ struct LoginWithTokenView: View {
                     .padding()
                     .background(.ultraThinMaterial)
                     .cornerRadius(10)
-                    .textContentType(.emailAddress)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
             }
 
             Button(action: {
