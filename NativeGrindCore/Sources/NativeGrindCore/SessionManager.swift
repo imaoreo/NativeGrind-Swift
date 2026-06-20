@@ -83,7 +83,24 @@ public final class SessionManager: ObservableObject {
     }
 
     public func authenticateWithToken(token: String) {
-        KeychainManager.shared.saveToken(token)
+        var correctedToken = token
+        
+        // If the token is prefixed with "Grindr3 ", extract the sessionId portion.
+        if correctedToken.hasPrefix("Grindr3 ") {
+            let parts = correctedToken.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            if parts.count == 2 {
+                correctedToken = String(parts[1])
+            }
+        }
+        
+        // Make sure the token isn't just white space or that
+        let trimmed = correctedToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, KeychainManager.shared.saveToken(trimmed) else {
+            ErrorManager.shared.error("SessionManager", "Token Login: Failed to save token")
+            self.isAuthenticated = false
+            return
+        }
+    
         self.isAuthenticated = true
     }
     

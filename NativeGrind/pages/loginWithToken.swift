@@ -21,14 +21,6 @@ struct LoginWithTokenView: View {
     }
 
 private func handleTokenSignIn() {
-    // If the token is prefixed with "Grindr3 ", extract the sessionId portion.
-    if token.hasPrefix("Grindr3 ") {
-        let parts = token.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-        if parts.count == 2 {
-            token = String(parts[1])
-        }
-    }
-
     SessionManager.shared.authenticateWithToken(token: token)
 }
 
