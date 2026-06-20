@@ -84,7 +84,7 @@ public actor APIClient {
     }
 
 
-    /// Executes a network request matching native iOS packet structures
+    /// Executes a network request
     /// - Parameters:
     ///   - method: HTTP verb (GET, POST, etc.)
     ///   - path: The endpoint path (e.g., `/v1/auth/login`)
