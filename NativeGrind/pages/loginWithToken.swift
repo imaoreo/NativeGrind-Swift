@@ -10,7 +10,6 @@ import NativeGrindCore
 
 struct LoginWithTokenView: View {
     @State private var token = ""
-    @Environment(NavigationRouter.self) private var router
 
     private var containerWidth: CGFloat {
         #if os(tvOS)
@@ -20,9 +19,9 @@ struct LoginWithTokenView: View {
         #endif
     }
 
-private func handleTokenSignIn() {
-    SessionManager.shared.authenticateWithToken(token: token)
-}
+    private func handleTokenSignIn() {
+        SessionManager.shared.authenticateWithToken(token: token)
+    }
 
     var body: some View {
         VStack(spacing: 24) {
