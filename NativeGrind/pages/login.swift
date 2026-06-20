@@ -83,8 +83,8 @@ struct LoginView: View {
                 print("User cancelled Facebook configuration flow.")
                 return
             }
-
-            guard let accessToken = AccessToken.current?.tokenString else {
+            
+            guard let accessToken = result.authenticationToken?.tokenString else {
                 print("Failed to retrieve an active Facebook access token string.")
                 return
             }
@@ -92,7 +92,7 @@ struct LoginView: View {
             print("Facebook Sign-In successful. Access Token: \(accessToken)")
 
             Task {
-                //await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
+                await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
             }
         }
     }

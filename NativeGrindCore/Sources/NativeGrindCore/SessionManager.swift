@@ -35,7 +35,7 @@ public final class SessionManager: ObservableObject {
     /// change the google login to a grindr auth token
     public func authenticateWithGoogle(accessToken: String) async {
         do {
-            let response = try await APIClient.shared.request(.loginWithGoogle(token: accessToken))
+            let response = try await APIClient.shared.request(.thirdPartyLogin(token: accessToken, isFacebook: false))
             
             // make sure there isn't a error
             if let response = response {
@@ -46,6 +46,23 @@ public final class SessionManager: ObservableObject {
             }
         } catch {
             ErrorManager.shared.error("SessionManager", "Google Login: \(error.localizedDescription)")
+        }
+    }
+    
+    /// change the facebook login to a grindr auth token
+    public func authenticateWithFacebook(accessToken: String) async {
+        do {
+            let response = try await APIClient.shared.request(.thirdPartyLogin(token: accessToken, isFacebook: true))
+            
+            // make sure there isn't a error
+            if let response = response {
+                let sessionId = response.authenticationResponse.sessionId
+                
+                KeychainManager.shared.saveToken(sessionId)
+                self.isAuthenticated = true
+            }
+        } catch {
+            ErrorManager.shared.error("SessionManager", "Facebook Login: \(error.localizedDescription)")
         }
     }
     

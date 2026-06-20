@@ -46,14 +46,14 @@ public extension Endpoint {
         )
     }
     
-    static func loginWithGoogle(token: String) -> Endpoint<ThirdPartyAuthResponse> {
+    static func thirdPartyLogin(token: String, isFacebook: Bool ) -> Endpoint<ThirdPartyAuthResponse> {
         return Endpoint<ThirdPartyAuthResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
-            queryItems: nil,
+            queryItems: isFacebook ? ["allowFacebookLimitedLogin": "true"] : nil,
             body: [
                 "thirdPartyToken": token,
-                "thirdPartyVendor": 2
+                "thirdPartyVendor": isFacebook ? 1 : 2
             ],
             isAuthedRoute: false,
             networkHandlers: []
