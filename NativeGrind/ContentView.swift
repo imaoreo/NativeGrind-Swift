@@ -157,7 +157,6 @@ struct ContentView: View {
                     }
                     .tag(UnprotectedRoute.register)
                 }
-                .accentColor(.green) // Green accent color for auth states
             }
         }
         .environment(router)
