@@ -137,10 +137,11 @@ public actor APIClient {
         
         if isAuthed {
             let token = await MainActor.run {
-                KeychainManager.shared.getToken()
+                KeychainManager.shared.getToken(type: .sessionId)
             }
             
-            if let validToken = token {
+            if var validToken = token {
+                validToken = "Grindr3 \(validToken)"
                 request.setValue(validToken, forHTTPHeaderField: "Authorization")
             } else {
                 // Route requires auth but there is no token stored
