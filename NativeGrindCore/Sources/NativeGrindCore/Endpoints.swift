@@ -37,12 +37,42 @@ public extension Endpoint {
             body: [
                 "email": email,
                 "password": password,
-                "token": ""
+                "token": "" // This is for fcm Tokens
             ],
             isAuthedRoute: false,
             networkHandlers: [
                 networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Loggin Error", level: .error, match: .matchBoth)
             ]
+        )
+    }
+    
+    static func refreshToken(email: String, token: String) -> Endpoint<AuthenticationResponse> {
+        return Endpoint<AuthenticationResponse>(
+            path: "/v8/sessions",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "email": email,
+                "authToken": token,
+            ],
+            isAuthedRoute: false,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Issue refreshing", header: "Loggin Error", level: .error, match: .matchBoth)
+            ]
+        )
+    }
+    
+    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> Endpoint<AuthenticationResponse> {
+        return Endpoint<AuthenticationResponse>(
+            path: "/v8/sessions/thirdparty",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "thirdPartyUserId": thirdPartyUserId, // this is like google111659523269679641630, or facebook985658287553855
+                "authToken": authToken,
+            ],
+            isAuthedRoute: false,
+            networkHandlers: []
         )
     }
     

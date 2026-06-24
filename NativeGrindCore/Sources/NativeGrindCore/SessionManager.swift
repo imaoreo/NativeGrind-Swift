@@ -23,9 +23,9 @@ public final class SessionManager: ObservableObject {
     
     /// Check if the token is in the keychain
     public func checkCurrentAuthStatus() {
-        if let existingToken = keychain.getToken() {
+        if let existingToken = keychain.getToken(type: .authToken) {
             // We need to add a check here to make sure token is still valid
-            ErrorManager.shared.log("SessionManager", "Existing token found")
+            ErrorManager.shared.log("SessionManager", "Existing authtoken found")
             self.isAuthenticated = true
         } else {
             self.isAuthenticated = false
@@ -40,8 +40,10 @@ public final class SessionManager: ObservableObject {
             // make sure there isn't a error
             if let response = response {
                 let sessionId = response.authenticationResponse.sessionId
+                let authToken = response.authenticationResponse.authToken
                 
-                KeychainManager.shared.saveToken(sessionId)
+                KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+                KeychainManager.shared.saveToken(authToken, type: .authToken)
                 self.isAuthenticated = true
             }
         } catch {
@@ -57,8 +59,10 @@ public final class SessionManager: ObservableObject {
             // make sure there isn't a error
             if let response = response {
                 let sessionId = response.authenticationResponse.sessionId
+                let authToken = response.authenticationResponse.authToken
                 
-                KeychainManager.shared.saveToken(sessionId)
+                KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+                KeychainManager.shared.saveToken(authToken, type: .authToken)
                 self.isAuthenticated = true
             }
         } catch {
@@ -73,8 +77,10 @@ public final class SessionManager: ObservableObject {
             // make sure there isn't a error
             if let response = response {
                 let sessionId = response.sessionId
+                let authToken = response.authToken
                 
-                KeychainManager.shared.saveToken(sessionId)
+                KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+                KeychainManager.shared.saveToken(authToken, type: .authToken)
                 self.isAuthenticated = true
             }
         } catch {
@@ -82,31 +88,89 @@ public final class SessionManager: ObservableObject {
         }
     }
 
-    public func authenticateWithToken(token: String) {
-        var correctedToken = token
-        
-        // If the token is prefixed with "Grindr3 ", extract the sessionId portion.
-        if correctedToken.hasPrefix("Grindr3 ") {
-            let parts = correctedToken.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-            if parts.count == 2 {
-                correctedToken = String(parts[1])
+    public func authenticateWithAuthToken(token: String, email: String) async {
+    
+        do {
+            let response = try await APIClient.shared.request(.refreshToken(email: email, token: token))
+            
+            guard let sessionId = response?.sessionId else {
+                self.isAuthenticated = false
+                return
             }
+            
+            guard let authToken = response?.authToken else {
+                self.isAuthenticated = false
+                return
+            }
+            
+            KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+            KeychainManager.shared.saveToken(authToken, type: .authToken)
+            self.isAuthenticated = true
+            
+        } catch {
+            ErrorManager.shared.error("SessionManager", "Failed to authenticate with auth token: \(error.localizedDescription)")
+            self.isAuthenticated = false
         }
-        
-        // Make sure the token isn't just white space or that
-        let trimmed = correctedToken.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, KeychainManager.shared.saveToken(trimmed) else {
-            ErrorManager.shared.error("SessionManager", "Token Login: Failed to save token")
+    }
+    
+    public func authenticateWithThirdPartyToken(token: String, thirdPartyUserId: String) async {
+    
+        do {
+            let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: thirdPartyUserId, authToken: token))
+            
+            guard let sessionId = response?.sessionId else {
+                self.isAuthenticated = false
+                return
+            }
+            
+            guard let authToken = response?.authToken else {
+                self.isAuthenticated = false
+                return
+            }
+            
+            KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+            KeychainManager.shared.saveToken(authToken, type: .authToken)
+            self.isAuthenticated = true
+            
+        } catch {
+            ErrorManager.shared.error("SessionManager", "Failed to authenticate with third party token: \(error.localizedDescription)")
+            self.isAuthenticated = false
+        }
+    }
+    
+    public func refreshToken() async {
+        guard let currentToken = KeychainManager.shared.getToken(type: .authToken) else {
             self.isAuthenticated = false
             return
         }
-    
-        self.isAuthenticated = true
+        
+        do {
+            let response = try await APIClient.shared.request(.refreshToken(email: "user@example.com", token: currentToken))
+            
+            guard let sessionId = response?.sessionId else {
+                self.isAuthenticated = false
+                return
+            }
+            
+            guard let authToken = response?.authToken else {
+                self.isAuthenticated = false
+                return
+            }
+            
+            KeychainManager.shared.saveToken(sessionId, type: .sessionId)
+            KeychainManager.shared.saveToken(authToken, type: .authToken)
+            self.isAuthenticated = true
+            
+        } catch {
+            ErrorManager.shared.error("SessionManager", "Failed to refresh token: \(error.localizedDescription)")
+            self.isAuthenticated = false
+        }
     }
     
     /// Clears credentials and tears down the active state
     public func logout() {
-        keychain.deleteToken()
+        keychain.deleteToken(type: .authToken)
+        keychain.deleteToken(type: .sessionId)
         self.isAuthenticated = false
     }
 }
