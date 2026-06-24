@@ -123,15 +123,15 @@ struct ContentView: View {
                     .tag(UnprotectedRoute.login)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.loginWithToken
+                        UnprotectedRoute.advancedLogin
                             .navigationDestination(for: UnprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
-                        Label("Token Login", systemImage: "key")
+                        Label("Advanced Login", systemImage: "key")
                     }
-                    .tag(UnprotectedRoute.loginWithToken)
+                    .tag(UnprotectedRoute.advancedLogin)
                     
                     NavigationStack(path: $router.unprotectedPath) {
                         UnprotectedRoute.resetPassword

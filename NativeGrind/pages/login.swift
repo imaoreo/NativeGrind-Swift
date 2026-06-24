@@ -177,7 +177,7 @@ struct LoginView: View {
                 spacing: 12
             ) {
                 Button(action: {
-                    router.selectedUnprotectedTab = .loginWithToken
+                    router.selectedUnprotectedTab = .advancedLogin
                 }) {
                     HStack(spacing: 12) {
                         Image(systemName: "applelogo")

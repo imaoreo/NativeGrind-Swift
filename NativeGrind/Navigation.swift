@@ -9,7 +9,7 @@ import SwiftUI
 
 enum UnprotectedRoute: Hashable {
     case login
-    case loginWithToken
+    case advancedLogin
     case register
     case resetPassword
 }
@@ -24,8 +24,8 @@ extension UnprotectedRoute: View {
         switch self {
         case .login:
             LoginView()
-        case .loginWithToken:
-            LoginWithTokenView()
+        case .advancedLogin:
+            AdvancedLoginView()
         case .register:
             Text("Register")
         case .resetPassword:
