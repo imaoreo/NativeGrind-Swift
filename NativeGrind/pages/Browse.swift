@@ -30,6 +30,23 @@ struct BrowseView: View {
             }
             .buttonStyle(.plain)
             
+            Button(action: {
+                Task {
+                    await SessionManager.shared.refreshToken()
+                }
+                
+            }) {
+                Text("Refresh")
+                    .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.black)
+                .cornerRadius(10)
+            }
+            .buttonStyle(.plain)
+
+            
             Spacer()
         }
         .padding(24)
