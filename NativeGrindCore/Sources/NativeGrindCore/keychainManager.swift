@@ -1,5 +1,5 @@
 //
-//  KeychainManager.swift
+//  keychainManager.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/06/2026.
@@ -8,24 +8,28 @@
 import Foundation
 import Security
 
-public final class KeychainManager {
+public enum keyType: String, Decodable, Sendable {
+    case authToken = "authToken"
+    case sessionId = "sessionId"
+}
+
+public final class keychainManager {
     
-    @MainActor public static let shared = KeychainManager()
+    @MainActor public static let shared = keychainManager()
     private let service = "dev.imaoreo.NativeGrind"
-    private let account = "authToken"
     
     private init() {}
     
     /// Saves or updates the authentication token in Keychain
     @discardableResult
-    public func saveToken(_ token: String) -> Bool {
+    public func saveToken(_ token: String, type: keyType) -> Bool {
         guard let data = token.data(using: .utf8) else { return false }
         
         // Prepare query to check if there is a token
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account
+            kSecAttrAccount as String: type.rawValue
         ]
         
         // check if it exists
@@ -52,11 +56,11 @@ public final class KeychainManager {
     }
     
     /// Retrieves the token from the Keychain
-    public func getToken() -> String? {
+    public func getToken(type: keyType) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: type.rawValue,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
@@ -73,11 +77,11 @@ public final class KeychainManager {
     
     /// Deletes the token from the Keychain
     @discardableResult
-    public func deleteToken() -> Bool {
+    public func deleteToken(type: keyType) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account
+            kSecAttrAccount as String: type.rawValue
         ]
         
         let status = SecItemDelete(query as CFDictionary)

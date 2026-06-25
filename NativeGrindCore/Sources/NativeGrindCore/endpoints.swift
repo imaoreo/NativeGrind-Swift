@@ -1,5 +1,5 @@
 //
-//  Endpoints.swift
+//  endpoints.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 14/06/2026.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// The generic container that binds a network route to a specific response model.
-public struct Endpoint<Response: Decodable> {
+public struct endpoint<Response: Decodable> {
     public let path: String
     public let method: HTTPMethod
     public let queryItems: [String: String]?
@@ -26,18 +26,18 @@ public struct Endpoint<Response: Decodable> {
 }
 
 /// Routes with their corresponding response models.
-public extension Endpoint {
+public extension endpoint {
     
     // Auth Routes
-    static func login(email: String, password: String) -> Endpoint<AuthenticationResponse> {
-        return Endpoint<AuthenticationResponse>(
+    static func login(email: String, password: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
             path: "/v8/sessions",
             method: .post,
             queryItems: nil,
             body: [
                 "email": email,
                 "password": password,
-                "token": ""
+                "token": "" // This is for fcm Tokens
             ],
             isAuthedRoute: false,
             networkHandlers: [
@@ -46,8 +46,38 @@ public extension Endpoint {
         )
     }
     
-    static func thirdPartyLogin(token: String, isFacebook: Bool ) -> Endpoint<ThirdPartyAuthResponse> {
-        return Endpoint<ThirdPartyAuthResponse>(
+    static func refreshToken(email: String, token: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
+            path: "/v8/sessions",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "email": email,
+                "authToken": token,
+            ],
+            isAuthedRoute: false,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Issue refreshing", header: "Loggin Error", level: .error, match: .matchBoth)
+            ]
+        )
+    }
+    
+    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
+            path: "/v8/sessions/thirdparty",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "thirdPartyUserId": thirdPartyUserId, // this is like google111659523269679641630, or facebook985658287553855
+                "authToken": authToken,
+            ],
+            isAuthedRoute: false,
+            networkHandlers: []
+        )
+    }
+    
+    static func thirdPartyLogin(token: String, isFacebook: Bool ) -> endpoint<thirdPartyAuthResponse> {
+        return endpoint<thirdPartyAuthResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
             queryItems: isFacebook ? ["allowFacebookLimitedLogin": "true"] : nil,
@@ -61,8 +91,8 @@ public extension Endpoint {
     }
     
     // Public
-    static var getGenders: Endpoint<[Gender]> {
-        return Endpoint<[Gender]>(
+    static var getGenders: endpoint<[gender]> {
+        return endpoint<[gender]>(
             path: "/public/v2/genders",
             method: .get,
             queryItems: nil,
@@ -72,8 +102,8 @@ public extension Endpoint {
         )
     }
     
-    static var getPronouns: Endpoint<[Pronoun]> {
-        return Endpoint<[Pronoun]>(
+    static var getPronouns: endpoint<[pronoun]> {
+        return endpoint<[pronoun]>(
             path: "/public/v1/pronouns",
             method: .get,
             queryItems: nil,
@@ -93,8 +123,8 @@ public extension Endpoint {
          rightNowOnly: Bool? = nil,
          onlineNowOnly: Bool? = nil,
          distanceMeters: Double? = nil,
-         positions: [SexualPosition]? = nil
-    ) -> Endpoint<InboxResponse> {
+         positions: [sexualPosition]? = nil
+    ) -> endpoint<inboxResponse> {
         
         let positionArray = removeENUM(from: positions)
         
@@ -116,7 +146,7 @@ public extension Endpoint {
         // Removes ones that are nil
         let filteredBody = rawBody.compactMapValues { $0 }
         
-        return Endpoint<InboxResponse>(
+        return endpoint<inboxResponse>(
             path: "/v3/inbox",
             method: .post,
             queryItems: queryItems,
@@ -128,8 +158,8 @@ public extension Endpoint {
     
     // Profiles
     
-    static func getProfile(profileId: String) -> Endpoint<ProfileResponse> {
-        return Endpoint<ProfileResponse>(
+    static func getProfile(profileId: String) -> endpoint<profileResponse> {
+        return endpoint<profileResponse>(
             path: "/v7/profiles/\(profileId)",
             method: .get,
             queryItems: nil,

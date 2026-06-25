@@ -1,22 +1,29 @@
+//
+//  errorManager.swift
+//  NativeGrindCore
+//
+//  Created by Jay Brammeld on 14/06/2026.
+//
+
 import Foundation
 import Combine
 
-public enum LogLevel: String, Codable, CaseIterable {
+public enum logLevel: String, Codable, CaseIterable {
     case log = "LOG"
     case warn = "WARN"
     case error = "ERROR"
 }
 
-public struct LogEntry: Identifiable, Equatable {
+public struct logEntry: Identifiable, Equatable {
     public let id = UUID()
     public let timestamp = Date()
-    public let level: LogLevel
+    public let level: logLevel
     public let prefix: String
     public let message: String
 }
 
-public enum MatchRule: String, Codable {
-    case statusCodeOnly    
+public enum matchRule: String, Codable {
+    case statusCodeOnly
     case jsonContentOnly
     case matchBoth
     case mathchEither
@@ -28,16 +35,16 @@ public struct networkHandler: Codable {
     public let jsonLocationValue: String?
     public let message: String
     public let header: String
-    public let level: LogLevel
-    public let match: MatchRule
+    public let level: logLevel
+    public let match: matchRule
 }
 
 @MainActor
-public final class ErrorManager: ObservableObject {
-    public static let shared = ErrorManager()
+public final class errorManager: ObservableObject {
+    public static let shared = errorManager()
     
     // Will be used by a dev page in the future to show all logs
-    @Published public private(set) var logs: [LogEntry] = [] {
+    @Published public private(set) var logs: [logEntry] = [] {
             didSet {
                 if logs.count > 100 {
                     // Limits logs to 100
@@ -46,12 +53,12 @@ public final class ErrorManager: ObservableObject {
             }
         }
     // This is the newest error that will be shown by ui
-    @Published public var activeToast: LogEntry? = nil
+    @Published public var activeToast: logEntry? = nil
     
     private init() {} // Prevents multiple instances
     
-    private func createEntry(level: LogLevel, prefix: String, message: String) {
-        let newEntry = LogEntry(level: level, prefix: prefix, message: message)
+    private func createEntry(level: logLevel, prefix: String, message: String) {
+        let newEntry = logEntry(level: level, prefix: prefix, message: message)
         self.logs.append(newEntry)
         
         // Prints out to XCode
@@ -65,7 +72,7 @@ public final class ErrorManager: ObservableObject {
         // This controls what is shown on the UI
         if level == .error {
             self.activeToast = newEntry
-            ToastManager.shared.show(style: .error, header: prefix, message: message)
+            toastManager.shared.show(style: .error, header: prefix, message: message)
         }
     }
     

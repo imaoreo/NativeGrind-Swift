@@ -1,12 +1,12 @@
 //
-//  Inbox.swift
+//  inbox.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct InboxResponse: Decodable, Sendable {
-    public let entries: [Conversation]
+public struct inboxResponse: Decodable, Sendable {
+    public let entries: [conversation]
     public let showsFreeHeaderLabel: Bool
     public let totalFullConversations: Int
     public let totalPartialConversations: Int // Should js be 0 but who knows
@@ -14,18 +14,18 @@ public struct InboxResponse: Decodable, Sendable {
     public let nextPage: Int
 }
 
-public struct Conversation: Decodable, Sendable {
-    public let type: ConversationType
-    public let data: ConversationData
+public struct conversation: Decodable, Sendable {
+    public let type: conversationType
+    public let data: conversationData
 }
 
-public struct ConversationData: Decodable, Sendable {
+public struct conversationData: Decodable, Sendable {
     public let conversationId: String
     public let name: String
-    public let participants: [ConversationParticipant]
+    public let participants: [conversationParticipant]
     public let lastActivityTimestamp: Int
     public let unreadCount: Int
-    public let preview: ConversationPreview
+    public let preview: conversationPreview
     public let muted: Bool
     public let pinned: Bool
     public let favorite: Bool
@@ -36,24 +36,24 @@ public struct ConversationData: Decodable, Sendable {
     public let hasUnreadThrob: Bool
 }
 
-public struct ConversationParticipant: Decodable, Sendable {
-    public let profileId: ProfileID
+public struct conversationParticipant: Decodable, Sendable {
+    public let profileId: profileID
     public let primaryMediaHash: String
     public let lastOnline: String
     public let onlineUntil: String
     public let distanceMetres: Double
-    public let position: [SexualPosition]
+    public let position: [sexualPosition]
     public let isInAList: Bool
     public let hasDatingPotential: Bool
 }
 
-public struct ConversationPreview: Decodable, Sendable {
+public struct conversationPreview: Decodable, Sendable {
     public let conversationId: conversationIdObject
     public let messageId: String
     public let chat1MessageId: String // UUIDv4
     public let senderId: String
-    public let type: MessageType
-    public let chat1Type: Chat1MessageType
+    public let type: messageType
+    public let chat1Type: chat1MessageType
     public let text: String?
     public let url: String?
     public let lat: String?

@@ -1,11 +1,11 @@
 //
-//  PublicModels.swift
+//  publicModels.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct Gender: Decodable, Sendable {
+public struct gender: Decodable, Sendable {
     public let genderId: Int
     public let gender: String // Man, Trans Man, Non-Binary
     public let displayGroup: Int
@@ -18,7 +18,7 @@ public struct Gender: Decodable, Sendable {
 }
 
 
-public struct Pronoun: Decodable, Sendable {
+public struct pronoun: Decodable, Sendable {
     public let pronounId: Int
     public let pronoun: String // He/Him/His, etc.
 }

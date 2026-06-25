@@ -6,7 +6,7 @@ import UIKit
 #endif
 
 #if os(iOS)
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class appDelegate: NSObject, UIApplicationDelegate {
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
@@ -33,10 +33,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 #endif
 
 @main
-struct MyApp: App {
-    @State private var router = NavigationRouter()
+struct myApp: App {
+    @State private var router = navigationRouter()
     #if os(iOS)
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(appDelegate.self) private var _appDelegate
     #endif
     
     init() {
@@ -51,7 +51,7 @@ struct MyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            contentView()
                 .withToastOverlay()
                 .environment(router)
                 #if os(iOS)
@@ -67,41 +67,41 @@ struct MyApp: App {
     }
 }
 
-struct ContentView: View {
-    @StateObject private var sessionManager = SessionManager.shared
+struct contentView: View {
+    @StateObject private var _sessionManager = sessionManager.shared
     
-    @Environment(NavigationRouter.self) private var router
+    @Environment(navigationRouter.self) private var router
     
     var body: some View {
         @Bindable var router = router
         Group {
-            if sessionManager.isAuthenticated {
+            if _sessionManager.isAuthenticated {
                 // ==========================================
                 // PROTECTED FLOW
                 // ==========================================
                 TabView(selection: $router.selectedProtectedTab) {
                     
                     NavigationStack(path: $router.protectedPath) {
-                        ProtectedRoute.browse
-                            .navigationDestination(for: ProtectedRoute.self) { route in
+                        protectedRoute.browse
+                            .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Browse", systemImage: "safari")
                     }
-                    .tag(ProtectedRoute.browse)
+                    .tag(protectedRoute.browse)
                     
                     NavigationStack(path: $router.protectedPath) {
-                        ProtectedRoute.messages
-                            .navigationDestination(for: ProtectedRoute.self) { route in
+                        protectedRoute.messages
+                            .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Messages", systemImage: "bubble.left.and.bubble.right")
                     }
-                    .tag(ProtectedRoute.messages)
+                    .tag(protectedRoute.messages)
                 }
                 .accentColor(.blue) // Changes the active tab highlight color
                 
@@ -112,48 +112,48 @@ struct ContentView: View {
                 TabView(selection: $router.selectedUnprotectedTab) {
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.login
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.login
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Login", systemImage: "lock.shield")
                     }
-                    .tag(UnprotectedRoute.login)
+                    .tag(unprotectedRoute.login)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.loginWithToken
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.advancedLogin
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
-                        Label("Token Login", systemImage: "key")
+                        Label("Advanced Login", systemImage: "key")
                     }
-                    .tag(UnprotectedRoute.loginWithToken)
+                    .tag(unprotectedRoute.advancedLogin)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.resetPassword
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.resetPassword
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Reset Password", systemImage: "person.badge.key")
                     }
-                    .tag(UnprotectedRoute.resetPassword)
+                    .tag(unprotectedRoute.resetPassword)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.register
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.register
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Register", systemImage: "person.badge.plus")
                     }
-                    .tag(UnprotectedRoute.register)
+                    .tag(unprotectedRoute.register)
                 }
             }
         }
@@ -162,5 +162,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    contentView()
 }

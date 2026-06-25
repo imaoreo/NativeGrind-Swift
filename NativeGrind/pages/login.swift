@@ -15,11 +15,11 @@ import FacebookLogin
 import FBSDKCoreKit
 #endif
 
-struct LoginView: View {
+struct loginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    @Environment(NavigationRouter.self) private var router
+    @Environment(navigationRouter.self) private var router
 
     private var containerWidth: CGFloat {
         #if os(tvOS)
@@ -71,7 +71,7 @@ struct LoginView: View {
             print("Google Sign-In successful.")
 
             Task {
-                await SessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
+                await sessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
             }
         }
     }
@@ -100,7 +100,7 @@ struct LoginView: View {
             print("Facebook Sign-In successful.")
 
             Task {
-                await SessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
+                await sessionManager.shared.authenticateWithFacebook(accessToken: accessToken)
             }
         }
     }
@@ -108,7 +108,7 @@ struct LoginView: View {
 
     private func handleEmailSignIn() {
         Task {
-            await SessionManager.shared.authenticateWithEmail(email: username, password: password)
+            await sessionManager.shared.authenticateWithEmail(email: username, password: password)
         }
     }
 
@@ -177,7 +177,7 @@ struct LoginView: View {
                 spacing: 12
             ) {
                 Button(action: {
-                    router.selectedUnprotectedTab = .loginWithToken
+                    router.selectedUnprotectedTab = .advancedLogin
                 }) {
                     HStack(spacing: 12) {
                         Image(systemName: "applelogo")
@@ -244,5 +244,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    loginView()
 }

@@ -1,5 +1,5 @@
 //
-//  Browse.swift
+//  browse.swift
 //  NativeGrind
 //
 //  Created by Jay Brammeld on 15/06/2026.
@@ -8,7 +8,7 @@
 import SwiftUI
 import NativeGrindCore
 
-struct BrowseView: View {
+struct browseView: View {
     
     var body: some View {
         VStack(
@@ -18,7 +18,7 @@ struct BrowseView: View {
             Spacer()
             
             Button(action: {
-                SessionManager.shared.logout()
+                sessionManager.shared.logout()
             }) {
                 Text("Log Out")
                     .font(.headline)
@@ -30,6 +30,23 @@ struct BrowseView: View {
             }
             .buttonStyle(.plain)
             
+            Button(action: {
+                Task {
+                    await sessionManager.shared.refreshToken()
+                }
+                
+            }) {
+                Text("Refresh")
+                    .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.black)
+                .cornerRadius(10)
+            }
+            .buttonStyle(.plain)
+
+            
             Spacer()
         }
         .padding(24)
@@ -39,5 +56,5 @@ struct BrowseView: View {
 }
 
 #Preview {
-    BrowseView()
+    browseView()
 }

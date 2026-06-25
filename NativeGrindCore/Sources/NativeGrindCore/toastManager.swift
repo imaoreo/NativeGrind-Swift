@@ -1,5 +1,5 @@
 //
-//  ToastManager.swift
+//  toastManager.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 17/06/2026.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-public enum ToastStyle {
+public enum toastStyle {
     case error
     case warn
     case info
@@ -30,18 +30,18 @@ public enum ToastStyle {
     }
 }
 
-public struct ToastItem: Identifiable, Equatable {
+public struct toastItem: Identifiable, Equatable {
     public let id = UUID()
-    public let style: ToastStyle
+    public let style: toastStyle
     public let header: String
     public let message: String
 }
 
 @MainActor
-public final class ToastManager: ObservableObject {
-    public static let shared = ToastManager()
+public final class toastManager: ObservableObject {
+    public static let shared = toastManager()
     
-    @Published public var currentToast: ToastItem? = nil
+    @Published public var currentToast: toastItem? = nil
     private var dismissTask: Task<Void, Never>? = nil
     
     private init() {}
@@ -51,12 +51,12 @@ public final class ToastManager: ObservableObject {
     ///   - style: ToastStyle, .info, .warning etc
     ///   - header: Header at the top bold
     ///   - message: descriptive message
-    public func show(style: ToastStyle, header: String, message: String) {
+    public func show(style: toastStyle, header: String, message: String) {
         // Cancel any active auto-dismiss countdowns for existing toasts
         dismissTask?.cancel()
             
         // Push the new layout metadata structure
-        self.currentToast = ToastItem(style: style, header: header, message: message)
+        self.currentToast = toastItem(style: style, header: header, message: message)
         
         // Removes the toast after 4 seconds
         dismissTask = Task {

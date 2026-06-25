@@ -9,7 +9,7 @@ public func removeENUM<T: RawRepresentable>(from items: [T]?) -> [T.RawValue]? {
     return items?.map { $0.rawValue }
 }
 
-public enum SexualPosition: Int, Decodable, Sendable {
+public enum sexualPosition: Int, Decodable, Sendable {
     case top = 1
     case bottom = 2
     case versatile = 3
@@ -18,18 +18,18 @@ public enum SexualPosition: Int, Decodable, Sendable {
     case side = 6
 }
 
-public enum ConversationType: String, Decodable, Sendable {
+public enum conversationType: String, Decodable, Sendable {
     case fullConversationV1 = "full_conversation_v1"
     case unknown
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawString = try container.decode(String.self)
-        self = ConversationType(rawValue: rawString) ?? .unknown
+        self = conversationType(rawValue: rawString) ?? .unknown
     }
 }
 
-public enum MessageType: String, Decodable, Sendable {
+public enum messageType: String, Decodable, Sendable {
     case album = "Album"
     case albumContentReaction = "AlbumContentReaction"
     case albumContentReply = "AlbumContentReply"
@@ -55,11 +55,11 @@ public enum MessageType: String, Decodable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawString = try container.decode(String.self)
-        self = MessageType(rawValue: rawString) ?? .unknown
+        self = messageType(rawValue: rawString) ?? .unknown
     }
 }
 
-public enum Chat1MessageType: String, Decodable, Sendable {
+public enum chat1MessageType: String, Decodable, Sendable {
     case map = "map"
     case image = "image"
     case expiringAlbum = "expiring_album"
@@ -84,17 +84,17 @@ public enum Chat1MessageType: String, Decodable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawString = try container.decode(String.self)
-        self = Chat1MessageType(rawValue: rawString) ?? .unknown
+        self = chat1MessageType(rawValue: rawString) ?? .unknown
     }
 }
 
-public enum RightNowStatus: String, Decodable, Sendable {
+public enum rightNowStatus: String, Decodable, Sendable {
     case notActive = "NOT_ACTIVE"
     case hosting = "HOSTING"
     case notHosting = "NOT_HOSTING"
 }
 
-public enum ViewSource: String, Decodable, Sendable {
+public enum viewSource: String, Decodable, Sendable {
     case discover = "DISCOVER"
     case forYou = "FOR_YOU"
     case unknown = "UNKOWN"
@@ -102,11 +102,11 @@ public enum ViewSource: String, Decodable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawString = try container.decode(String.self)
-        self = ViewSource(rawValue: rawString) ?? .unknown
+        self = viewSource(rawValue: rawString) ?? .unknown
     }
 }
 
-public enum MeetAt: Int, Decodable, Sendable {
+public enum meetAt: Int, Decodable, Sendable {
     case myPlace = 1
     case yourPlace = 2
     case bar = 3
@@ -114,7 +114,7 @@ public enum MeetAt: Int, Decodable, Sendable {
     case restaurant = 5
 }
 
-public enum Vaccines: Int, Decodable, Sendable {
+public enum vaccines: Int, Decodable, Sendable {
     case covid19 = 1
     case monkeyPox = 2
     case meningitis = 3
@@ -126,7 +126,7 @@ public enum NSFWPics: Int, Decodable, Sendable {
     case yesPlease = 3
 }
 
-public enum Ethnicity: Int, Decodable, Sendable {
+public enum ethnicity: Int, Decodable, Sendable {
     case asian = 1
     case black = 2
     case latino = 3
@@ -138,7 +138,7 @@ public enum Ethnicity: Int, Decodable, Sendable {
     case southAsian = 9
 }
 
-public enum RelationshipStatus: Int, Decodable, Sendable {
+public enum relationshipStatus: Int, Decodable, Sendable {
     case single = 1
     case dating = 2
     case exclusive = 3
@@ -149,7 +149,7 @@ public enum RelationshipStatus: Int, Decodable, Sendable {
     case openRelationship = 8
 }
 
-public enum Tribes: Int, Decodable, Sendable {
+public enum tribes: Int, Decodable, Sendable {
     case bear = 1
     case cleanCut = 2
     case daddy = 3
@@ -165,7 +165,7 @@ public enum Tribes: Int, Decodable, Sendable {
     case sober = 13
 }
 
-public enum LookingFor: Int, Decodable, Sendable {
+public enum lookingFor: Int, Decodable, Sendable {
     case chat = 2
     case dates = 3
     case friends = 4
@@ -174,7 +174,7 @@ public enum LookingFor: Int, Decodable, Sendable {
     case hookups = 7
 }
 
-public enum BodyType: Int, Decodable, Sendable {
+public enum bodyType: Int, Decodable, Sendable {
     case toned = 1
     case average = 2
     case large = 3
@@ -190,13 +190,13 @@ public enum HIVStatus: Int, Decodable, Sendable {
     case positiveUndetectable = 4
 }
 
-public enum TapType: Int, Decodable, Sendable {
+public enum tapType: Int, Decodable, Sendable {
     case friendly = 0
     case hot = 1
     case looking = 2
 }
 
-public enum SexualHealth: Int, Decodable, Sendable {
+public enum sexualHealth: Int, Decodable, Sendable {
     case condoms = 1
     case doxyPEP = 2
     case PrEP = 3

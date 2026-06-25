@@ -1,11 +1,11 @@
 //
-//  IDs.swift
+//  ids.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct ProfileID: Decodable, Equatable, Sendable {
+public struct profileID: Decodable, Equatable, Sendable {
     public let rawValue: String
     
     // This is for Decoder
@@ -20,7 +20,7 @@ public struct ProfileID: Decodable, Equatable, Sendable {
     }
     
     // Special ass shit
-    public func getDetails() async throws -> Profile? {
+    public func getDetails() async throws -> profile? {
         
         let result = try await APIClient.shared.request(.getProfile(profileId: rawValue))
         

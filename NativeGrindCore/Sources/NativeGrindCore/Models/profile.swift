@@ -1,24 +1,24 @@
 //
-//  Profile.swift
+//  profile.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct ProfileResponse: Decodable, Sendable {
-    public let profiles: [Profile]
+public struct profileResponse: Decodable, Sendable {
+    public let profiles: [profile]
 }
 
-public struct Profile: Decodable, Sendable {
+public struct profile: Decodable, Sendable {
     public let distance: Double
     public let profileImageMediaHash: String
     public let isFavorite: Bool
     public let lastViewed: Int?
     public let seen: Int?
-    public let rightNow: RightNowStatus
-    public let sexualPosition: SexualPosition
-    public let foundVia: ViewSource?
-    public let profileId: ProfileID
+    public let rightNow: rightNowStatus
+    public let sexualPosition: sexualPosition
+    public let foundVia: viewSource?
+    public let profileId: profileID
     public let displayName: String?
     public let onlineUntil: Int?
     public let age: Int?
@@ -28,9 +28,9 @@ public struct Profile: Decodable, Sendable {
     public let lastChatTimestamp: Int?
     public let isNew: Bool
     public let lastUpdatedTime: Int
-    public let medias: [ProfileMedia]
-    public let meetAt: [MeetAt]?
-    public let vaccines: [Vaccines]?
+    public let medias: [profileMedia]
+    public let meetAt: [meetAt]?
+    public let vaccines: [vaccines]?
     public let genders: [Int] // ENUM
     public let pronouns: [Int] // ENUM
     public let rightNowText: String?
@@ -44,38 +44,38 @@ public struct Profile: Decodable, Sendable {
     public let showTribes: Bool
     public let showPosition: Bool
     public let aboutMe: String
-    public let ethnicity: Ethnicity
-    public let relationshipStatus: RelationshipStatus
-    public let grindrTribes: [Tribes]
-    public let lookingFor: [LookingFor]
-    public let bodyType: BodyType?
+    public let ethnicity: ethnicity
+    public let relationshipStatus: relationshipStatus
+    public let grindrTribes: [tribes]
+    public let lookingFor: [lookingFor]
+    public let bodyType: bodyType?
     public let hivStatus: HIVStatus?
     public let lastTestedDate: Int?
     public let height: Int // Currently in cm
     public let weight: Int? // Currently in grams
-    public let socialNetworks: SocialNetworks
+    public let socialNetworks: socialNetworks
     public let identity: String?
     public let hashtags: [String]
     public let profileTags: [String] // Type GET /v1/tags
     public let tapped: Bool
-    public let tapType: TapType?
+    public let tapType: tapType?
     public let lastReceivedTapTimestamp: Int?
     public let isTeleporting: Bool
     public let isRoaming: Bool
     public let arrivalDays: Int?
     public let unreadCount: Int?
     public let lastThrobTimestamp: String?
-    public let sexualHealth: [SexualHealth]
+    public let sexualHealth: [sexualHealth]
     public let isVisiting: Bool
     public let travelPlans: String // Type
     public let isInAList: Bool
-    public let tribesImInto: [Tribes]
+    public let tribesImInto: [tribes]
     public let showVipBadge: Bool
     public let rightNowShareLocation: String? // Rather "NONE" or null
-    public let rightNowMedias: [RightNowMedia]?
+    public let rightNowMedias: [rightNowMedia]?
 }
 
-public struct RightNowMedia: Decodable, Sendable {
+public struct rightNowMedia: Decodable, Sendable {
     public let mediaId: Int?
     public let thumbnailUrl: String
     public let fullImageUrl: String
@@ -83,18 +83,18 @@ public struct RightNowMedia: Decodable, Sendable {
     public let isNsfw: Bool?
 }
 
-public struct SocialNetworks: Decodable, Sendable {
-    public let twitter: SocialNetwork?
-    public let facebook: SocialNetwork?
-    public let instagram: SocialNetwork?
+public struct socialNetworks: Decodable, Sendable {
+    public let twitter: socialNetwork?
+    public let facebook: socialNetwork?
+    public let instagram: socialNetwork?
 }
 
-public struct SocialNetwork: Decodable, Sendable {
+public struct socialNetwork: Decodable, Sendable {
     public let userId: String?
     public let site: String?
 }
 
-public struct ProfileMedia: Decodable, Sendable {
+public struct profileMedia: Decodable, Sendable {
     public let mediaHash: String
     public let type: Int
     public let state: Int
