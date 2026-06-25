@@ -137,7 +137,7 @@ public actor APIClient {
         
         if isAuthed {
             let token = await MainActor.run {
-                KeychainManager.shared.getToken(type: .sessionId)
+                keychainManager.shared.getToken(type: .sessionId)
             }
             
             if var validToken = token {
@@ -218,12 +218,12 @@ public actor APIClient {
                     
                     if isMatch {
                         // Show Toast if match
-                        let toastStyle = handler.level == .error ? ToastStyle.error : ToastStyle.warn
+                        let toastStyle = handler.level == .error ? toastStyle.error : toastStyle.warn
                         let toastHeader = handler.header
                         let toastMessage = handler.message
                         
                         await MainActor.run {
-                            ToastManager.shared.show(
+                            toastManager.shared.show(
                                 style: toastStyle,
                                 header: toastHeader,
                                 message: toastMessage
@@ -238,7 +238,7 @@ public actor APIClient {
                 if !handledByCustomHandler {
                     let fallbackMsg = String(data: data, encoding: .utf8) ?? "Unknown server response profile."
                     await MainActor.run {
-                        ToastManager.shared.show(
+                        toastManager.shared.show(
                             style: .error,
                             header: "Error (\(response.statusCode))",
                             message: fallbackMsg

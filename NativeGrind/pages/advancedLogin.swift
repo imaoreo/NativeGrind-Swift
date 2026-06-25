@@ -1,5 +1,5 @@
 //
-//  loginWithToken.swift
+//  advancedLogin.swift
 //  NativeGrind
 //
 //  Created by Jay Brammeld on 20/06/2026.
@@ -30,13 +30,13 @@ struct advancedLoginView: View {
 
     private func handleEmailSignIn() {
         Task {
-            await SessionManager.shared.authenticateWithAuthToken(token: authToken, email: email)
+            await sessionManager.shared.authenticateWithAuthToken(token: authToken, email: email)
         }
     }
     
     private func handleTokenSignIn() {
         Task {
-            await SessionManager.shared.authenticateWithThirdPartyToken(token: authToken, thirdPartyUserId: thirdPartyUserId)
+            await sessionManager.shared.authenticateWithThirdPartyToken(token: authToken, thirdPartyUserId: thirdPartyUserId)
         }
     }
 

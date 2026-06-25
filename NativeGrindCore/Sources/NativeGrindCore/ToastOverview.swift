@@ -1,5 +1,5 @@
 //
-//  ToastOverview.swift
+//  toastOverview.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 17/06/2026.
@@ -7,15 +7,15 @@
 
 import SwiftUI
 
-struct ToastOverlay: ViewModifier {
-    @ObservedObject private var toastManager = ToastManager.shared
+struct toastOverlay: ViewModifier {
+    @ObservedObject private var _toastManager = toastManager.shared
 
     func body(content: Content) -> some View {
         ZStack(alignment: .top) {
             content
                 .zIndex(0)
             
-            if let toast = toastManager.currentToast {
+            if let toast = _toastManager.currentToast {
                 HStack(spacing: 12) {
                     Image(systemName: toast.style.iconName)
                         .font(.title3)
@@ -38,7 +38,7 @@ struct ToastOverlay: ViewModifier {
                     
                     Spacer()
                     
-                    Button(action: { toastManager.dismiss() }) {
+                    Button(action: { _toastManager.dismiss() }) {
                         Image(systemName: "xmark")
                             .font(.caption2.bold())
                             .foregroundColor(.white.opacity(0.5))
@@ -64,7 +64,7 @@ struct ToastOverlay: ViewModifier {
                 .zIndex(1)
             }
         }
-        .animation(.bouncy(duration: 0.35), value: toastManager.currentToast)
+        .animation(.bouncy(duration: 0.35), value: _toastManager.currentToast)
     }
     
     private var safeAreaTopPadding: CGFloat {
@@ -81,6 +81,6 @@ struct ToastOverlay: ViewModifier {
 
 extension View {
     public func withToastOverlay() -> some View {
-        self.modifier(ToastOverlay())
+        self.modifier(toastOverlay())
     }
 }
