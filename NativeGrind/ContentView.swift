@@ -82,26 +82,26 @@ struct ContentView: View {
                 TabView(selection: $router.selectedProtectedTab) {
                     
                     NavigationStack(path: $router.protectedPath) {
-                        ProtectedRoute.browse
-                            .navigationDestination(for: ProtectedRoute.self) { route in
+                        protectedRoute.browse
+                            .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Browse", systemImage: "safari")
                     }
-                    .tag(ProtectedRoute.browse)
+                    .tag(protectedRoute.browse)
                     
                     NavigationStack(path: $router.protectedPath) {
-                        ProtectedRoute.messages
-                            .navigationDestination(for: ProtectedRoute.self) { route in
+                        protectedRoute.messages
+                            .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Messages", systemImage: "bubble.left.and.bubble.right")
                     }
-                    .tag(ProtectedRoute.messages)
+                    .tag(protectedRoute.messages)
                 }
                 .accentColor(.blue) // Changes the active tab highlight color
                 
@@ -112,48 +112,48 @@ struct ContentView: View {
                 TabView(selection: $router.selectedUnprotectedTab) {
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.login
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.login
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Login", systemImage: "lock.shield")
                     }
-                    .tag(UnprotectedRoute.login)
+                    .tag(unprotectedRoute.login)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.advancedLogin
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.advancedLogin
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Advanced Login", systemImage: "key")
                     }
-                    .tag(UnprotectedRoute.advancedLogin)
+                    .tag(unprotectedRoute.advancedLogin)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.resetPassword
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.resetPassword
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Reset Password", systemImage: "person.badge.key")
                     }
-                    .tag(UnprotectedRoute.resetPassword)
+                    .tag(unprotectedRoute.resetPassword)
                     
                     NavigationStack(path: $router.unprotectedPath) {
-                        UnprotectedRoute.register
-                            .navigationDestination(for: UnprotectedRoute.self) { route in
+                        unprotectedRoute.register
+                            .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
                         Label("Register", systemImage: "person.badge.plus")
                     }
-                    .tag(UnprotectedRoute.register)
+                    .tag(unprotectedRoute.register)
                 }
             }
         }

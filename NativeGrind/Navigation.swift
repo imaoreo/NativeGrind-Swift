@@ -7,25 +7,25 @@
 
 import SwiftUI
 
-enum UnprotectedRoute: Hashable {
+enum unprotectedRoute: Hashable {
     case login
     case advancedLogin
     case register
     case resetPassword
 }
 
-enum ProtectedRoute: Hashable {
+enum protectedRoute: Hashable {
     case browse
     case messages
 }
 
-extension UnprotectedRoute: View {
+extension unprotectedRoute: View {
     var body: some View {
         switch self {
         case .login:
             LoginView()
         case .advancedLogin:
-            AdvancedLoginView()
+            advancedLoginView()
         case .register:
             Text("Register")
         case .resetPassword:
@@ -34,7 +34,7 @@ extension UnprotectedRoute: View {
     }
 }
 
-extension ProtectedRoute: View {
+extension protectedRoute: View {
     var body: some View {
         switch self {
         case .browse:
@@ -47,25 +47,25 @@ extension ProtectedRoute: View {
 
 @Observable
 final class NavigationRouter {
-    var selectedUnprotectedTab: UnprotectedRoute = .login
-    var selectedProtectedTab: ProtectedRoute = .browse
+    var selectedUnprotectedTab: unprotectedRoute = .login
+    var selectedProtectedTab: protectedRoute = .browse
     
-    var unprotectedPath: [UnprotectedRoute] = []
-    var protectedPath: [ProtectedRoute] = []
+    var unprotectedPath: [unprotectedRoute] = []
+    var protectedPath: [protectedRoute] = []
     
-    func getCurrentUnprotected() -> UnprotectedRoute? {
+    func getCurrentUnprotected() -> unprotectedRoute? {
         unprotectedPath.last
     }
     
-    func getCurrentProtected() -> ProtectedRoute? {
+    func getCurrentProtected() -> protectedRoute? {
         protectedPath.last
     }
     
-    func push(_ route: UnprotectedRoute) {
+    func push(_ route: unprotectedRoute) {
         unprotectedPath.append(route)
     }
     
-    func push(_ route: ProtectedRoute) {
+    func push(_ route: protectedRoute) {
         protectedPath.append(route)
     }
     

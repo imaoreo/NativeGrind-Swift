@@ -8,17 +8,17 @@
 import SwiftUI
 import NativeGrindCore
 
-struct AdvancedLoginView: View {
-    private enum loginTypes: String {
+struct advancedLoginView: View {
+    private enum loginType: String {
         case email
-        case thirdparty
+        case thirdParty
     }
     
     @State private var email = ""
     @State private var authToken = ""
     
     @State private var thirdPartyUserId = ""
-    @State private var type: loginTypes = .email
+    @State private var type: loginType = .email
 
     private var containerWidth: CGFloat {
         #if os(tvOS)
@@ -63,8 +63,8 @@ struct AdvancedLoginView: View {
             .padding(.horizontal, 16)
             
             Picker("Login Method", selection: $type) {
-                Text("Email").tag(loginTypes.email)
-                Text("Third Party").tag(loginTypes.thirdparty)
+                Text("Email").tag(loginType.email)
+                Text("Third Party").tag(loginType.thirdParty)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
@@ -133,5 +133,5 @@ struct AdvancedLoginView: View {
 }
 
 #Preview {
-    AdvancedLoginView()
+    advancedLoginView()
 }

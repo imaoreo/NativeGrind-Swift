@@ -5,14 +5,14 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct ThirdPartyAuthResponse: Decodable, Sendable {
-    public let authenticationResponse: AuthenticationResponse
+public struct thirdPartyAuthResponse: Decodable, Sendable {
+    public let authenticationResponse: authenticationResponse
     public let registered: Bool
     public let profileId: String?
     public let thirdPartyUserInfo: String?
 }
 
-public struct ThirdPartyAuthenticationResponse: Decodable, Sendable {
+public struct thirdPartyAuthenticationResponse: Decodable, Sendable {
     public let profileId: String
     public let sessionId: String
     public let xmppToken: String
@@ -21,7 +21,7 @@ public struct ThirdPartyAuthenticationResponse: Decodable, Sendable {
     public let thirdPartyUserIdToShow: String
 }
 
-public struct AuthenticationResponse: Decodable, Sendable {
+public struct authenticationResponse: Decodable, Sendable {
     public let profileId: String
     public let sessionId: String
     public let xmppToken: String
