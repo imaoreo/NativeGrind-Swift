@@ -18,5 +18,5 @@ public struct ageVerificationConfig: Decodable, Sendable {
 }
 
 public struct ageVerificationSessionResponse: Decodable, Sendable {
-    public let sessionId: String // 55 characters long just a identifier for the age verfication
+    public let sessionId: String // 55 characters long just a identifier for the age verification
 }

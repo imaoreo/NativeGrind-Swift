@@ -169,7 +169,7 @@ public extension endpoint {
         )
     }
     
-    // Age Verficaiton
+    // Age Verification
     
     static func getAgeVerificationOptions()  -> endpoint<ageVerificationOptionsResponse> {
         return endpoint<ageVerificationOptionsResponse>(
@@ -182,8 +182,8 @@ public extension endpoint {
         )
     }
     
-    static func getAgeVerificationSession() -> endpoint<ageVerificationOptionsResponse> {
-        return endpoint<ageVerificationOptionsResponse>(
+    static func getAgeVerificationSession() -> endpoint<ageVerificationSessionResponse> {
+        return endpoint<ageVerificationSessionResponse>(
             path: "/v1/age-verification/session",
             method: .post,
             queryItems: nil,
