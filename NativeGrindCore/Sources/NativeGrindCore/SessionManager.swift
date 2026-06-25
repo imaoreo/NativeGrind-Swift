@@ -25,7 +25,7 @@ public final class SessionManager: ObservableObject {
     public func checkCurrentAuthStatus() {
         if let existingToken = keychain.getToken(type: .authToken) {
             // We need to add a check here to make sure token is still valid
-            ErrorManager.shared.log("SessionManager", "Existing authtoken found")
+            errorManager.shared.log("SessionManager", "Existing authtoken found")
             self.isAuthenticated = true
         } else {
             self.isAuthenticated = false
@@ -47,7 +47,7 @@ public final class SessionManager: ObservableObject {
                 self.isAuthenticated = true
             }
         } catch {
-            ErrorManager.shared.error("SessionManager", "Google Login: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Google Login: \(error.localizedDescription)")
         }
     }
     
@@ -66,7 +66,7 @@ public final class SessionManager: ObservableObject {
                 self.isAuthenticated = true
             }
         } catch {
-            ErrorManager.shared.error("SessionManager", "Facebook Login: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Facebook Login: \(error.localizedDescription)")
         }
     }
     
@@ -84,7 +84,7 @@ public final class SessionManager: ObservableObject {
                 self.isAuthenticated = true
             }
         } catch {
-            ErrorManager.shared.error("SessionManager", "Email Login: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Email Login: \(error.localizedDescription)")
         }
     }
 
@@ -108,7 +108,7 @@ public final class SessionManager: ObservableObject {
             self.isAuthenticated = true
             
         } catch {
-            ErrorManager.shared.error("SessionManager", "Failed to authenticate with auth token: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Failed to authenticate with auth token: \(error.localizedDescription)")
             self.isAuthenticated = false
         }
     }
@@ -133,7 +133,7 @@ public final class SessionManager: ObservableObject {
             self.isAuthenticated = true
             
         } catch {
-            ErrorManager.shared.error("SessionManager", "Failed to authenticate with third party token: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Failed to authenticate with third party token: \(error.localizedDescription)")
             self.isAuthenticated = false
         }
     }
@@ -162,7 +162,7 @@ public final class SessionManager: ObservableObject {
             self.isAuthenticated = true
             
         } catch {
-            ErrorManager.shared.error("SessionManager", "Failed to refresh token: \(error.localizedDescription)")
+            errorManager.shared.error("SessionManager", "Failed to refresh token: \(error.localizedDescription)")
             self.isAuthenticated = false
         }
     }

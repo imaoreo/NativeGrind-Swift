@@ -15,7 +15,7 @@ public enum HTTPMethod: String {
     case patch = "PATCH"
 }
 
-public enum RequestError: LocalizedError {
+public enum requestError: LocalizedError {
     case malformedURL
     case invalidComponents
     case invalidResponse
@@ -107,7 +107,7 @@ public actor APIClient {
         
         // Translates the url string into a URL Type
         guard let sourceURL = URL(string: url) else {
-            throw RequestError.malformedURL
+            throw requestError.malformedURL
         }
         
         // This ts just splits up the url into like https://, grindr.mobi, /v1/auth
@@ -123,7 +123,7 @@ public actor APIClient {
         
         // Just checks that there is a url on the urlComponets
         guard let finalURL = urlComponents?.url else {
-            throw RequestError.invalidComponents
+            throw requestError.invalidComponents
         }
         
         // Transfer the finalURL into a URLRequest
@@ -145,7 +145,7 @@ public actor APIClient {
                 request.setValue(validToken, forHTTPHeaderField: "Authorization")
             } else {
                 // Route requires auth but there is no token stored
-                throw RequestError.uninitializedSession
+                throw requestError.uninitializedSession
             }
                 
         } else {
@@ -161,7 +161,7 @@ public actor APIClient {
         
         // Check there is a active session
         guard let activeSession = session else {
-            throw RequestError.uninitializedSession
+            throw requestError.uninitializedSession
         }
             
         // make the network request
@@ -169,13 +169,13 @@ public actor APIClient {
 
         // invalid http respones catcher
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw RequestError.invalidResponse
+            throw requestError.invalidResponse
         }
         
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable & Sendable>(_ endpoint: Endpoint<T>) async throws -> T? {
+    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>) async throws -> T? {
         do {
             let (data, response) = try await sendRequest(
                 method: endpoint.method,

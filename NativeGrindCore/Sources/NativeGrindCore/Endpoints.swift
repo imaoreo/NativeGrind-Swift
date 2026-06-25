@@ -1,5 +1,5 @@
 //
-//  Endpoints.swift
+//  endpoints.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 14/06/2026.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// The generic container that binds a network route to a specific response model.
-public struct Endpoint<Response: Decodable> {
+public struct endpoint<Response: Decodable> {
     public let path: String
     public let method: HTTPMethod
     public let queryItems: [String: String]?
@@ -26,11 +26,11 @@ public struct Endpoint<Response: Decodable> {
 }
 
 /// Routes with their corresponding response models.
-public extension Endpoint {
+public extension endpoint {
     
     // Auth Routes
-    static func login(email: String, password: String) -> Endpoint<authenticationResponse> {
-        return Endpoint<authenticationResponse>(
+    static func login(email: String, password: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
             path: "/v8/sessions",
             method: .post,
             queryItems: nil,
@@ -46,8 +46,8 @@ public extension Endpoint {
         )
     }
     
-    static func refreshToken(email: String, token: String) -> Endpoint<authenticationResponse> {
-        return Endpoint<authenticationResponse>(
+    static func refreshToken(email: String, token: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
             path: "/v8/sessions",
             method: .post,
             queryItems: nil,
@@ -62,8 +62,8 @@ public extension Endpoint {
         )
     }
     
-    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> Endpoint<authenticationResponse> {
-        return Endpoint<authenticationResponse>(
+    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<authenticationResponse> {
+        return endpoint<authenticationResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
             queryItems: nil,
@@ -76,8 +76,8 @@ public extension Endpoint {
         )
     }
     
-    static func thirdPartyLogin(token: String, isFacebook: Bool ) -> Endpoint<thirdPartyAuthResponse> {
-        return Endpoint<thirdPartyAuthResponse>(
+    static func thirdPartyLogin(token: String, isFacebook: Bool ) -> endpoint<thirdPartyAuthResponse> {
+        return endpoint<thirdPartyAuthResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
             queryItems: isFacebook ? ["allowFacebookLimitedLogin": "true"] : nil,
@@ -91,8 +91,8 @@ public extension Endpoint {
     }
     
     // Public
-    static var getGenders: Endpoint<[gender]> {
-        return Endpoint<[gender]>(
+    static var getGenders: endpoint<[gender]> {
+        return endpoint<[gender]>(
             path: "/public/v2/genders",
             method: .get,
             queryItems: nil,
@@ -102,8 +102,8 @@ public extension Endpoint {
         )
     }
     
-    static var getPronouns: Endpoint<[pronoun]> {
-        return Endpoint<[pronoun]>(
+    static var getPronouns: endpoint<[pronoun]> {
+        return endpoint<[pronoun]>(
             path: "/public/v1/pronouns",
             method: .get,
             queryItems: nil,
@@ -124,7 +124,7 @@ public extension Endpoint {
          onlineNowOnly: Bool? = nil,
          distanceMeters: Double? = nil,
          positions: [sexualPosition]? = nil
-    ) -> Endpoint<inboxResponse> {
+    ) -> endpoint<inboxResponse> {
         
         let positionArray = removeENUM(from: positions)
         
@@ -146,7 +146,7 @@ public extension Endpoint {
         // Removes ones that are nil
         let filteredBody = rawBody.compactMapValues { $0 }
         
-        return Endpoint<inboxResponse>(
+        return endpoint<inboxResponse>(
             path: "/v3/inbox",
             method: .post,
             queryItems: queryItems,
@@ -158,8 +158,8 @@ public extension Endpoint {
     
     // Profiles
     
-    static func getProfile(profileId: String) -> Endpoint<profileResponse> {
-        return Endpoint<profileResponse>(
+    static func getProfile(profileId: String) -> endpoint<profileResponse> {
+        return endpoint<profileResponse>(
             path: "/v7/profiles/\(profileId)",
             method: .get,
             queryItems: nil,
