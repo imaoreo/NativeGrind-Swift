@@ -168,4 +168,28 @@ public extension endpoint {
             networkHandlers: []
         )
     }
+    
+    // Age Verification
+    
+    static func getAgeVerificationOptions()  -> endpoint<ageVerificationOptionsResponse> {
+        return endpoint<ageVerificationOptionsResponse>(
+            path: "/v1/age-verification/options",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func getAgeVerificationSession() -> endpoint<ageVerificationSessionResponse> {
+        return endpoint<ageVerificationSessionResponse>(
+            path: "/v1/age-verification/session",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
 }

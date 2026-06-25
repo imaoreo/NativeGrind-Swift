@@ -1,4 +1,4 @@
 /build/
 *.DS_Store
-UserInterfaceState.xcuserstate
+*UserInterfaceState.xcuserstate
 NativeGrind.xcodeproj/project.xcworkspace/xcuserdata

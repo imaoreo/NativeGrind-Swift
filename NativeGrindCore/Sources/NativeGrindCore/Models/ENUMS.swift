@@ -203,3 +203,8 @@ public enum sexualHealth: Int, Decodable, Sendable {
     case HIVUndetectable = 4
     case preferToDiscuss = 5
 }
+
+public enum ageVerificationMethods: String, Decodable, Sendable {
+    case faceRecognition = "FACE_RECOGNITION"
+    case documentVerification = "DOCUMENT_VERIFICATION"
+}
