@@ -37,7 +37,7 @@ public struct conversationData: Decodable, Sendable {
 }
 
 public struct conversationParticipant: Decodable, Sendable {
-    public let profileId: profileID
+    public let profileId: profileId
     public let primaryMediaHash: String
     public let lastOnline: String
     public let onlineUntil: String
