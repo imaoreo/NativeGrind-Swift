@@ -62,8 +62,8 @@ public extension endpoint {
         )
     }
     
-    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<authenticationResponse> {
-        return endpoint<authenticationResponse>(
+    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<thirdPartyAuthResponse> {
+        return endpoint<thirdPartyAuthResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
             queryItems: nil,

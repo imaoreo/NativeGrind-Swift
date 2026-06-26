@@ -6,7 +6,7 @@
 //
 
 public struct thirdPartyAuthResponse: Decodable, Sendable {
-    public let authenticationResponse: authenticationResponse
+    public let authenticationResponse: thirdPartyAuthenticationResponse
     public let registered: Bool
     public let profileId: String?
     public let thirdPartyUserInfo: String?
