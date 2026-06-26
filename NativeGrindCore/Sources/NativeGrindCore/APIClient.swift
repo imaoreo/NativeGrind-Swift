@@ -15,22 +15,6 @@ public enum HTTPMethod: String {
     case patch = "PATCH"
 }
 
-public enum requestError: LocalizedError {
-    case malformedURL
-    case invalidComponents
-    case invalidResponse
-    case uninitializedSession
-    
-    public var errorDescription: String? {
-        switch self {
-        case .malformedURL: return "Malformed URL String"
-        case .invalidComponents: return "Invalid URL components"
-        case .invalidResponse: return "Invalid server response"
-        case .uninitializedSession: return "Session is not initialized. Call setup() first."
-        }
-    }
-}
-
 public actor APIClient {
     public static let shared = APIClient()
     
