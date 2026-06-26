@@ -11,6 +11,8 @@ import Security
 public enum keyType: String, Decodable, Sendable {
     case authToken = "authToken"
     case sessionId = "sessionId"
+    case isEmail = "isEmail"
+    case data = "data" // for email this is the email for third party this is the thirdparty user id
 }
 
 public final class keychainManager {
