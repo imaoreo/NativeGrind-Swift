@@ -17,30 +17,23 @@ public final class sessionManager: ObservableObject {
     
     private let keychain = keychainManager.shared
     
-    private func handleAuth(provider: String, function: () async throws -> Void) async {
+    private func handleAuth(provider: String, showErrors: Bool = true, function: () async throws -> Void) async {
         do {
             try await function()
             
             self.isAuthenticated = true
             
         } catch {
-            errorManager.shared.error("SessionManager", "\(provider): \(error.localizedDescription)")
+            if (showErrors) {
+                errorManager.shared.error("SessionManager", "\(provider): \(error.localizedDescription)")
+            }
             self.isAuthenticated = false
         }
     }
     
     public init() {
-        checkCurrentAuthStatus()
-    }
-    
-    /// Check if the token is in the keychain
-    public func checkCurrentAuthStatus() {
-        if let existingToken = keychain.getToken(type: .authToken) {
-            // We need to add a check here to make sure token is still valid
-            errorManager.shared.log("SessionManager", "Existing authtoken found")
-            self.isAuthenticated = true
-        } else {
-            self.isAuthenticated = false
+        Task {
+            await refreshToken(showError: false)
         }
     }
     
@@ -56,7 +49,7 @@ public final class sessionManager: ObservableObject {
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
         
-        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
         keychainManager.shared.saveToken(thirdPartyUserId, type: .data)
@@ -80,7 +73,7 @@ public final class sessionManager: ObservableObject {
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
         
-        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
         keychainManager.shared.saveToken(thirdPartyUserId, type: .data)
@@ -102,7 +95,7 @@ public final class sessionManager: ObservableObject {
         let sessionId = response.sessionId
         let authToken = response.authToken
         
-        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
         keychainManager.shared.saveToken(email, type: .data)
@@ -124,7 +117,7 @@ public final class sessionManager: ObservableObject {
         let sessionId = response.sessionId
         let authToken = response.authToken
         
-        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
         keychainManager.shared.saveToken(email, type: .data)
@@ -146,7 +139,7 @@ public final class sessionManager: ObservableObject {
         let sessionId = response.authenticationResponse.sessionId
         let authToken = response.authenticationResponse.authToken
         
-        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
         keychainManager.shared.saveToken(thirdPartyUserId, type: .data)
@@ -172,6 +165,7 @@ public final class sessionManager: ObservableObject {
             throw authenticationError.missing(itemName: "authToken")
         }
         
+        // Email Refresh
         if (isEmail == "true") {
             let response = try await APIClient.shared.request(.refreshToken(email: data, token: authToken))
             
@@ -182,25 +176,28 @@ public final class sessionManager: ObservableObject {
             let sessionId = response.sessionId
             let authToken = response.authToken
             
-            keychainManager.shared.saveToken(sessionId, type: .sessionId)
+            keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
             keychainManager.shared.saveToken(authToken, type: .authToken)
-        } else {
-            let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: data, authToken: authToken))
             
-            guard let response = response else {
-                throw authenticationError.invalidResponse
-            }
-            
-            let sessionId = response.authenticationResponse.sessionId
-            let authToken = response.authenticationResponse.authToken
-            
-            keychainManager.shared.saveToken(sessionId, type: .sessionId)
-            keychainManager.shared.saveToken(authToken, type: .authToken)
+            return
         }
+        
+        // Third Party Refresh
+        let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: data, authToken: authToken))
+        
+        guard let response = response else {
+            throw authenticationError.invalidResponse
+        }
+        
+        let sessionId = response.authenticationResponse.sessionId
+        let authToken = response.authenticationResponse.authToken
+        
+        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
+        keychainManager.shared.saveToken(authToken, type: .authToken)
     }
     
-    public func refreshToken() async {
-        await handleAuth(provider: "Refresh Token") {
+    public func refreshToken(showError: Bool = true) async {
+        await handleAuth(provider: "Refresh Token", showErrors: showError) {
             try await _refreshToken()
         }
     }
