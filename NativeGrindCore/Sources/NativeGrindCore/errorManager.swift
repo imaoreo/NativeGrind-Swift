@@ -26,7 +26,7 @@ public enum matchRule: String, Codable {
     case statusCodeOnly
     case jsonContentOnly
     case matchBoth
-    case mathchEither
+    case matchEither
 }
 
 public struct networkHandler: Codable {

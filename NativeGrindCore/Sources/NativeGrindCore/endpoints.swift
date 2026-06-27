@@ -15,6 +15,7 @@ public struct endpoint<Response: Decodable> {
     public let body: [String: Any]?
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
+    public let shouldRetryOn401: Bool = true
     
     private var baseURL: String {
         return "https://grindr.mobi"
@@ -42,7 +43,8 @@ public extension endpoint {
             isAuthedRoute: false,
             networkHandlers: [
                 networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Loggin Error", level: .error, match: .matchBoth)
-            ]
+            ],
+            shouldRetryOn401: false
         )
     }
     
@@ -58,7 +60,8 @@ public extension endpoint {
             isAuthedRoute: false,
             networkHandlers: [
                 networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Issue refreshing", header: "Loggin Error", level: .error, match: .matchBoth)
-            ]
+            ],
+            shouldRetryOn401: false
         )
     }
     
@@ -72,7 +75,8 @@ public extension endpoint {
                 "authToken": authToken,
             ],
             isAuthedRoute: false,
-            networkHandlers: []
+            networkHandlers: [],
+            shouldRetryOn401: false
         )
     }
     
@@ -86,7 +90,8 @@ public extension endpoint {
                 "thirdPartyVendor": isFacebook ? 1 : 2
             ],
             isAuthedRoute: false,
-            networkHandlers: []
+            networkHandlers: [],
+            shouldRetryOn401: false
         )
     }
     
