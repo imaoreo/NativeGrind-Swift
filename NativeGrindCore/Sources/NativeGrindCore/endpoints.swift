@@ -32,7 +32,7 @@ public struct endpoint<Response: Decodable> {
         body: [String: Any]? = nil,
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
-        shouldRetryOn401: Bool = true // Default value set here
+        shouldRetryOn401: Bool = true
     ) {
         self.path = path
         self.method = method
