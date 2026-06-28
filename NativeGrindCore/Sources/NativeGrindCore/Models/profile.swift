@@ -18,7 +18,7 @@ public struct profile: Decodable, Sendable {
     public let rightNow: rightNowStatus
     public let sexualPosition: sexualPosition
     public let foundVia: viewSource?
-    public let profileId: profileID
+    public let profileId: profileId
     public let displayName: String?
     public let onlineUntil: Int?
     public let age: Int?

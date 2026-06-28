@@ -15,6 +15,7 @@ public struct endpoint<Response: Decodable> {
     public let body: [String: Any]?
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
+    public let shouldRetryOn401: Bool
     
     private var baseURL: String {
         return "https://grindr.mobi"
@@ -22,6 +23,24 @@ public struct endpoint<Response: Decodable> {
     
     public var fullURLString: String {
         return baseURL + path
+    }
+    
+    public init(
+        path: String,
+        method: HTTPMethod,
+        queryItems: [String: String]? = nil,
+        body: [String: Any]? = nil,
+        isAuthedRoute: Bool,
+        networkHandlers: [networkHandler],
+        shouldRetryOn401: Bool = true
+    ) {
+        self.path = path
+        self.method = method
+        self.queryItems = queryItems
+        self.body = body
+        self.isAuthedRoute = isAuthedRoute
+        self.networkHandlers = networkHandlers
+        self.shouldRetryOn401 = shouldRetryOn401
     }
 }
 
@@ -41,8 +60,9 @@ public extension endpoint {
             ],
             isAuthedRoute: false,
             networkHandlers: [
-                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Loggin Error", level: .error, match: .matchBoth)
-            ]
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Login Error", level: .error, match: .matchBoth)
+            ],
+            shouldRetryOn401: false
         )
     }
     
@@ -57,13 +77,14 @@ public extension endpoint {
             ],
             isAuthedRoute: false,
             networkHandlers: [
-                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Issue refreshing", header: "Loggin Error", level: .error, match: .matchBoth)
-            ]
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Issue refreshing", header: "Login Error", level: .error, match: .matchBoth)
+            ],
+            shouldRetryOn401: false
         )
     }
     
-    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<authenticationResponse> {
-        return endpoint<authenticationResponse>(
+    static func refreshThirdParty(thirdPartyUserId: String, authToken: String) -> endpoint<thirdPartyAuthResponse> {
+        return endpoint<thirdPartyAuthResponse>(
             path: "/v8/sessions/thirdparty",
             method: .post,
             queryItems: nil,
@@ -72,7 +93,8 @@ public extension endpoint {
                 "authToken": authToken,
             ],
             isAuthedRoute: false,
-            networkHandlers: []
+            networkHandlers: [],
+            shouldRetryOn401: false
         )
     }
     
@@ -86,7 +108,8 @@ public extension endpoint {
                 "thirdPartyVendor": isFacebook ? 1 : 2
             ],
             isAuthedRoute: false,
-            networkHandlers: []
+            networkHandlers: [],
+            shouldRetryOn401: false
         )
     }
     

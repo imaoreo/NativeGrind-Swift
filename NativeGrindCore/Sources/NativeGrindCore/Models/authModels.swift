@@ -6,7 +6,7 @@
 //
 
 public struct thirdPartyAuthResponse: Decodable, Sendable {
-    public let authenticationResponse: authenticationResponse
+    public let authenticationResponse: thirdPartyAuthenticationResponse
     public let registered: Bool
     public let profileId: String?
     public let thirdPartyUserInfo: String?
@@ -14,7 +14,7 @@ public struct thirdPartyAuthResponse: Decodable, Sendable {
 
 public struct thirdPartyAuthenticationResponse: Decodable, Sendable {
     public let profileId: String
-    public let sessionId: String
+    public let sessionId: sessionId
     public let xmppToken: String
     public let authToken: String
     public let thirdPartyUserId: String
@@ -23,7 +23,7 @@ public struct thirdPartyAuthenticationResponse: Decodable, Sendable {
 
 public struct authenticationResponse: Decodable, Sendable {
     public let profileId: String
-    public let sessionId: String
+    public let sessionId: sessionId
     public let xmppToken: String
     public let authToken: String
 }

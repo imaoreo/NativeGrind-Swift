@@ -15,22 +15,6 @@ public enum HTTPMethod: String {
     case patch = "PATCH"
 }
 
-public enum requestError: LocalizedError {
-    case malformedURL
-    case invalidComponents
-    case invalidResponse
-    case uninitializedSession
-    
-    public var errorDescription: String? {
-        switch self {
-        case .malformedURL: return "Malformed URL String"
-        case .invalidComponents: return "Invalid URL components"
-        case .invalidResponse: return "Invalid server response"
-        case .uninitializedSession: return "Session is not initialized. Call setup() first."
-        }
-    }
-}
-
 public actor APIClient {
     public static let shared = APIClient()
     
@@ -147,7 +131,6 @@ public actor APIClient {
                 // Route requires auth but there is no token stored
                 throw requestError.uninitializedSession
             }
-                
         } else {
             // clear header for unauthed routes
             request.setValue(nil, forHTTPHeaderField: "Authorization")
@@ -175,85 +158,77 @@ public actor APIClient {
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>) async throws -> T? {
-        do {
-            let (data, response) = try await sendRequest(
-                method: endpoint.method,
-                url: endpoint.fullURLString,
-                queryItems: endpoint.queryItems,
-                body: endpoint.body,
-                isAuthed: endpoint.isAuthedRoute
-            )
-            
-            // Handle failure HTTP statuses (outside 200...299)
-            guard (200...299).contains(response.statusCode) else {
-                
-                var handledByCustomHandler = false
-                
-                // Go through all the network handlers
-                for handler in endpoint.networkHandlers {
-                    let statusCodeMatches = (handler.code == response.statusCode)
-                    
-                    // extract the json and see if it matches
-                    var jsonMatches = false
-                    if let location = handler.jsonLocation,
-                       let expectedValue = handler.jsonLocationValue,
-                       let serverJSON = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let actualValue = serverJSON[location] as? String {
-                        jsonMatches = actualValue.localizedCaseInsensitiveContains(expectedValue)
-                    }
-                    
-                    // See if it's a match using the matching ruels
-                    let isMatch: Bool
-                    switch handler.match {
-                        case .statusCodeOnly:
-                            isMatch = statusCodeMatches
-                        case .jsonContentOnly:
-                            isMatch = jsonMatches
-                        case .matchBoth:
-                            isMatch = statusCodeMatches && jsonMatches
-                        case .mathchEither:
-                            isMatch = statusCodeMatches || jsonMatches
-                    }
-                    
-                    if isMatch {
-                        // Show Toast if match
-                        let toastStyle = handler.level == .error ? toastStyle.error : toastStyle.warn
-                        let toastHeader = handler.header
-                        let toastMessage = handler.message
-                        
-                        await MainActor.run {
-                            toastManager.shared.show(
-                                style: toastStyle,
-                                header: toastHeader,
-                                message: toastMessage
-                            )
-                        }
-                        handledByCustomHandler = true
-                        break
-                    }
-                }
-                
-                // Generic response if there is no custom handler that matches it
-                if !handledByCustomHandler {
-                    let fallbackMsg = String(data: data, encoding: .utf8) ?? "Unknown server response profile."
-                    await MainActor.run {
-                        toastManager.shared.show(
-                            style: .error,
-                            header: "Error (\(response.statusCode))",
-                            message: fallbackMsg
-                        )
-                    }
-                }
-                
-                return nil;
-            }
-            
+    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false) async throws -> T? {
+        let (data, response) = try await sendRequest(
+            method: endpoint.method,
+            url: endpoint.fullURLString,
+            queryItems: endpoint.queryItems,
+            body: endpoint.body,
+            isAuthed: endpoint.isAuthedRoute
+        )
+        
+        if (200...299).contains(response.statusCode) {
             let decoder = JSONDecoder()
             return try decoder.decode(T.self, from: data)
+        }
+        
+        // the isRetry flag prevents a infinite loop
+        if response.statusCode == 401, !isRetry, endpoint.shouldRetryOn401 {
+            await sessionManager.shared.refreshToken()
+
+            return try await request(endpoint, isRetry: true)
+        }
+        
+        await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
+        return nil
+    }
+    
+    private func handleNetworkError<T>(data: Data, statusCode: Int, endpoint: endpoint<T>) async {
+        var handledByCustomHandler = false
+        
+        let serverJSON = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+        
+        for handler in endpoint.networkHandlers {
+            let statusCodeMatches = (handler.code == statusCode)
             
-        } catch {
-            throw error
+            var jsonMatches = false
+            if let location = handler.jsonLocation,
+               let expectedValue = handler.jsonLocationValue,
+               let actualValue = serverJSON[location] as? String {
+                jsonMatches = actualValue.localizedCaseInsensitiveContains(expectedValue)
+            }
+            
+            let isMatch: Bool
+            switch handler.match {
+                case .statusCodeOnly: isMatch = statusCodeMatches
+                case .jsonContentOnly: isMatch = jsonMatches
+                case .matchBoth: isMatch = statusCodeMatches && jsonMatches
+                case .matchEither: isMatch = statusCodeMatches || jsonMatches
+            }
+            
+            if isMatch {
+                let style: toastStyle = handler.level == .error ? .error : .warn
+                let header = handler.header
+                let message = handler.message
+                
+                await MainActor.run {
+                    toastManager.shared.show(style: style, header: header, message: message)
+                }
+                handledByCustomHandler = true
+                break
+            }
+        }
+        
+        // Generic response if there is no custom handler that matches it
+        if !handledByCustomHandler {
+            let fallbackMsg = String(data: data, encoding: .utf8) ?? "Unknown server response profile."
+            await MainActor.run {
+                toastManager.shared.show(
+                    style: .error,
+                    header: "Error (\(statusCode))",
+                    message: fallbackMsg
+                )
+            }
         }
     }
 }
