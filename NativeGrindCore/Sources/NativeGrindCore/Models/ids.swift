@@ -88,7 +88,6 @@ public struct SessionID: Decodable, Equatable, Sendable {
             return nil
         }
         
-        print(payload)
         return payload
     }
 }
