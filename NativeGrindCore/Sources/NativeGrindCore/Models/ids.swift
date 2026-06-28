@@ -61,9 +61,14 @@ public struct SessionID: Decodable, Equatable, Sendable {
     private func timeClaim(for key: String) -> TimeInterval? {
         let segments = rawValue.components(separatedBy: ".")
         guard segments.count == 3,
-              let payload = decodeJWTPart(from: segments[1]) else { return nil }
-        
-        return payload[key] as? TimeInterval
+              let payload = decodeJWTPart(from: segments[1]),
+              let value = payload[key] else { return nil }
+
+        if let time = value as? TimeInterval { return time }
+        if let int = value as? Int { return TimeInterval(int) }
+        if let number = value as? NSNumber { return number.doubleValue }
+        if let string = value as? String, let double = Double(string) { return double }
+        return nil
     }
     
     private func decodeJWTPart(from base64Url: String) -> [String: Any]? {
