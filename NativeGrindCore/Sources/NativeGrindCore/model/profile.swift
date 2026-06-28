@@ -34,7 +34,7 @@ public struct profile: Decodable, Sendable {
     public let genders: [Int] // ENUM
     public let pronouns: [Int] // ENUM
     public let rightNowText: String?
-    public let rightNowPosted: Int?
+    public let rightNowPosted: Int? // Unix Timestamp
     public let rightNowDistance: Int?
     public let rightNowThumbnailUrl: String?
     public let rightNowFullImageUrl: String?
@@ -67,12 +67,21 @@ public struct profile: Decodable, Sendable {
     public let lastThrobTimestamp: String?
     public let sexualHealth: [sexualHealth]
     public let isVisiting: Bool
-    public let travelPlans: String // Type
+    public let travelPlans: [travelPlan] // Type
     public let isInAList: Bool
     public let tribesImInto: [tribes]
     public let showVipBadge: Bool
     public let rightNowShareLocation: String? // Rather "NONE" or null
     public let rightNowMedias: [rightNowMedia]?
+}
+
+public struct travelPlan: Decodable, Sendable {
+    public let endDate: Int? // Unix Timestamp
+    public let geohash: String
+    public let travelPlanId: Int
+    public let locationName: String
+    public let showOnProfile: Bool?
+    public let startDate: Int? // Unix Timestamp
 }
 
 public struct rightNowMedia: Decodable, Sendable {
