@@ -8,7 +8,7 @@ import Foundation
 
 public enum authenticationError: Error, LocalizedError {
     case invalidResponse
-    case missing(itemName: String)
+    case missing
     case unknown
     
     public var errorDescription: String? {
