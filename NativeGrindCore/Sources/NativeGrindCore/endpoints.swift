@@ -15,7 +15,7 @@ public struct endpoint<Response: Decodable> {
     public let body: [String: Any]?
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
-    public let shouldRetryOn401: Bool = true
+    public let shouldRetryOn401: Bool
     
     private var baseURL: String {
         return "https://grindr.mobi"
@@ -23,6 +23,24 @@ public struct endpoint<Response: Decodable> {
     
     public var fullURLString: String {
         return baseURL + path
+    }
+    
+    public init(
+        path: String,
+        method: HTTPMethod,
+        queryItems: [String: String]? = nil,
+        body: [String: Any]? = nil,
+        isAuthedRoute: Bool,
+        networkHandlers: [networkHandler],
+        shouldRetryOn401: Bool = true // Default value set here
+    ) {
+        self.path = path
+        self.method = method
+        self.queryItems = queryItems
+        self.body = body
+        self.isAuthedRoute = isAuthedRoute
+        self.networkHandlers = networkHandlers
+        self.shouldRetryOn401 = shouldRetryOn401
     }
 }
 
