@@ -60,7 +60,7 @@ public extension endpoint {
             ],
             isAuthedRoute: false,
             networkHandlers: [
-                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Loggin Error", level: .error, match: .matchBoth)
+                networkHandler(code: 403, jsonLocation: "message", jsonLocationValue: "Invalid input parameters", message: "Email or password are incorrect", header: "Login Error", level: .error, match: .matchBoth)
             ],
             shouldRetryOn401: false
         )
