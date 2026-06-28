@@ -190,10 +190,10 @@ public final class sessionManager: ObservableObject {
         }
         
         let sessionId = response.authenticationResponse.sessionId
-        let authToken = response.authenticationResponse.authToken
+        let responseAuthToken = response.authenticationResponse.authToken
         
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
-        keychainManager.shared.saveToken(authToken, type: .authToken)
+        keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
     }
     
     public func refreshToken(showError: Bool = true) async {
