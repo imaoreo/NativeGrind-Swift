@@ -154,15 +154,15 @@ public final class sessionManager: ObservableObject {
     private func _refreshToken() async throws {
         
         guard let isEmail = keychainManager.shared.getToken(type: .isEmail) else {
-            throw authenticationError.missing(itemName: "isEmail")
+            throw authenticationError.missing
         }
         
         guard let data = keychainManager.shared.getToken(type: .data) else {
-            throw authenticationError.missing(itemName: "data")
+            throw authenticationError.missing
         }
         
         guard let authToken = keychainManager.shared.getToken(type: .authToken) else {
-            throw authenticationError.missing(itemName: "authToken")
+            throw authenticationError.missing
         }
         
         // Email Refresh

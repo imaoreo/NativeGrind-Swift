@@ -14,7 +14,7 @@ public enum authenticationError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidResponse: return "The server returned an empty or invalid response."
-        case .missing(let itemName): return "Missing Item: \(itemName)"
+        case .missing: return "Your session information is incomplete. Please sign in again."
         case .unknown: return "An unknown authentication error occurred."
         }
     }
