@@ -32,8 +32,12 @@ public final class sessionManager: ObservableObject {
     }
     
     public init() {
+        if keychain.getToken(type: .authToken) != nil {
+            self.isAuthenticated = true
+        }
+
         Task {
-            await refreshToken(showError: false)
+            try? await _refreshToken()
         }
     }
     
