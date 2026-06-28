@@ -129,7 +129,7 @@ public final class sessionManager: ObservableObject {
         }
     }
     
-    public func _authenticateWithThirdPartyToken(token: String, thirdPartyUserId: String) async throws {
+    private func _authenticateWithThirdPartyToken(token: String, thirdPartyUserId: String) async throws {
         let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: thirdPartyUserId, authToken: token))
         
         guard let response = response else {
@@ -151,7 +151,7 @@ public final class sessionManager: ObservableObject {
         }
     }
     
-    public func _refreshToken() async throws {
+    private func _refreshToken() async throws {
         
         guard let isEmail = keychainManager.shared.getToken(type: .isEmail) else {
             throw authenticationError.missing(itemName: "isEmail")
