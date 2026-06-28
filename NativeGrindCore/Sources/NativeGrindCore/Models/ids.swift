@@ -30,7 +30,7 @@ public struct profileId: Decodable, Equatable, Sendable {
     }
 }
 
-public struct SessionID: Decodable, Equatable, Sendable {
+public struct sessionId: Decodable, Equatable, Sendable {
     public let rawValue: String
     
     public init(from decoder: Decoder) throws {
