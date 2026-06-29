@@ -5,6 +5,8 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
+import Foundation
+
 public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
@@ -18,7 +20,7 @@ public struct profile: Codable, Sendable {
     public let rightNow: rightNowStatus
     public let sexualPosition: sexualPosition
     public let foundVia: viewSource?
-    public let profileId: profileId
+    public let profileId: String
     public let displayName: String?
     public let onlineUntil: Int?
     public let age: Int?
@@ -73,6 +75,7 @@ public struct profile: Codable, Sendable {
     public let showVipBadge: Bool
     public let rightNowShareLocation: String? // Rather "NONE" or null
     public let rightNowMedias: [rightNowMedia]?
+    public var dbCreatedAt: Date? // used by the db for DIFF
 }
 
 public struct travelPlan: Codable, Sendable {
