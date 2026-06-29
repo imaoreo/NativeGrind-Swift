@@ -5,7 +5,7 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct inboxResponse: Decodable, Sendable {
+public struct inboxResponse: Codable, Sendable {
     public let entries: [conversation]
     public let showsFreeHeaderLabel: Bool
     public let totalFullConversations: Int
@@ -14,12 +14,12 @@ public struct inboxResponse: Decodable, Sendable {
     public let nextPage: Int
 }
 
-public struct conversation: Decodable, Sendable {
+public struct conversation: Codable, Sendable {
     public let type: conversationType
     public let data: conversationData
 }
 
-public struct conversationData: Decodable, Sendable {
+public struct conversationData: Codable, Sendable {
     public let conversationId: String
     public let name: String
     public let participants: [conversationParticipant]
@@ -36,7 +36,7 @@ public struct conversationData: Decodable, Sendable {
     public let hasUnreadThrob: Bool
 }
 
-public struct conversationParticipant: Decodable, Sendable {
+public struct conversationParticipant: Codable, Sendable {
     public let profileId: profileId
     public let primaryMediaHash: String
     public let lastOnline: String
@@ -47,7 +47,7 @@ public struct conversationParticipant: Decodable, Sendable {
     public let hasDatingPotential: Bool
 }
 
-public struct conversationPreview: Decodable, Sendable {
+public struct conversationPreview: Codable, Sendable {
     public let conversationId: conversationIdObject
     public let messageId: String
     public let chat1MessageId: String // UUIDv4
@@ -66,6 +66,6 @@ public struct conversationPreview: Decodable, Sendable {
     public let photoContentReply: String?
 }
 
-public struct conversationIdObject: Decodable, Sendable {
+public struct conversationIdObject: Codable, Sendable {
     public let value: String
 }

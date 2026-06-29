@@ -5,11 +5,11 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct profileResponse: Decodable, Sendable {
+public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
 
-public struct profile: Decodable, Sendable {
+public struct profile: Codable, Sendable {
     public let distance: Double
     public let profileImageMediaHash: String
     public let isFavorite: Bool
@@ -75,7 +75,7 @@ public struct profile: Decodable, Sendable {
     public let rightNowMedias: [rightNowMedia]?
 }
 
-public struct travelPlan: Decodable, Sendable {
+public struct travelPlan: Codable, Sendable {
     public let endDate: Int? // Unix Timestamp
     public let geohash: String
     public let travelPlanId: Int
@@ -84,7 +84,7 @@ public struct travelPlan: Decodable, Sendable {
     public let startDate: Int? // Unix Timestamp
 }
 
-public struct rightNowMedia: Decodable, Sendable {
+public struct rightNowMedia: Codable, Sendable {
     public let mediaId: Int?
     public let thumbnailUrl: String
     public let fullImageUrl: String
@@ -92,18 +92,18 @@ public struct rightNowMedia: Decodable, Sendable {
     public let isNsfw: Bool?
 }
 
-public struct socialNetworks: Decodable, Sendable {
+public struct socialNetworks: Codable, Sendable {
     public let twitter: socialNetwork?
     public let facebook: socialNetwork?
     public let instagram: socialNetwork?
 }
 
-public struct socialNetwork: Decodable, Sendable {
+public struct socialNetwork: Codable, Sendable {
     public let userId: String?
     public let site: String?
 }
 
-public struct profileMedia: Decodable, Sendable {
+public struct profileMedia: Codable, Sendable {
     public let mediaHash: String
     public let type: Int
     public let state: Int

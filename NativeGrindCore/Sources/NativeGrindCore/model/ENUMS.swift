@@ -9,7 +9,7 @@ public func removeENUM<T: RawRepresentable>(from items: [T]?) -> [T.RawValue]? {
     return items?.map { $0.rawValue }
 }
 
-public enum sexualPosition: Int, Decodable, Sendable {
+public enum sexualPosition: Int, Codable, Sendable {
     case top = 1
     case bottom = 2
     case versatile = 3
@@ -18,7 +18,7 @@ public enum sexualPosition: Int, Decodable, Sendable {
     case side = 6
 }
 
-public enum conversationType: String, Decodable, Sendable {
+public enum conversationType: String, Codable, Sendable {
     case fullConversationV1 = "full_conversation_v1"
     case unknown
 
@@ -29,7 +29,7 @@ public enum conversationType: String, Decodable, Sendable {
     }
 }
 
-public enum messageType: String, Decodable, Sendable {
+public enum messageType: String, Codable, Sendable {
     case album = "Album"
     case albumContentReaction = "AlbumContentReaction"
     case albumContentReply = "AlbumContentReply"
@@ -59,7 +59,7 @@ public enum messageType: String, Decodable, Sendable {
     }
 }
 
-public enum chat1MessageType: String, Decodable, Sendable {
+public enum chat1MessageType: String, Codable, Sendable {
     case map = "map"
     case image = "image"
     case expiringAlbum = "expiring_album"
@@ -88,13 +88,13 @@ public enum chat1MessageType: String, Decodable, Sendable {
     }
 }
 
-public enum rightNowStatus: String, Decodable, Sendable {
+public enum rightNowStatus: String, Codable, Sendable {
     case notActive = "NOT_ACTIVE"
     case hosting = "HOSTING"
     case notHosting = "NOT_HOSTING"
 }
 
-public enum viewSource: String, Decodable, Sendable {
+public enum viewSource: String, Codable, Sendable {
     case discover = "DISCOVER"
     case forYou = "FOR_YOU"
     case unknown = "UNKOWN"
@@ -106,7 +106,7 @@ public enum viewSource: String, Decodable, Sendable {
     }
 }
 
-public enum meetAt: Int, Decodable, Sendable {
+public enum meetAt: Int, Codable, Sendable {
     case myPlace = 1
     case yourPlace = 2
     case bar = 3
@@ -114,19 +114,19 @@ public enum meetAt: Int, Decodable, Sendable {
     case restaurant = 5
 }
 
-public enum vaccines: Int, Decodable, Sendable {
+public enum vaccines: Int, Codable, Sendable {
     case covid19 = 1
     case monkeyPox = 2
     case meningitis = 3
 }
 
-public enum NSFWPics: Int, Decodable, Sendable {
+public enum NSFWPics: Int, Codable, Sendable {
     case never = 1
     case notAtFirst = 2
     case yesPlease = 3
 }
 
-public enum ethnicity: Int, Decodable, Sendable {
+public enum ethnicity: Int, Codable, Sendable {
     case asian = 1
     case black = 2
     case latino = 3
@@ -138,7 +138,7 @@ public enum ethnicity: Int, Decodable, Sendable {
     case southAsian = 9
 }
 
-public enum relationshipStatus: Int, Decodable, Sendable {
+public enum relationshipStatus: Int, Codable, Sendable {
     case single = 1
     case dating = 2
     case exclusive = 3
@@ -149,7 +149,7 @@ public enum relationshipStatus: Int, Decodable, Sendable {
     case openRelationship = 8
 }
 
-public enum tribes: Int, Decodable, Sendable {
+public enum tribes: Int, Codable, Sendable {
     case bear = 1
     case cleanCut = 2
     case daddy = 3
@@ -165,7 +165,7 @@ public enum tribes: Int, Decodable, Sendable {
     case sober = 13
 }
 
-public enum lookingFor: Int, Decodable, Sendable {
+public enum lookingFor: Int, Codable, Sendable {
     case chat = 2
     case dates = 3
     case friends = 4
@@ -174,7 +174,7 @@ public enum lookingFor: Int, Decodable, Sendable {
     case hookups = 7
 }
 
-public enum bodyType: Int, Decodable, Sendable {
+public enum bodyType: Int, Codable, Sendable {
     case toned = 1
     case average = 2
     case large = 3
@@ -183,20 +183,20 @@ public enum bodyType: Int, Decodable, Sendable {
     case stocky = 6
 }
 
-public enum HIVStatus: Int, Decodable, Sendable {
+public enum HIVStatus: Int, Codable, Sendable {
     case negative = 1
     case negativeOnPrep = 2
     case positive = 3
     case positiveUndetectable = 4
 }
 
-public enum tapType: Int, Decodable, Sendable {
+public enum tapType: Int, Codable, Sendable {
     case friendly = 0
     case hot = 1
     case looking = 2
 }
 
-public enum sexualHealth: Int, Decodable, Sendable {
+public enum sexualHealth: Int, Codable, Sendable {
     case condoms = 1
     case doxyPEP = 2
     case PrEP = 3
@@ -204,7 +204,7 @@ public enum sexualHealth: Int, Decodable, Sendable {
     case preferToDiscuss = 5
 }
 
-public enum ageVerificationMethods: String, Decodable, Sendable {
+public enum ageVerificationMethods: String, Codable, Sendable {
     case faceRecognition = "FACE_RECOGNITION"
     case documentVerification = "DOCUMENT_VERIFICATION"
 }

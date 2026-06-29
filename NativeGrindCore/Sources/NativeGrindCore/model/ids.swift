@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct profileId: Decodable, Equatable, Sendable {
+public struct profileId: Codable, Equatable, Sendable {
     public let rawValue: String
     
     // This is for Decoder
@@ -30,7 +30,7 @@ public struct profileId: Decodable, Equatable, Sendable {
     }
 }
 
-public struct sessionId: Decodable, Equatable, Sendable {
+public struct sessionId: Codable, Equatable, Sendable {
     public let rawValue: String
     
     public init(from decoder: Decoder) throws {
