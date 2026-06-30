@@ -159,28 +159,35 @@ public actor APIClient {
     }
     
     public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false) async throws -> T? {
-        let (data, response) = try await sendRequest(
-            method: endpoint.method,
-            url: endpoint.fullURLString,
-            queryItems: endpoint.queryItems,
-            body: endpoint.body,
-            isAuthed: endpoint.isAuthedRoute
-        )
-        
-        if (200...299).contains(response.statusCode) {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
-        }
-        
-        // the isRetry flag prevents a infinite loop
-        if response.statusCode == 401, !isRetry, endpoint.shouldRetryOn401 {
-            await sessionManager.shared.refreshToken()
+        do {
+            let (data, response) = try await sendRequest(
+                method: endpoint.method,
+                url: endpoint.fullURLString,
+                queryItems: endpoint.queryItems,
+                body: endpoint.body,
+                isAuthed: endpoint.isAuthedRoute
+            )
+            
+            if (200...299).contains(response.statusCode) {
+                let decoder = JSONDecoder()
+                return try decoder.decode(T.self, from: data)
+            }
+            
+            // the isRetry flag prevents a infinite loop
+            if response.statusCode == 401, !isRetry, endpoint.shouldRetryOn401 {
+                await sessionManager.shared.refreshToken()
 
-            return try await request(endpoint, isRetry: true)
+                return try await request(endpoint, isRetry: true)
+            }
+            
+            await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
+            return nil
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw requestError.networkError
+        } catch {
+            throw error
         }
-        
-        await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
-        return nil
+
     }
     
     private func handleNetworkError<T>(data: Data, statusCode: Int, endpoint: endpoint<T>) async {

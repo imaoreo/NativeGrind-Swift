@@ -37,7 +37,11 @@ public actor inboxController {
                 try await dbController.updateInbox(inbox: conversation.data)
             }
         } catch {
-            await errorManager.shared.warn("inboxController", "Failed to network fetch profile: \(error)")
+            let isNetworkError = (error as? requestError) == .networkError
+                
+            if !isNetworkError {
+                await errorManager.shared.warn("inboxController", "Failed to network fetch inbox: \(error)")
+            }
         }
     }
     

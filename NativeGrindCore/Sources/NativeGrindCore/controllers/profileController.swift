@@ -25,7 +25,11 @@ public actor profileController {
             
             try await dbController.updateProfile(profileId: profileId, profile: profile)
         } catch {
-            await errorManager.shared.warn("profileController", "Failed to network fetch profile: \(error)")
+            let isNetworkError = (error as? requestError) == .networkError
+                
+            if !isNetworkError {
+                await errorManager.shared.warn("profileController", "Failed to network fetch profile: \(error)")
+            }
         }
     }
     

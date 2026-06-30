@@ -23,8 +23,13 @@ public final class sessionManager: ObservableObject {
             
             self.isAuthenticated = true
             
+        } catch authenticationError.networkError {
+            self.isAuthenticated = true
+            if showErrors {
+                errorManager.shared.warn("SessionManager", "Offline: \(provider) skipped due to no internet.")
+            }
         } catch {
-            if (showErrors) {
+            if showErrors {
                 errorManager.shared.error("SessionManager", "\(provider): \(error.localizedDescription)")
             }
             self.isAuthenticated = false
@@ -165,35 +170,41 @@ public final class sessionManager: ObservableObject {
             throw authenticationError.missing
         }
         
-        // Email Refresh
-        if (isEmail == "true") {
-            let response = try await APIClient.shared.request(.refreshToken(email: data, token: authToken))
+        do {
+            // Email Refresh
+            if (isEmail == "true") {
+                let response = try await APIClient.shared.request(.refreshToken(email: data, token: authToken))
+                
+                guard let response = response else {
+                    throw authenticationError.invalidResponse
+                }
+                
+                let sessionId = response.sessionId
+                let authToken = response.authToken
+                
+                keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
+                keychainManager.shared.saveToken(authToken, type: .authToken)
+                
+                return
+            }
+            
+            // Third Party Refresh
+            let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: data, authToken: authToken))
             
             guard let response = response else {
                 throw authenticationError.invalidResponse
             }
             
-            let sessionId = response.sessionId
-            let authToken = response.authToken
+            let sessionId = response.authenticationResponse.sessionId
+            let responseAuthToken = response.authenticationResponse.authToken
             
             keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
-            keychainManager.shared.saveToken(authToken, type: .authToken)
-            
-            return
+            keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw authenticationError.networkError
+        } catch {
+            throw error
         }
-        
-        // Third Party Refresh
-        let response = try await APIClient.shared.request(.refreshThirdParty(thirdPartyUserId: data, authToken: authToken))
-        
-        guard let response = response else {
-            throw authenticationError.invalidResponse
-        }
-        
-        let sessionId = response.authenticationResponse.sessionId
-        let responseAuthToken = response.authenticationResponse.authToken
-        
-        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
-        keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
     }
     
     public func refreshToken(showError: Bool = true) async {
