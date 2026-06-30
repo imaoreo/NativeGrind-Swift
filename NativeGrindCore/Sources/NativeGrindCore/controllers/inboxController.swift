@@ -95,8 +95,8 @@ public actor inboxController {
                         guard onlineUntil > Date().addingTimeInterval(-600) else { continue }
                     }
                     
-                    if let distanceMeters {
-                        guard matchedProfile.distance > distanceMeters else { continue }
+                    if let distanceMeters, let distance = matchedProfile.distance {
+                        guard distance > distanceMeters else { continue }
                     }
                     
                     if let positions {
