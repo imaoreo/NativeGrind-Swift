@@ -57,7 +57,7 @@ public actor profileController {
         }
     }
     
-    public func getHistroyFromProfile(source: profileSource) async -> [profile]? {
+    public func getHistoryFromProfile(source: profileSource) async -> [profile]? {
         do {
             var profileId: String
             
