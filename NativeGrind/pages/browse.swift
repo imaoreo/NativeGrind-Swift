@@ -30,6 +30,7 @@ struct browseView: View {
             }
             .buttonStyle(.plain)
             
+            #if DEBUG
             Button(action: {
                 Task{
                     let profile = await profileController.shared.fetchProfile(profileId: "<profile_id>")
@@ -46,6 +47,7 @@ struct browseView: View {
                 .cornerRadius(10)
             }
             .buttonStyle(.plain)
+            #endif
             
             Button(action: {
                 Task {
