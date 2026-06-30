@@ -50,6 +50,8 @@ public actor inboxController {
     public func fetchInbox(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
         do {
             await withTaskGroup(of: Void.self) { group in
+                guard depth > 0 else { return }
+                
                 for page in 1...depth {
                     group.addTask {
                         await self.networkFetchInbox(
@@ -142,11 +144,11 @@ public actor inboxController {
                     await networkFetchInbox(page: 1)
             }
             
-            let profile = try await dbController.fetchInboxDiffs(conversationId: conversationId)
+            let inbox = try await dbController.fetchInboxDiffs(conversationId: conversationId)
 
-            return profile
+            return inbox
         } catch {
-            await errorManager.shared.error("profileController", "Failed to fetch or cache profile / profile history: \(error)")
+            await errorManager.shared.error("inboxController", "Failed to fetch or cache inbox / inbox history: \(error)")
             return nil
         }
         
