@@ -40,7 +40,7 @@ public struct profileViewsResponseV7: Codable, Sendable {
     public let hasFaceRecognition: Bool
     public let lastViewed: Date?
     public let isIncognito: Bool
-    public let isInBadNeighbourhood: Bool
+    public let isInBadNeighborhood: Bool
     public let medias: [profileMedia]
     public let lastUpdatedTime: Int?
     public let boosting: Bool
@@ -63,7 +63,7 @@ public struct previewProfileViewsResponseV7: Codable, Sendable {
     public let lastViewed: Date?
     public let profileImageMediaHash: String?
     public let isInBadNeighborhood: Bool
-    public let isViewMeFreshFace: Bool
+    public let isViewedMeFreshFace: Bool
     public let isSecretAdmirer: Bool
     public let isFavorite: Bool
     public let seen: Date?
