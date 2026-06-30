@@ -54,7 +54,7 @@ public struct profileViewsResponseV7: Codable, Sendable {
     public let receivedDuringBoost: Bool
     public let showUnlockReward: Bool
     public let viewedCount: viewedCount
-    public let unreadMessageCoun: Int
+    public let unreadMessageCount: Int
     public let hasChatted: Bool
 }
 
