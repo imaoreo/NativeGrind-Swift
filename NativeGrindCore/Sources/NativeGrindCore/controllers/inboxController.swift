@@ -43,18 +43,25 @@ public actor inboxController {
     
     // Fetches Inboxs
     // Bear in mind chemistryOnly doesn't seem to do anything
-    public func fetchInbox(page: Int = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
+    public func fetchInbox(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
         do {
-            await networkFetchInbox(
-                page: page,
-                unreadOnly: unreadOnly,
-                chemistryOnly: chemistryOnly,
-                favoritesOnly: favoritesOnly,
-                rightNowOnly: rightNowOnly,
-                onlineNowOnly: onlineNowOnly,
-                distanceMeters: distanceMeters,
-                positions: positions
-            )
+            await withTaskGroup(of: Void.self) { group in
+                for page in 1...depth {
+                    group.addTask {
+                        await self.networkFetchInbox(
+                            page: page + offset,
+                            unreadOnly: unreadOnly,
+                            chemistryOnly: chemistryOnly,
+                            favoritesOnly: favoritesOnly,
+                            rightNowOnly: rightNowOnly,
+                            onlineNowOnly: onlineNowOnly,
+                            distanceMeters: distanceMeters,
+                            positions: positions
+                        )
+                    }
+                }
+            }
+
             
             guard let inboxs = try await dbController.fetchInboxs(),
                   let profiles = await profileController.shared.fetchProfiles() else {
