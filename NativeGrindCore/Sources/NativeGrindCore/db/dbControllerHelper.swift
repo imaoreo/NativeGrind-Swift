@@ -1,5 +1,5 @@
 //
-//  helper.swift
+//  dbControllerHelper.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 29/06/2026.
