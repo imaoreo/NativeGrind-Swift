@@ -29,7 +29,7 @@ public enum dbControllerHelper {
         return try decoder.decode(T.self, from: jsonData)
     }
 
-    // Compare 2 codeable objects and output a JSON delta string
+    // Compare 2 codeable objects and output a reverse JSON delta string
     public static func generateDiff(from oldData: Data, to newData: Data) -> String? {
         guard let oldDict = try? JSONSerialization.jsonObject(with: oldData) as? [String: Any],
               let newDict = try? JSONSerialization.jsonObject(with: newData) as? [String: Any] else {
@@ -38,16 +38,18 @@ public enum dbControllerHelper {
         
         var diffDict: [String: Any] = [:]
         
-        for (key, newValue) in newDict {
-            if let oldValue = oldDict[key] {
-                let oldObj = oldValue as? NSObject
-                let newObj = newValue as? NSObject
-                
-                if oldObj != newObj {
-                    diffDict[key] = newValue
-                }
-            } else {
-                diffDict[key] = newValue
+        let keys = Set(oldDict.keys).union(newDict.keys)
+        
+        for key in keys {
+            let oldValue = oldDict[key]
+            let newValue = newDict[key]
+            
+            let oldObj = oldValue as? NSObject
+            let newObj = newValue as? NSObject
+            
+            if oldObj != newObj {
+                // Store the previous value so history can be rebuilt backwards from the current model.
+                diffDict[key] = oldValue ?? NSNull()
             }
         }
         
@@ -80,9 +82,13 @@ public enum dbControllerHelper {
                 continue
             }
             
-            // add the diffData to the current data
+            // apply reverse diff data to the current state
             for (key, val) in diffDict {
-                currentJsonDict[key] = val
+                if val is NSNull {
+                    currentJsonDict.removeValue(forKey: key)
+                } else {
+                    currentJsonDict[key] = val
+                }
             }
             
             if let combinedData = try? JSONSerialization.data(withJSONObject: currentJsonDict),
@@ -95,4 +101,3 @@ public enum dbControllerHelper {
         return history
     }
 }
-
