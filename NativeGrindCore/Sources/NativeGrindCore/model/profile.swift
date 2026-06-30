@@ -17,7 +17,7 @@ public struct profile: Codable, Sendable {
     public let isFavorite: Bool
     public let lastViewed: Int?
     public let seen: Int?
-    public let rightNow: rightNowStatus
+    public let rightNow: rightNowType
     public let sexualPosition: sexualPosition
     public let foundVia: viewSource?
     public let profileId: String

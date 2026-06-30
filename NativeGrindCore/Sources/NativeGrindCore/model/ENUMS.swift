@@ -88,10 +88,14 @@ public enum chat1MessageType: String, Codable, Sendable {
     }
 }
 
-public enum rightNowStatus: String, Codable, Sendable {
+public enum rightNowType: String, Codable, Sendable {
     case notActive = "NOT_ACTIVE"
-    case hosting = "HOSTING"
-    case notHosting = "NOT_HOSTING"
+    case hosting = "HOSTING" // research required
+    case notHosting = "NOT_HOSTING" // research required
+}
+
+public enum rightNowStatus: String, Codable, Sendable {
+    case none = "NONE"
 }
 
 public enum viewSource: String, Codable, Sendable {
