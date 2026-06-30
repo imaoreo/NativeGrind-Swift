@@ -281,7 +281,7 @@ public extension endpoint {
     
     static func getBlockedProfilesV31() -> endpoint<getBlockedProfilesResponseV31> {
         return endpoint<getBlockedProfilesResponseV31>(
-            path: "/v4/me/muted-profiles",
+            path: "/v3.1/me/blocks",
             method: .get,
             queryItems: nil,
             body: nil,
