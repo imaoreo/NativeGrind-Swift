@@ -170,6 +170,7 @@ public actor APIClient {
             
             if (200...299).contains(response.statusCode) {
                 let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .secondsSince1970
                 return try decoder.decode(T.self, from: data)
             }
             
