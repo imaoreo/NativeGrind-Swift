@@ -24,7 +24,9 @@ public final class sessionManager: ObservableObject {
             self.isAuthenticated = true
             
         } catch authenticationError.networkError {
-            self.isAuthenticated = true
+            // make sure there is authToken and sessionId for allowing it to stay authed
+            self.isAuthenticated = (self.keychain.getToken(type: .authToken) != nil &&
+                                    self.keychain.getToken(type: .sessionId) != nil)
             if showErrors {
                 errorManager.shared.warn("SessionManager", "Offline: \(provider) skipped due to no internet.")
             }
@@ -200,7 +202,7 @@ public final class sessionManager: ObservableObject {
             
             keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
             keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
-        } catch let error as URLError where error.code == .notConnectedToInternet {
+        } catch requestError.networkError  {
             throw authenticationError.networkError
         } catch {
             throw error
