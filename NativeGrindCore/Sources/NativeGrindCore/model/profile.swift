@@ -22,7 +22,7 @@ public struct profile: Codable, Sendable {
     public let foundVia: viewSource?
     public let profileId: String
     public let displayName: String?
-    public let onlineUntil: Int?
+    public let onlineUntil: Date?
     public let age: Int?
     public let showAge: Bool
     public let showDistance: Bool

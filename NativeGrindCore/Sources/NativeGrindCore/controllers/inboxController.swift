@@ -43,7 +43,7 @@ public actor inboxController {
     
     // Fetches Inboxs
     // Bear in mind chemistryOnly doesn't seem to do anything
-    public func fetchInbox(page: Int = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil) async -> [(conversation: conversationData, profile: profile)]? {
+    public func fetchInbox(page: Int = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
         do {
             await networkFetchInbox(
                 page: page,
@@ -82,10 +82,34 @@ public actor inboxController {
                     guard inbox.rightNow != .notHosting else { continue }
                 }
                 
+
+                
                 // match the user with a Profile
                 if let matchedProfile = profileMap[firstParticipant.profileId] {
+                    if let onlineNowOnly, onlineNowOnly == true, let onlineUntil = matchedProfile.onlineUntil {
+                        guard onlineUntil > Date().addingTimeInterval(-600) else { continue }
+                    }
                     
-                    // 3. Apply local filters if flags are passed
+                    if let distanceMeters {
+                        guard matchedProfile.distance > distanceMeters else { continue }
+                    }
+                    
+                    if let positions {
+                        guard positions.contains(matchedProfile.sexualPosition) else { continue }
+                    }
+                    
+                    if let minAge, let profileAge = matchedProfile.age {
+                        guard profileAge > minAge else { continue }
+                    }
+                    
+                    if let maxAge, let profileAge = matchedProfile.age {
+                        guard profileAge < maxAge else { continue }
+                    }
+                    
+                    if hideProfilesWithoutAge {
+                        guard let age = matchedProfile.age, age > 0 else { continue }
+                    }
+                    
                     results.append((conversation: inbox, profile: matchedProfile))
                 }
             }
