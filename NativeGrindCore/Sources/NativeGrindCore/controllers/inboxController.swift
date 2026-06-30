@@ -100,7 +100,7 @@ public actor inboxController {
                     }
                     
                     if let distanceMeters, let distance = matchedProfile.distance {
-                        guard distance > distanceMeters else { continue }
+                        guard distance <= distanceMeters else { continue }
                     }
                     
                     if let positions {
