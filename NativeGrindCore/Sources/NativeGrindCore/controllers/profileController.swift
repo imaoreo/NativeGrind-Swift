@@ -11,7 +11,7 @@ public actor profileController {
     public let dbController: dbProfileController
     
     private init() {
-        let container = try! ModelContainer(for: dbProfile.self)
+        let container = try! ModelContainer(for: dbProfile.self, dbProfileDiff.self)
         self.dbController = dbProfileController(modelContainer: container)
     }
     
@@ -19,7 +19,7 @@ public actor profileController {
         do {
             let response = try await APIClient.shared.request(.getProfile(profileId: profileId))
             
-            guard let profile = response?.profiles[0] else {
+            guard let profile = response?.profiles.first else {
                 return
             }
             

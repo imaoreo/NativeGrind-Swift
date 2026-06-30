@@ -11,7 +11,7 @@ public actor inboxController {
     public let dbController: dbInboxController
     
     private init() {
-        let container = try! ModelContainer(for: dbProfile.self)
+        let container = try! ModelContainer(for: dbInbox.self, dbInboxDiff.self)
         self.dbController = dbInboxController(modelContainer: container)
     }
     
