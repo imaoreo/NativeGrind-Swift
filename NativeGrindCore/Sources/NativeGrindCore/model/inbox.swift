@@ -5,6 +5,8 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
+import Foundation
+
 public struct inboxResponse: Codable, Sendable {
     public let entries: [conversation]
     public let showsFreeHeaderLabel: Bool
@@ -32,8 +34,9 @@ public struct conversationData: Codable, Sendable {
     public let context: Int?
     public let onlineUntil: Int? // Don't use this one
     public let translatable: Bool
-    public let rightNow: String // like "NOT_ACTIVE"
+    public let rightNow: rightNowType
     public let hasUnreadThrob: Bool
+    public var dbCreatedAt: Date?
 }
 
 public struct conversationParticipant: Codable, Sendable {
