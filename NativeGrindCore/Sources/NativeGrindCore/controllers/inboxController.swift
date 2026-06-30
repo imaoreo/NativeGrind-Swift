@@ -89,8 +89,6 @@ public actor inboxController {
                     guard inbox.rightNow != .notHosting else { continue }
                 }
                 
-
-                
                 // match the user with a Profile
                 if let matchedProfile = profileMap[firstParticipant.profileId] {
                     if let onlineNowOnly, onlineNowOnly == true, let onlineUntil = matchedProfile.onlineUntil {
