@@ -32,6 +32,31 @@ public actor dbProfileController {
         )
     }
     
+    // fetch profiles
+    public func fetchProfiles() throws -> [profile]? {
+        let context = modelContext
+        
+        // Setup the db requrest
+        let descriptor = FetchDescriptor<dbProfile>()
+        let cachedRecords = try context.fetch(descriptor)
+        
+        // If database is empty return []
+        guard !cachedRecords.isEmpty else {
+            return []
+        }
+        
+        // Map through the records and decode each individual profile
+        let decodedProfiles = cachedRecords.compactMap { record in
+            try? dbControllerHelper.decodeRecord(
+                record.json,
+                as: profile.self,
+                domain: "dbProfileControllerError"
+            )
+        }
+        
+        return decodedProfiles
+    }
+    
     // fetch all snapshots of a profile
     public func fetchProfileDiffs(profileId: String) throws -> [profile] {
         let context = modelContext

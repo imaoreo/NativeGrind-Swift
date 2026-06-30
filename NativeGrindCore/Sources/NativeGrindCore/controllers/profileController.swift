@@ -42,6 +42,17 @@ public actor profileController {
         }
     }
     
+    public func fetchProfiles() async -> [profile]? {
+        do {
+            let profiles = try await dbController.fetchProfiles()
+
+            return profiles
+        } catch {
+            await errorManager.shared.error("profileController", "Failed to fetch profiles: \(error)")
+            return nil
+        }
+    }
+    
     public func getHistroyFromProfile(source: profileSource) async -> [profile]? {
         do {
             var profileId: String
