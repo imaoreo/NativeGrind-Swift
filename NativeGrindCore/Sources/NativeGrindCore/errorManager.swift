@@ -72,6 +72,15 @@ public final class errorManager: ObservableObject {
         // This controls what is shown on the UI
         if level == .error {
             self.activeToast = newEntry
+            
+            let args = ProcessInfo.processInfo.arguments.joined(separator: " ").uppercased()
+            let envKeys = ProcessInfo.processInfo.environment.keys.joined(separator: " ").uppercased()
+            let isTesting = args.contains("TEST") || envKeys.contains("TEST")
+
+            if(isTesting) {
+                return
+            }
+            
             toastManager.shared.show(style: .error, header: prefix, message: message)
         }
     }
