@@ -12,9 +12,9 @@ public actor profileController {
     
     private init() {
         do {
-            var isRunningUnitTests: Bool {
-                ProcessInfo.processInfo.processName == "xctest"
-            }
+            let args = ProcessInfo.processInfo.arguments.joined(separator: " ").uppercased()
+            let envKeys = ProcessInfo.processInfo.environment.keys.joined(separator: " ").uppercased()
+            var isRunningUnitTests: Bool = args.contains("TEST") || envKeys.contains("TEST")
             
             let config = ModelConfiguration(isStoredInMemoryOnly: isRunningUnitTests)
             
