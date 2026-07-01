@@ -15,7 +15,10 @@ import SwiftUI
 struct toastManagerTests {
     
     init() {
-        toastManager.shared.dismiss()
+        Task { @MainActor in
+            toastManager.shared.dismiss()
+            errorManager.shared.clearLogs()
+        }
     }
     
     @Test("Verifies toastStyle enum maps to correct colors")

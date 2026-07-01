@@ -12,16 +12,11 @@ public actor inboxController {
     
     private init() {
         do {
-            let args = ProcessInfo.processInfo.arguments.joined(separator: " ").uppercased()
-            let envKeys = ProcessInfo.processInfo.environment.keys.joined(separator: " ").uppercased()
-            var isRunningUnitTests: Bool = args.contains("TEST") || envKeys.contains("TEST")
-            
-            let config = ModelConfiguration(isStoredInMemoryOnly: isRunningUnitTests)
-            
+            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
             let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self, configurations: config)
             self.dbController = dbInboxController(modelContainer: container)
         } catch {
-            fatalError("Failed to create SwiftData ModelContainer for inboxes: \(error)")
+            fatalError("Container failed: \(error)")
         }
     }
     

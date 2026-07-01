@@ -13,7 +13,7 @@ import Foundation
 @MainActor
 struct sessionManagerTests {
     
-    func clearKeychain() {
+    public func clearKeychain() {
         keychainManager.shared.deleteToken(type: .authToken)
         keychainManager.shared.deleteToken(type: .data)
         keychainManager.shared.deleteToken(type: .isEmail)

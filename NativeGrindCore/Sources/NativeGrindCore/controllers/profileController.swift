@@ -12,16 +12,11 @@ public actor profileController {
     
     private init() {
         do {
-            let args = ProcessInfo.processInfo.arguments.joined(separator: " ").uppercased()
-            let envKeys = ProcessInfo.processInfo.environment.keys.joined(separator: " ").uppercased()
-            var isRunningUnitTests: Bool = args.contains("TEST") || envKeys.contains("TEST")
-            
-            let config = ModelConfiguration(isStoredInMemoryOnly: isRunningUnitTests)
-            
+            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
             let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
         } catch {
-            fatalError("Failed to create SwiftData ModelContainer for profiles: \(error)")
+            fatalError("Container failed: \(error)")
         }
     }
     
