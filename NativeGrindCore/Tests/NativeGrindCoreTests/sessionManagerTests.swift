@@ -11,7 +11,7 @@ import Foundation
 
 @Suite("Session Manager Tests", .serialized)
 @MainActor
-struct SessionManagerTests {
+struct sessionManagerTests {
     
     /// Helper to guarantee a clean keychain state before each test
     private func clearKeychain() {
