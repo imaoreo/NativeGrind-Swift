@@ -15,7 +15,7 @@ public actor inboxController {
             let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self)
             self.dbController = dbInboxController(modelContainer: container)
         } catch {
-            fatalError("Failed to create SwiftData ModelContainer for inboxs: \(error)")
+            fatalError("Failed to create SwiftData ModelContainer for inboxes: \(error)")
         }
     }
     
