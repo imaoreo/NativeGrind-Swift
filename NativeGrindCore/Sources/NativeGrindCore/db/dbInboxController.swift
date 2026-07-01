@@ -68,10 +68,11 @@ public actor dbInboxController {
         
         // fetch all changes newest to oldest
         let predicate = #Predicate<dbInboxDiff> { $0.conversationId == conversationId }
-        var descriptor = FetchDescriptor<dbInboxDiff>(
+        let descriptor = FetchDescriptor<dbInboxDiff>(
             predicate: predicate,
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
+        
         let diffRecords = try context.fetch(descriptor)
                 
         // Map the diffRecors into types
