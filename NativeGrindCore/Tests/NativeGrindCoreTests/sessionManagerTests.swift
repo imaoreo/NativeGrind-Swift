@@ -13,13 +13,17 @@ import Foundation
 @MainActor
 struct sessionManagerTests {
     
-    init() async {
-        sessionManager.shared.logout()
-        errorManager.shared.clearLogs()
+    func clearKeychain() {
         keychainManager.shared.deleteToken(type: .authToken)
         keychainManager.shared.deleteToken(type: .data)
         keychainManager.shared.deleteToken(type: .isEmail)
         keychainManager.shared.deleteToken(type: .sessionId)
+    }
+    
+    init() async {
+        sessionManager.shared.logout()
+        errorManager.shared.clearLogs()
+        clearKeychain()
         
         MockURLProtocol.shared.handler = nil
     }
