@@ -11,8 +11,12 @@ public actor inboxController {
     public let dbController: dbInboxController
     
     private init() {
-        let container = try! ModelContainer(for: dbInbox.self, dbInboxDiff.self)
-        self.dbController = dbInboxController(modelContainer: container)
+        do {
+            let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self)
+            self.dbController = dbInboxController(modelContainer: container)
+        } catch {
+            fatalError("Failed to create SwiftData ModelContainer for inboxs: \(error)")
+        }
     }
     
     private func networkFetchInbox(page: Int? = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil) async {

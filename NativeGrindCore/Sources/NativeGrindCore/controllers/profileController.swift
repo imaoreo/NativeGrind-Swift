@@ -11,8 +11,12 @@ public actor profileController {
     public let dbController: dbProfileController
     
     private init() {
-        let container = try! ModelContainer(for: dbProfile.self, dbProfileDiff.self)
-        self.dbController = dbProfileController(modelContainer: container)
+        do {
+            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self)
+            self.dbController = dbProfileController(modelContainer: container)
+        } catch {
+            fatalError("Failed to create SwiftData ModelContainer for profiles: \(error)")
+        }
     }
     
     private func networkFetchProfile(profileId: String) async {
