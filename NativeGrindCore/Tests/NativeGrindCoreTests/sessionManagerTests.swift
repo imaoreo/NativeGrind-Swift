@@ -13,19 +13,15 @@ import Foundation
 @MainActor
 struct sessionManagerTests {
     
-    /// Helper to guarantee a clean keychain state before each test
-    private func clearKeychain() {
-        let keychain = keychainManager.shared
-        keychain.deleteToken(type: .authToken)
-        keychain.deleteToken(type: .sessionId)
-        keychain.deleteToken(type: .isEmail)
-        keychain.deleteToken(type: .data)
-    }
-    
-    init() {
-        clearKeychain()
+    init() async {
         sessionManager.shared.logout()
         errorManager.shared.clearLogs()
+        keychainManager.shared.deleteToken(type: .authToken)
+        keychainManager.shared.deleteToken(type: .data)
+        keychainManager.shared.deleteToken(type: .isEmail)
+        keychainManager.shared.deleteToken(type: .sessionId)
+        
+        MockURLProtocol.shared.handler = nil
     }
     
     @Test("Verifies logout clears all keychain data and resets authentication state")
