@@ -76,6 +76,8 @@ public enum dbControllerHelper {
         
         var history: [T] = []
         
+        history.append(currentModel)
+        
         for record in diffStrings {
             guard let diffData = record.jsonStr.data(using: .utf8),
                   let diffDict = try? JSONSerialization.jsonObject(with: diffData) as? [String: Any] else {
