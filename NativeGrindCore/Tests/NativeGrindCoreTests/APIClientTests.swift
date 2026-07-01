@@ -84,6 +84,39 @@ func testBuildingAcceptLanguageHeaders(input: String, expected: String) async {
     }
 }
 
+@Suite("APIClient State & Pre-Flight Tests")
+struct APIClientStateTests {
+    
+    @Test("Throws uninitializedSession when sending a request before setup() is called")
+    func testUninitializedSessionThrowsError() async {
+        let client = APIClient()
+        
+        await #expect(throws: requestError.uninitializedSession) {
+            _ = try await client.sendRequest(
+                method: .get,
+                url: "https://grindr.mobi/v1/test",
+                isAuthed: false
+            )
+        }
+    }
+    
+    @Test("Throws uninitializedSession if request isAuthed but keychain token is missing")
+    @MainActor
+    func testMissingAuthTokenThrowsError() async {
+        keychainManager.shared.deleteToken(type: .sessionId)
+        
+        let client = APIClient()
+        await client.setup(timezone: "Europe/London", language: "en-GB", deviceId: "test-id")
+        
+        await #expect(throws: requestError.uninitializedSession) {
+            _ = try await client.sendRequest(
+                method: .get,
+                url: "https://grindr.mobi/v1/secure-data",
+                isAuthed: true
+            )
+        }
+    }}
+
 @Suite("Send Request Tests")
 @MainActor
 struct SendRequestTests {
@@ -98,5 +131,103 @@ struct SendRequestTests {
         await #expect(throws: requestError.malformedURL) {
             try await client.sendRequest(method: .get, url: badURL, isAuthed: false)
         }
+    }
+}
+
+@Suite("APIClient Request Formatting Tests", .serialized)
+struct APIClientFormattingTests {
+    
+    // Helper to create a sessionClient
+    private func createMockedClient() async -> APIClient {
+        let client = APIClient()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        await client.setup(timezone: "UTC", language: "en-US", deviceId: "mock")
+        
+        // Override the default one
+        await client.setMockSession(URLSession(configuration: config))
+        return client
+    }
+    
+    @Test("Verifies query parameters are correctly appended to the URL string")
+    func testQueryParametersFormatting() async throws {
+        let client = await createMockedClient()
+        
+        MockURLProtocol.shared.handler = { request in
+            let urlString = request.url?.absoluteString ?? ""
+            
+            // Make sure the query was done correctly
+            #expect(urlString.contains("limit=50"))
+            #expect(urlString.contains("offset=10"))
+            
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+        
+        _ = try await client.sendRequest(
+            method: .get,
+            url: "https://api.example.com/search",
+            queryItems: ["limit": "50", "offset": "10"],
+            isAuthed: false
+        )
+    }
+    
+    @Test("Verifies JSON body serialization and Content-Type header injection")
+    func testJSONBodySerialization() async throws {
+        let client = await createMockedClient()
+        let requestBody: [String: Any] = ["username": "testUser", "age": 25]
+        
+        MockURLProtocol.shared.handler = { request in
+            // Check the Content Header and Method
+            #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+            #expect(request.httpMethod == "POST")
+            
+            // Extract the Body
+            let bodyData: Data
+            if let data = request.httpBody {
+                bodyData = data
+            } else if let stream = request.httpBodyStream {
+                stream.open()
+                let bufferSize = 1024
+                let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+                var data = Data()
+                while stream.hasBytesAvailable {
+                    let read = stream.read(buffer, maxLength: bufferSize)
+                    if read > 0 {
+                        data.append(buffer, count: read)
+                    } else {
+                        break
+                    }
+                }
+                buffer.deallocate()
+                stream.close()
+                bodyData = data
+            } else {
+                bodyData = Data()
+            }
+
+            let decodedBody = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+            
+            // Make sure the data is in the body
+            #expect(decodedBody?["username"] as? String == "testUser")
+            #expect(decodedBody?["age"] as? Int == 25)
+            
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+        
+        _ = try await client.sendRequest(
+            method: .post,
+            url: "https://api.example.com/users",
+            body: requestBody,
+            isAuthed: false
+        )
+    }
+}
+
+// used for getting around session restrictions
+extension APIClient {
+    func setMockSession(_ mockSession: URLSession) {
+        self.session = mockSession
     }
 }
