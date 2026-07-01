@@ -8,13 +8,13 @@
 import Foundation
 import Combine
 
-public enum logLevel: String, Codable, CaseIterable {
+public enum logLevel: String, Codable, CaseIterable, Sendable {
     case log = "LOG"
     case warn = "WARN"
     case error = "ERROR"
 }
 
-public struct logEntry: Identifiable, Equatable {
+public struct logEntry: Identifiable, Equatable, Sendable {
     public let id = UUID()
     public let timestamp = Date()
     public let level: logLevel
@@ -52,7 +52,7 @@ public final class errorManager: ObservableObject {
                 }
             }
         }
-    // This is the newest error that will be shown by ui
+    // This is the newest error that will be shown by it
     @Published public var activeToast: logEntry? = nil
     
     private init() {} // Prevents multiple instances
