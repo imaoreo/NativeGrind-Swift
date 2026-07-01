@@ -95,8 +95,12 @@ public actor inboxController {
                     guard inbox.favorite == true else { continue }
                 }
                 
-                if let rightNowOnly, rightNowOnly == true {
-                    guard inbox.rightNow != .notHosting else { continue }
+                if let rightNowOnly, rightNowOnly == true, let createdAt = inbox.dbCreatedAt {
+                    if (createdAt > Date().addingTimeInterval(-600)) {
+                        guard inbox.rightNow != .notHosting else { continue }
+                    } else {
+                        continue
+                    }
                 }
                 
                 // match the user with a Profile
