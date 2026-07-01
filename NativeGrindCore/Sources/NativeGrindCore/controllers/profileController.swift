@@ -12,7 +12,14 @@ public actor profileController {
     
     private init() {
         do {
-            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self)
+            let env = ProcessInfo.processInfo.environment
+            print(env)
+            print(env.keys)
+            let isTesting = env.keys.contains(where: { $0.hasPrefix("XCODE_TEST_PLAN_NAME") }) || NSClassFromString("XCTestObservationCenter") != nil
+            
+            let config = ModelConfiguration(isStoredInMemoryOnly: isTesting)
+            
+            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
         } catch {
             fatalError("Failed to create SwiftData ModelContainer for profiles: \(error)")
