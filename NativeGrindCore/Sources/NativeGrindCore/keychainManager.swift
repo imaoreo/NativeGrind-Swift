@@ -18,7 +18,7 @@ public enum keyType: String, Decodable, Sendable {
 public final class keychainManager {
     
     @MainActor public static let shared = keychainManager()
-    private let service = "dev.imaoreo.NativeGrind"
+    public let service = "dev.imaoreo.NativeGrind"
     
     private init() {}
     
