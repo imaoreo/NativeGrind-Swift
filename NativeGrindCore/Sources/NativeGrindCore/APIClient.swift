@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum HTTPMethod: String {
+public enum HTTPMethod: String, Sendable, Codable {
     case get = "GET"
     case post = "POST"
     case put = "PUT"
@@ -15,14 +15,14 @@ public enum HTTPMethod: String {
     case patch = "PATCH"
 }
 
-public actor APIClient {
+actor APIClient {
     public static let shared = APIClient()
     
-    private init() {}
+    init() {}
     
-    private var session: URLSession? = nil
+    var session: URLSession? = nil
     
-    private func buildAcceptLanguageHeader(for languageCode: String) -> String {
+    func buildAcceptLanguageHeader(for languageCode: String) -> String {
         // Split into components (e.g., "en-GB" -> ["en", "GB"])
         let components = languageCode.split(separator: "-")
         
@@ -81,7 +81,7 @@ public actor APIClient {
     ///   - Code -2: Invalid server response (non-HTTP response)
     ///   - Code -3 Malformed URL String
     ///   - Code -4 Session is not initialized. Call setup() first.
-    public func sendRequest(
+    func sendRequest(
         method: HTTPMethod,
         url: String,
         queryItems: [String: String]? = nil,
@@ -90,7 +90,7 @@ public actor APIClient {
     ) async throws -> (Data, HTTPURLResponse) {
         
         // Translates the url string into a URL Type
-        guard let sourceURL = URL(string: url) else {
+        guard let sourceURL = URL(string: url), sourceURL.scheme != nil else {
             throw requestError.malformedURL
         }
         
@@ -191,7 +191,7 @@ public actor APIClient {
 
     }
     
-    private func handleNetworkError<T>(data: Data, statusCode: Int, endpoint: endpoint<T>) async {
+    func handleNetworkError<T>(data: Data, statusCode: Int, endpoint: endpoint<T>) async {
         var handledByCustomHandler = false
         
         let serverJSON = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
