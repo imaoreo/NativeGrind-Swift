@@ -5,22 +5,24 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct profileResponse: Decodable, Sendable {
+import Foundation
+
+public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
 
-public struct profile: Decodable, Sendable {
-    public let distance: Double
+public struct profile: Codable, Sendable {
+    public let distance: Double?
     public let profileImageMediaHash: String
     public let isFavorite: Bool
     public let lastViewed: Int?
     public let seen: Int?
-    public let rightNow: rightNowStatus
+    public let rightNow: rightNowType
     public let sexualPosition: sexualPosition
     public let foundVia: viewSource?
-    public let profileId: profileId
+    public let profileId: String
     public let displayName: String?
-    public let onlineUntil: Int?
+    public let onlineUntil: Date?
     public let age: Int?
     public let showAge: Bool
     public let showDistance: Bool
@@ -34,7 +36,7 @@ public struct profile: Decodable, Sendable {
     public let genders: [Int] // ENUM
     public let pronouns: [Int] // ENUM
     public let rightNowText: String?
-    public let rightNowPosted: Int?
+    public let rightNowPosted: Int? // Unix Timestamp
     public let rightNowDistance: Int?
     public let rightNowThumbnailUrl: String?
     public let rightNowFullImageUrl: String?
@@ -67,15 +69,25 @@ public struct profile: Decodable, Sendable {
     public let lastThrobTimestamp: String?
     public let sexualHealth: [sexualHealth]
     public let isVisiting: Bool
-    public let travelPlans: String // Type
+    public let travelPlans: [travelPlan] // Type
     public let isInAList: Bool
     public let tribesImInto: [tribes]
     public let showVipBadge: Bool
     public let rightNowShareLocation: String? // Rather "NONE" or null
     public let rightNowMedias: [rightNowMedia]?
+    public var dbCreatedAt: Date? // used by the db for DIFF
 }
 
-public struct rightNowMedia: Decodable, Sendable {
+public struct travelPlan: Codable, Sendable {
+    public let endDate: Int? // Unix Timestamp
+    public let geohash: String
+    public let travelPlanId: Int
+    public let locationName: String
+    public let showOnProfile: Bool?
+    public let startDate: Int? // Unix Timestamp
+}
+
+public struct rightNowMedia: Codable, Sendable {
     public let mediaId: Int?
     public let thumbnailUrl: String
     public let fullImageUrl: String
@@ -83,18 +95,18 @@ public struct rightNowMedia: Decodable, Sendable {
     public let isNsfw: Bool?
 }
 
-public struct socialNetworks: Decodable, Sendable {
+public struct socialNetworks: Codable, Sendable {
     public let twitter: socialNetwork?
     public let facebook: socialNetwork?
     public let instagram: socialNetwork?
 }
 
-public struct socialNetwork: Decodable, Sendable {
+public struct socialNetwork: Codable, Sendable {
     public let userId: String?
     public let site: String?
 }
 
-public struct profileMedia: Decodable, Sendable {
+public struct profileMedia: Codable, Sendable {
     public let mediaHash: String
     public let type: Int
     public let state: Int

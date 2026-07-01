@@ -5,7 +5,9 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
-public struct inboxResponse: Decodable, Sendable {
+import Foundation
+
+public struct inboxResponse: Codable, Sendable {
     public let entries: [conversation]
     public let showsFreeHeaderLabel: Bool
     public let totalFullConversations: Int
@@ -14,12 +16,12 @@ public struct inboxResponse: Decodable, Sendable {
     public let nextPage: Int
 }
 
-public struct conversation: Decodable, Sendable {
+public struct conversation: Codable, Sendable {
     public let type: conversationType
     public let data: conversationData
 }
 
-public struct conversationData: Decodable, Sendable {
+public struct conversationData: Codable, Sendable {
     public let conversationId: String
     public let name: String
     public let participants: [conversationParticipant]
@@ -32,12 +34,13 @@ public struct conversationData: Decodable, Sendable {
     public let context: Int?
     public let onlineUntil: Int? // Don't use this one
     public let translatable: Bool
-    public let rightNow: String // like "NOT_ACTIVE"
+    public let rightNow: rightNowType
     public let hasUnreadThrob: Bool
+    public var dbCreatedAt: Date?
 }
 
-public struct conversationParticipant: Decodable, Sendable {
-    public let profileId: profileId
+public struct conversationParticipant: Codable, Sendable {
+    public let profileId: String
     public let primaryMediaHash: String
     public let lastOnline: String
     public let onlineUntil: String
@@ -47,7 +50,7 @@ public struct conversationParticipant: Decodable, Sendable {
     public let hasDatingPotential: Bool
 }
 
-public struct conversationPreview: Decodable, Sendable {
+public struct conversationPreview: Codable, Sendable {
     public let conversationId: conversationIdObject
     public let messageId: String
     public let chat1MessageId: String // UUIDv4
@@ -66,6 +69,6 @@ public struct conversationPreview: Decodable, Sendable {
     public let photoContentReply: String?
 }
 
-public struct conversationIdObject: Decodable, Sendable {
+public struct conversationIdObject: Codable, Sendable {
     public let value: String
 }

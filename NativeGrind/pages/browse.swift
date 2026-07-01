@@ -30,6 +30,25 @@ struct browseView: View {
             }
             .buttonStyle(.plain)
             
+            #if DEBUG
+            Button(action: {
+                Task{
+                    let profile = await profileController.shared.fetchProfile(profileId: "<profile_id>")
+                    errorManager.shared.error("Test", profile?.profileId ?? "Test")
+                }
+                
+            }) {
+                Text("fetch profile")
+                    .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.black)
+                .cornerRadius(10)
+            }
+            .buttonStyle(.plain)
+            #endif
+            
             Button(action: {
                 Task {
                     await sessionManager.shared.refreshToken()

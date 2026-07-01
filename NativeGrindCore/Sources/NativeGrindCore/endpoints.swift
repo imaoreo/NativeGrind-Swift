@@ -215,4 +215,78 @@ public extension endpoint {
             networkHandlers: []
         )
     }
+    
+    // Voice Chat
+    
+    // Profile
+    
+    static func getPreferenceSettings() -> endpoint<preferenceSettingResponse> {
+        return endpoint<preferenceSettingResponse>(
+            path: "/v3/me/prefs/settings",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    // Views / Taps
+    
+    static func getViewV6() -> endpoint<viewResponseV6> {
+        return endpoint<viewResponseV6>(
+            path: "/v6/views/eyeball",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func getViewsV7() -> endpoint<viewsResponseV7> {
+        return endpoint<viewsResponseV7>(
+            path: "/v7/views/list",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func getTapsV2() -> endpoint<getTapsResponseV2> {
+        return endpoint<getTapsResponseV2>(
+            path: "/v2/taps/received",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    // Mutes / Blocks
+    
+    static func getMutedProfilesV4() -> endpoint<getMutedProfilesResponseV4> {
+        return endpoint<getMutedProfilesResponseV4>(
+            path: "/v4/me/muted-profiles",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func getBlockedProfilesV31() -> endpoint<getBlockedProfilesResponseV31> {
+        return endpoint<getBlockedProfilesResponseV31>(
+            path: "/v3.1/me/blocks",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
 }

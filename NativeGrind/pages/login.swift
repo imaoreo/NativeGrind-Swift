@@ -41,7 +41,6 @@ struct loginView: View {
     private func handleGoogleSignIn() {
         #if os(macOS)
             guard let presentingWindow = NSApplication.shared.windows.first(where: { $0.isKeyWindow }) ?? NSApplication.shared.windows.first else {
-                print("No Active Window on MacOS")
                 return
             }
 
@@ -49,7 +48,6 @@ struct loginView: View {
         #else
             guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                   let rootViewController = windowScene.windows.first?.rootViewController else {
-                print("No Active Window on iOS")
                 return
             }
 
@@ -58,17 +56,20 @@ struct loginView: View {
 
         GIDSignIn.sharedInstance.signIn(withPresenting: presentationAnchor) { signInResult, error in
             if let error = error {
-                print("Authentication failed: \(error.localizedDescription)")
+                Task {
+                    await errorManager.shared.error("GoogleLogin", "Authentication failed: \(error.localizedDescription)")
+                }
                 return
             }
 
             guard let user = signInResult?.user else {
-                print("No valid user found.")
+                Task {
+                    await errorManager.shared.error("GoogleLogin", "Failed to get user")
+                }
                 return
             }
 
             let accessToken = user.accessToken.tokenString
-            print("Google Sign-In successful.")
 
             Task {
                 await sessionManager.shared.authenticateWithGoogle(accessToken: accessToken)
@@ -83,21 +84,26 @@ struct loginView: View {
 
         loginManager.logIn(permissions: ["public_profile", "email"], from: nil) { result, error in
             if let error = error {
-                print("Facebook Authentication failed: \(error.localizedDescription)")
+                Task {
+                    await errorManager.shared.error("FacebookLogin", "Authentication failed: \(error.localizedDescription)")
+                }
                 return
             }
 
             guard let result = result, !result.isCancelled else {
-                print("User cancelled Facebook configuration flow.")
+                Task {
+                    await errorManager.shared.error("FacebookLogin", "Configuration flow cancelled")
+                }
                 return
             }
             
             guard let accessToken = result.authenticationToken?.tokenString else {
-                print("Failed to retrieve an active Facebook access token string.")
+                Task {
+                    await errorManager.shared.error("FacebookLogin", "Failed to get Facebook access token")
+                }
                 return
             }
 
-            print("Facebook Sign-In successful.")
 
             Task {
                 await sessionManager.shared.authenticateWithFacebook(accessToken: accessToken)

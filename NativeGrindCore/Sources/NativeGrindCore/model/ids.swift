@@ -7,30 +7,7 @@
 
 import Foundation
 
-public struct profileId: Decodable, Equatable, Sendable {
-    public let rawValue: String
-    
-    // This is for Decoder
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.rawValue = try container.decode(String.self)
-    }
-    
-    // If creating manually
-    public init(_ rawValue: String) {
-        self.rawValue = rawValue
-    }
-    
-    // Special ass shit
-    public func getDetails() async throws -> profile? {
-        
-        let result = try await APIClient.shared.request(.getProfile(profileId: rawValue))
-        
-        return result?.profiles.first
-    }
-}
-
-public struct sessionId: Decodable, Equatable, Sendable {
+public struct sessionId: Codable, Equatable, Sendable {
     public let rawValue: String
     
     public init(from decoder: Decoder) throws {
