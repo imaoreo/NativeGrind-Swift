@@ -80,10 +80,12 @@ struct sessionManagerTests {
         config.protocolClasses = [MockURLProtocol.self]
         await APIClient.shared.setMockSession(URLSession(configuration: config))
         
-        MockURLProtocol.shared.handler = { request in
+        MockURLProtocol.shared.handler = { _ in
             // Throw no internet
             throw URLError(.notConnectedToInternet)
         }
+        
+        defer { MockURLProtocol.shared.handler = nil }
         
         await manager.refreshToken(showError: false)
         
@@ -106,9 +108,11 @@ struct sessionManagerTests {
         config.protocolClasses = [MockURLProtocol.self]
         await APIClient.shared.setMockSession(URLSession(configuration: config))
         
-        MockURLProtocol.shared.handler = { request in
+        MockURLProtocol.shared.handler = { _ in
             throw URLError(.notConnectedToInternet)
         }
+        
+        defer { MockURLProtocol.shared.handler = nil }
         
         await manager.refreshToken(showError: false)
         
