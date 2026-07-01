@@ -11,8 +11,8 @@ import SwiftData
 @ModelActor
 public actor dbInboxController {
     
-    // fetch a inbox from the db
-    public func fetchInbox(conversationId: String) throws -> conversationData? {
+    // fetch inboxes from the db
+    public func fetchInboxes(conversationId: String) throws -> conversationData? {
         let context = modelContext
         
         // Setup the db requrest
@@ -32,8 +32,8 @@ public actor dbInboxController {
         )
     }
     
-    // fetch inboxs
-    public func fetchInboxs() throws -> [conversationData]? {
+    // fetch inboxes
+    public func fetchInboxes() throws -> [conversationData]? {
         let context = modelContext
         
         // Setup the db requrest
@@ -62,7 +62,7 @@ public actor dbInboxController {
         let context = modelContext
         
         // get current profile
-        guard let currentInbox = try fetchInbox(conversationId: conversationId) else {
+        guard let currentInbox = try fetchInboxes(conversationId: conversationId) else {
             return []
         }
         

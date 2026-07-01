@@ -19,7 +19,7 @@ public actor inboxController {
         }
     }
     
-    private func networkFetchInbox(page: Int? = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil) async {
+    private func networkFetchInboxes(page: Int? = 1, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil) async {
         do {
             let response = try await APIClient.shared.request(.getInbox(
                 page: page,
@@ -49,16 +49,16 @@ public actor inboxController {
         }
     }
     
-    // Fetches Inboxs
+    // Fetches Inboxes
     // Bear in mind chemistryOnly doesn't seem to do anything
-    public func fetchInbox(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
+    public func fetchInboxes(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
         do {
             await withTaskGroup(of: Void.self) { group in
                 guard depth > 0 else { return }
                 
                 for page in 1...depth {
                     group.addTask {
-                        await self.networkFetchInbox(
+                        await self.networkFetchInboxes(
                             page: page + offset,
                             unreadOnly: unreadOnly,
                             chemistryOnly: chemistryOnly,
@@ -73,7 +73,7 @@ public actor inboxController {
             }
 
             
-            guard let inboxs = try await dbController.fetchInboxs(),
+            guard let inboxes = try await dbController.fetchInboxes(),
                   let profiles = await profileController.shared.fetchProfiles() else {
                 return []
             }
@@ -82,7 +82,7 @@ public actor inboxController {
                     
             var results: [(conversation: conversationData, profile: profile)] = []
             
-            for inbox in inboxs {
+            for inbox in inboxes {
                 // get the other user
                 guard let firstParticipant = inbox.participants.first else { continue }
                 
@@ -136,7 +136,7 @@ public actor inboxController {
         }
     }
     
-    public func getHistroyForInbox(source: inboxSource) async -> [conversationData]? {
+    public func getHistoryForInbox(source: inboxSource) async -> [conversationData]? {
         do {
             var conversationId: String
             
@@ -145,7 +145,7 @@ public actor inboxController {
                     conversationId = inbox.conversationId
                 case .id(let _conversationId):
                     conversationId = _conversationId
-                    await networkFetchInbox(page: 1)
+                    await networkFetchInboxes(page: 1)
             }
             
             let inbox = try await dbController.fetchInboxDiffs(conversationId: conversationId)
