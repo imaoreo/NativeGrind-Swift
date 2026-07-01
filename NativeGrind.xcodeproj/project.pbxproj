@@ -13,6 +13,7 @@
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
 		F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */; };
 		F8BEB9C22FE4629800E9D5D5 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */; };
+		F8F845922FF5AE6700E6575E /* Tests.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = F8F845912FF5AE6700E6575E /* Tests.xctestplan */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,6 +31,7 @@
 		000000000000000000000120 /* NativeGrind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NativeGrind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8AF4B582FDF62F6009A8974 /* NativeGrindCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NativeGrindCore; sourceTree = "<group>"; };
 		F8BEB9A72FE4523600E9D5D5 /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNativeGrind Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8F845912FF5AE6700E6575E /* Tests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tests.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -81,6 +83,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				F8F845912FF5AE6700E6575E /* Tests.xctestplan */,
 				F8AF4B582FDF62F6009A8974 /* NativeGrindCore */,
 				000000000000000000000010 /* NativeGrind */,
 				F8B876BC2FDA4DB50027450C /* WatchNativeGrind Watch App */,
@@ -209,6 +212,7 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				F8F845922FF5AE6700E6575E /* Tests.xctestplan in Resources */,
 			);
 		};
 		F8B876B92FDA4DB50027450C /* Resources */ = {
