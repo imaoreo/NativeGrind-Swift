@@ -1,16 +1,17 @@
 import Testing
 @testable import NativeGrindCore
 
-@Suite("keychainManagerTest") struct `keychainManagerTest` {
+@Suite("keychainManagerTest", .serialized) struct `keychainManagerTest` {
     @MainActor
-    @Test func checkVariables() async throws {
+    @Test("Verfies that the variables are as expected")
+    func testCheckVariables() async throws {
         let isLocation = keychainManager.shared.service == "dev.imaoreo.NativeGrind"
         
         #expect(isLocation)
     }
     
     @MainActor
-    @Test("Save and Fetch", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
+    @Test("Verfies that saving and then fetching it matches", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
     func saveAndFetch(item: String, type: keyType) async throws {
         keychainManager.shared.saveToken(item, type: type)
         
@@ -36,7 +37,7 @@ import Testing
         }
     
     @MainActor
-    @Test("Save and Save", arguments: SaveandSaveCombinations)
+    @Test("Verifies that saving and then overwriting it works", arguments: SaveandSaveCombinations)
     func saveAndSave(item: String, item2: String, type: keyType) async throws {
         keychainManager.shared.saveToken(item, type: type)
         
@@ -48,8 +49,8 @@ import Testing
     }
     
     @MainActor
-    @Test("Save and Delete", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
-    func saveAndDelete(item: String, type: keyType) async throws {
+    @Test("Verifies that Saving and then Deleting works", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
+    func testsaveAndDelete(item: String, type: keyType) async throws {
         keychainManager.shared.saveToken(item, type: type)
         
         keychainManager.shared.deleteToken(type: type)
@@ -57,5 +58,15 @@ import Testing
         let token = keychainManager.shared.getToken(type: type)
         
         #expect(token == nil)
+    }
+}
+
+@Suite("nativeGrindCoreTest") struct `nativeGrindCoreTest` {
+    @Test("Verifies that the test function works")
+    func testHelloPizza() {
+        let coreInstance = nativeGrindCore()
+        let result = coreInstance.test()
+        
+        #expect(result == "Hello Pizza")
     }
 }
