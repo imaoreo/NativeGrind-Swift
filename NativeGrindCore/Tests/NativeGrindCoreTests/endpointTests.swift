@@ -1,5 +1,5 @@
 //
-//  endpointTest.swift
+//  endpointTests.swift
 //  NativeGrindCore
 //
 //  Created by Jay Brammeld on 01/07/2026.
