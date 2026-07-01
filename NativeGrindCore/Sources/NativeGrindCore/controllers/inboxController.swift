@@ -12,12 +12,11 @@ public actor inboxController {
     
     private init() {
         do {
-            let env = ProcessInfo.processInfo.environment
-            print(env)
-            print(env.keys)
-            let isTesting = env.keys.contains(where: { $0.hasPrefix("XCODE_TEST_PLAN_NAME") }) || NSClassFromString("XCTestObservationCenter") != nil
+            var isRunningUnitTests: Bool {
+                ProcessInfo.processInfo.processName == "xctest"
+            }
             
-            let config = ModelConfiguration(isStoredInMemoryOnly: isTesting)
+            let config = ModelConfiguration(isStoredInMemoryOnly: isRunningUnitTests)
             
             let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self, configurations: config)
             self.dbController = dbInboxController(modelContainer: container)

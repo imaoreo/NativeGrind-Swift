@@ -40,7 +40,8 @@ class MockURLProtocol: URLProtocol {
     
     override func startLoading() {
         guard let handler = MockURLProtocol.shared.handler else {
-            fatalError("Handler is unavailable.")
+            client?.urlProtocol(self, didFailWithError: URLError(.cancelled))
+            return
         }
         
         do {

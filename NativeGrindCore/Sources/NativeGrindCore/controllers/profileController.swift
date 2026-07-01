@@ -12,12 +12,11 @@ public actor profileController {
     
     private init() {
         do {
-            let env = ProcessInfo.processInfo.environment
-            print(env)
-            print(env.keys)
-            let isTesting = env.keys.contains(where: { $0.hasPrefix("XCODE_TEST_PLAN_NAME") }) || NSClassFromString("XCTestObservationCenter") != nil
+            var isRunningUnitTests: Bool {
+                ProcessInfo.processInfo.processName == "xctest"
+            }
             
-            let config = ModelConfiguration(isStoredInMemoryOnly: isTesting)
+            let config = ModelConfiguration(isStoredInMemoryOnly: isRunningUnitTests)
             
             let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
