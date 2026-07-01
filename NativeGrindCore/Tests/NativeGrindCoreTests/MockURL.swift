@@ -26,7 +26,7 @@ final class MockHandlerContainer: @unchecked Sendable {
     }
 }
 
-// Intercepter for the testing
+// Interceptor for the testing
 class MockURLProtocol: URLProtocol {
     static let shared = MockHandlerContainer()
     

@@ -64,7 +64,7 @@ struct errorManagerTests {
             manager.log("SPAM", "Log number \(i)")
         }
         
-        // The array should be capepd
+        // The array should be capped
         #expect(manager.logs.count == 100)
         
         // Make sure it drops the first 5

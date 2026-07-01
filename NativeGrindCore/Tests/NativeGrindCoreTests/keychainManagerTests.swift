@@ -10,7 +10,7 @@ import Testing
 
 @Suite("keychainManagerTest", .serialized) struct `keychainManagerTest` {
     @MainActor
-    @Test("Verfies that the variables are as expected")
+    @Test("Verifies that the variables are as expected")
     func testCheckVariables() async throws {
         let isLocation = keychainManager.shared.service == "dev.imaoreo.NativeGrind"
         
@@ -18,7 +18,7 @@ import Testing
     }
     
     @MainActor
-    @Test("Verfies that saving and then fetching it matches", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
+    @Test("Verifies that saving and then fetching it matches", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
     func saveAndFetch(item: String, type: keyType) async throws {
         keychainManager.shared.saveToken(item, type: type)
         
@@ -56,7 +56,7 @@ import Testing
     }
     
     @MainActor
-    @Test("Verifies that Saving and then Deleting works", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
+    @Test("Verifies that saving and then deleting works", arguments: ["1234", "_", "{String, 1234}"], [keyType.authToken, keyType.data, keyType.isEmail, keyType.sessionId])
     func testsaveAndDelete(item: String, type: keyType) async throws {
         keychainManager.shared.saveToken(item, type: type)
         

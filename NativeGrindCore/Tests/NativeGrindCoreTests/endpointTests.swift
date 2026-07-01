@@ -80,7 +80,7 @@ struct endpointTests {
         #expect(body["unreadOnly"] as? Bool == true)
         #expect(body["distanceMeters"] as? Double == 500.5)
         
-        // make sure that theydon't contain others
+        // make sure that they don't contain others
         #expect(body.keys.contains("chemistryOnly") == false)
         #expect(body.keys.contains("favoritesOnly") == false)
     }
