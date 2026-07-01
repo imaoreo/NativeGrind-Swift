@@ -244,7 +244,7 @@ public extension endpoint {
         )
     }
     
-    static func getViewsV67() -> endpoint<viewsResponseV7> {
+    static func getViewsV7() -> endpoint<viewsResponseV7> {
         return endpoint<viewsResponseV7>(
             path: "/v7/views/list",
             method: .get,
