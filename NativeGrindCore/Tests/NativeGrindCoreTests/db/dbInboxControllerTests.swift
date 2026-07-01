@@ -24,55 +24,6 @@ struct dbInboxControllerTests {
         let container = try ModelContainer(for: schema, configurations: [config])
         return dbInboxController(modelContainer: container)
     }
-    
-    // Dummy Inbox
-    private func mockConversation(id: String, text: String = "Hello") -> conversationData {
-        return conversationData(
-            conversationId: id,
-            name: "Test",
-            participants: [
-                conversationParticipant(
-                    profileId: "12345",
-                    primaryMediaHash: "",
-                    lastOnline: "0",
-                    onlineUntil: "100",
-                    distanceMetres: 10,
-                    position: [.top],
-                    isInAList: false,
-                    hasDatingPotential: false
-                )
-            ],
-            lastActivityTimestamp: 0,
-            unreadCount: 0,
-            preview:
-                conversationPreview(
-                    conversationId: conversationIdObject(value: "100:100"),
-                    messageId: "1234",
-                    chat1MessageId: "1234",
-                    senderId: "12345",
-                    type: .text,
-                    chat1Type: .text,
-                    text: text,
-                    url: nil,
-                    lat: nil,
-                    lon: nil,
-                    albumId: nil,
-                    albumContentId: nil,
-                    albumContentReply: "",
-                    duration: nil,
-                    imageHash: nil,
-                    photoContentReply: nil,
-                ),
-            muted: true,
-            pinned: false,
-            favorite: true,
-            context: 1,
-            onlineUntil: 0,
-            translatable: false,
-            rightNow: .notActive,
-            hasUnreadThrob: false
-        )
-    }
 
     @Test("Verifies fetching a non-existent inbox returns nil safely")
     func testFetchMissingInbox() async throws {
