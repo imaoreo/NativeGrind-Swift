@@ -11,12 +11,11 @@ import SwiftData
 @testable import NativeGrindCore
 
 @Suite("Inbox Controller Tests", .serialized)
+@MainActor
 struct inboxControllerTests {
     
     init() {
-        Task { @MainActor in
-            errorManager.shared.clearLogs()
-        }
+        errorManager.shared.clearLogs()
     }
     
     @Test("Verifies getHistoryForInbox with .inbox source bypasses network and fetches local diffs")

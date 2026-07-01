@@ -84,7 +84,7 @@ func testBuildingAcceptLanguageHeaders(input: String, expected: String) async {
     }
 }
 
-@Suite("APIClient State & Pre-Flight Tests")
+@Suite("APIClient State & Pre-Flight Tests", .serialized)
 struct APIClientStateTests {
     
     @Test("Throws uninitializedSession when sending a request before setup() is called")

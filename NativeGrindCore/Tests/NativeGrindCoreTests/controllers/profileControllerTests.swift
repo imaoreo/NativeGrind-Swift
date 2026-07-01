@@ -33,9 +33,7 @@ struct profileControllerTests {
     }
     
     init() {
-        Task { @MainActor in
-            errorManager.shared.clearLogs()
-        }
+        errorManager.shared.clearLogs()
     }
     
     private func injectMockAuth() {
