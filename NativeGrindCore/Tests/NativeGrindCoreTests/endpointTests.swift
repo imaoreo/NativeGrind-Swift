@@ -10,7 +10,7 @@ import Foundation
 @testable import NativeGrindCore
 
 @Suite("Endpoint Factory Tests")
-struct EndpointTests {
+struct endpointTests {
     
     @Test("Verifies fullURLString correctly appends path to the base URL")
     func testFullURLStringGeneration() {

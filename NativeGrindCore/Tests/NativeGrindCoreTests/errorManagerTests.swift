@@ -11,7 +11,7 @@ import Foundation
 
 @Suite("Error Manager Tests", .serialized)
 @MainActor
-struct ErrorManagerTests {
+struct errorManagerTests {
     
     // This runs before every other test to make sure it is cleared
     init() {
