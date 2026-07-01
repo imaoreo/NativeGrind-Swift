@@ -15,7 +15,7 @@ public enum HTTPMethod: String, Sendable, Codable {
     case patch = "PATCH"
 }
 
-actor APIClient {
+public actor APIClient {
     public static let shared = APIClient()
     
     init() {}
