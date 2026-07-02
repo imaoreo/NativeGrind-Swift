@@ -18,46 +18,53 @@ import Foundation
         (input: "es-ES", expected: "es-ES,es;q=0.9"),
         (input: "ja-JP", expected: "ja-JP,ja;q=0.9")
     ])
-func testBuildingAcceptLanguageHeaders(input: String, expected: String) async {
-    let result = await APIClient.shared.buildAcceptLanguageHeader(for: input)
-    
-    #expect(result == expected)
+func testBuildingAcceptLanguageHeaders(input: String, expected: String) async throws {
+    try await TestSerializer.shared.run {
+        let result = await APIClient.shared.buildAcceptLanguageHeader(for: input)
+        #expect(result == expected)
+    }
 }
 
 @Suite("APIClientSetupTest", .serialized) struct APIClientSetupTest {
     @Test("Verifies language hyphens are converted to underscores for L-Locale")
-    func testLocaleFormatting() async {
-        await APIClient.shared.setup(timezone: "Europe/London", language: "en-GB", deviceId: "mock-id")
-        
-        let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
-        let localeHeader = headers?["L-Locale"] as? String
-        
-        #expect(localeHeader == "en_GB")
+    func testLocaleFormatting() async throws {
+        try await TestSerializer.shared.run {
+            await APIClient.shared.setup(timezone: "Europe/London", language: "en-GB", deviceId: "mock-id")
+            
+            let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
+            let localeHeader = headers?["L-Locale"] as? String
+            
+            #expect(localeHeader == "en_GB")
+        }
     }
     
     @Test("Verifies L-Device-Info header matches the expected format")
-    func testDeviceInfoComposition() async {
-        let testDeviceId = "ABCDE-12345"
-        
-        await APIClient.shared.setup(timezone: "America/New_York", language: "en-US", deviceId: testDeviceId)
-        
-        let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
-        let deviceInfo = headers?["L-Device-Info"] as? String
-        
-        #expect(deviceInfo == "ABCDE-12345;appStore;2;8565768192;2796x1290")
+    func testDeviceInfoComposition() async throws {
+        try await TestSerializer.shared.run {
+            let testDeviceId = "ABCDE-12345"
+            
+            await APIClient.shared.setup(timezone: "America/New_York", language: "en-US", deviceId: testDeviceId)
+            
+            let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
+            let deviceInfo = headers?["L-Device-Info"] as? String
+            
+            #expect(deviceInfo == "ABCDE-12345;appStore;2;8565768192;2796x1290")
+        }
     }
     
     @Test("Verifies standard static network headers are injected")
     @MainActor
-    func testStaticHeaders() async {
-        await APIClient.shared.setup(timezone: "Asia/Tokyo", language: "ja-JP", deviceId: "id")
-        
-        let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
-        
-        #expect(headers?["Accept"] as? String == "application/json")
-        #expect(headers?["Accept-Encoding"] as? String == "gzip, deflate, br")
-        #expect(headers?["Connection"] as? String == "keep-alive")
-        #expect(headers?["User-Agent"] as? String == "Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)")
+    func testStaticHeaders() async throws {
+        try await TestSerializer.shared.run {
+            await APIClient.shared.setup(timezone: "Asia/Tokyo", language: "ja-JP", deviceId: "id")
+            
+            let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
+            
+            #expect(headers?["Accept"] as? String == "application/json")
+            #expect(headers?["Accept-Encoding"] as? String == "gzip, deflate, br")
+            #expect(headers?["Connection"] as? String == "keep-alive")
+            #expect(headers?["User-Agent"] as? String == "Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)")
+        }
     }
     
     @Test("Verifies edge-case timezones and languages map correctly", arguments: [
@@ -65,22 +72,26 @@ func testBuildingAcceptLanguageHeaders(input: String, expected: String) async {
         (tz: "Australia/Sydney", lang: "en-AU", expectedLocale: "en_AU"),
         (tz: "Africa/Cairo", lang: "ar-EG", expectedLocale: "ar_EG")
     ])
-    func testVariousConfigurations(tz: String, lang: String, expectedLocale: String) async {
-        await APIClient.shared.setup(timezone: tz, language: lang, deviceId: "test-id")
-        
-        let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
-        
-        #expect(headers?["L-Time-Zone"] as? String == tz)
-        #expect(headers?["L-Locale"] as? String == expectedLocale)
+    func testVariousConfigurations(tz: String, lang: String, expectedLocale: String) async throws {
+        try await TestSerializer.shared.run {
+            await APIClient.shared.setup(timezone: tz, language: lang, deviceId: "test-id")
+            
+            let headers = await APIClient.shared.session?.configuration.httpAdditionalHeaders
+            
+            #expect(headers?["L-Time-Zone"] as? String == tz)
+            #expect(headers?["L-Locale"] as? String == expectedLocale)
+        }
     }
     
     @Test("Ensures the generated session is strictly ephemeral")
-    func testSessionIsEphemeral() async {
-        await APIClient.shared.setup(timezone: "Europe/Paris", language: "fr-FR", deviceId: "id")
-        
-        let config = await APIClient.shared.session?.configuration
-        
-        #expect(config?.urlCache?.diskCapacity == 0)
+    func testSessionIsEphemeral() async throws {
+        try await TestSerializer.shared.run {
+            await APIClient.shared.setup(timezone: "Europe/Paris", language: "fr-FR", deviceId: "id")
+            
+            let config = await APIClient.shared.session?.configuration
+            
+            #expect(config?.urlCache?.diskCapacity == 0)
+        }
     }
 }
 
@@ -102,20 +113,23 @@ struct APIClientStateTests {
     
     @Test("Throws uninitializedSession if request isAuthed but keychain token is missing")
     @MainActor
-    func testMissingAuthTokenThrowsError() async {
-        keychainManager.shared.deleteToken(type: .sessionId)
-        
-        let client = APIClient()
-        await client.setup(timezone: "Europe/London", language: "en-GB", deviceId: "test-id")
-        
-        await #expect(throws: requestError.uninitializedSession) {
-            _ = try await client.sendRequest(
-                method: .get,
-                url: "https://grindr.mobi/v1/secure-data",
-                isAuthed: true
-            )
+    func testMissingAuthTokenThrowsError() async throws {
+        try await TestSerializer.shared.run {
+            keychainManager.shared.deleteToken(type: .sessionId)
+            
+            let client = APIClient()
+            await client.setup(timezone: "Europe/London", language: "en-GB", deviceId: "test-id")
+            
+            await #expect(throws: requestError.uninitializedSession) {
+                _ = try await client.sendRequest(
+                    method: .get,
+                    url: "https://grindr.mobi/v1/secure-data",
+                    isAuthed: true
+                )
+            }
         }
-    }}
+    }
+}
 
 @Suite("Send Request Tests")
 @MainActor
@@ -151,77 +165,85 @@ struct APIClientFormattingTests {
     
     @Test("Verifies query parameters are correctly appended to the URL string")
     func testQueryParametersFormatting() async throws {
-        let client = await createMockedClient()
-        
-        MockURLProtocol.shared.handler = { request in
-            let urlString = request.url?.absoluteString ?? ""
+        try await TestSerializer.shared.run {
+            let client = await createMockedClient()
             
-            // Make sure the query was done correctly
-            #expect(urlString.contains("limit=50"))
-            #expect(urlString.contains("offset=10"))
+            MockURLProtocol.shared.handler = { request in
+                let urlString = request.url?.absoluteString ?? ""
+                
+                // Make sure the query was done correctly
+                #expect(urlString.contains("limit=50"))
+                #expect(urlString.contains("offset=10"))
+                
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, Data())
+            }
             
-            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (response, Data())
+            defer { MockURLProtocol.shared.handler = nil }
+            
+            _ = try await client.sendRequest(
+                method: .get,
+                url: "https://api.example.com/search",
+                queryItems: ["limit": "50", "offset": "10"],
+                isAuthed: false
+            )
         }
-        
-        _ = try await client.sendRequest(
-            method: .get,
-            url: "https://api.example.com/search",
-            queryItems: ["limit": "50", "offset": "10"],
-            isAuthed: false
-        )
     }
     
     @Test("Verifies JSON body serialization and Content-Type header injection")
     func testJSONBodySerialization() async throws {
-        let client = await createMockedClient()
-        let requestBody: [String: Any] = ["username": "testUser", "age": 25]
-        
-        MockURLProtocol.shared.handler = { request in
-            // Check the Content Header and Method
-            #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-            #expect(request.httpMethod == "POST")
+        try await TestSerializer.shared.run {
+            let client = await createMockedClient()
+            let requestBody: [String: Any] = ["username": "testUser", "age": 25]
             
-            // Extract the Body
-            let bodyData: Data
-            if let data = request.httpBody {
-                bodyData = data
-            } else if let stream = request.httpBodyStream {
-                stream.open()
-                let bufferSize = 1024
-                let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-                var data = Data()
-                while stream.hasBytesAvailable {
-                    let read = stream.read(buffer, maxLength: bufferSize)
-                    if read > 0 {
-                        data.append(buffer, count: read)
-                    } else {
-                        break
+            MockURLProtocol.shared.handler = { request in
+                // Check the Content Header and Method
+                #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+                #expect(request.httpMethod == "POST")
+                
+                // Extract the Body
+                let bodyData: Data
+                if let data = request.httpBody {
+                    bodyData = data
+                } else if let stream = request.httpBodyStream {
+                    stream.open()
+                    let bufferSize = 1024
+                    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+                    var data = Data()
+                    while stream.hasBytesAvailable {
+                        let read = stream.read(buffer, maxLength: bufferSize)
+                        if read > 0 {
+                            data.append(buffer, count: read)
+                        } else {
+                            break
+                        }
                     }
+                    buffer.deallocate()
+                    stream.close()
+                    bodyData = data
+                } else {
+                    bodyData = Data()
                 }
-                buffer.deallocate()
-                stream.close()
-                bodyData = data
-            } else {
-                bodyData = Data()
-            }
 
-            let decodedBody = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+                let decodedBody = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+                
+                // Make sure the data is in the body
+                #expect(decodedBody?["username"] as? String == "testUser")
+                #expect(decodedBody?["age"] as? Int == 25)
+                
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, Data())
+            }
             
-            // Make sure the data is in the body
-            #expect(decodedBody?["username"] as? String == "testUser")
-            #expect(decodedBody?["age"] as? Int == 25)
+            defer { MockURLProtocol.shared.handler = nil }
             
-            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (response, Data())
+            _ = try await client.sendRequest(
+                method: .post,
+                url: "https://api.example.com/users",
+                body: requestBody,
+                isAuthed: false
+            )
         }
-        
-        _ = try await client.sendRequest(
-            method: .post,
-            url: "https://api.example.com/users",
-            body: requestBody,
-            isAuthed: false
-        )
     }
 }
 
