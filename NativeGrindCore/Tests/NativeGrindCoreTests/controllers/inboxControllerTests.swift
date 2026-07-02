@@ -19,8 +19,17 @@ struct inboxControllerTests {
     private func setupTestState() async {
         errorManager.shared.clearLogs()
         MockURLProtocol.shared.handler = nil
-        try? await inboxController.shared.dbController.clearDatabase()
-        try? await profileController.shared.dbController.clearDatabase()
+        do {
+            try await inboxController.shared.dbController.clearDatabase()
+        } catch {
+            Issue.record("Failed to clear inbox database: \(error)")
+        }
+
+        do {
+            try await profileController.shared.dbController.clearDatabase()
+        } catch {
+            Issue.record("Failed to clear profile database: \(error)")
+        }
     }
     
     @Test("Verifies getHistoryForInbox with .inbox source bypasses network and fetches local diffs")
