@@ -33,46 +33,110 @@ struct inboxView: View {
     @State private var isLoading = false
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                if isLoading && items.isEmpty {
+        VStack(spacing: 0) {
+            #if os(iOS)
+            if isLoading && items.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Inbox")
+                        .font(.largeTitle.bold())
+                        .padding(.horizontal, 16)
+                        .padding(.top, 60)
+                        .padding(.bottom, 8)
+                    
                     Spacer()
                     ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
-                } else if items.isEmpty {
-                    Spacer()
-                    Text("No conversations")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                } else {
-                    List(items) { item in
+                }
+            } else if items.isEmpty {
+                List {
+                    Text("Inbox")
+                        .font(.largeTitle.bold())
+                        .listRowInsets(EdgeInsets(top: 60, leading: 16, bottom: 8, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    
+                    VStack {
+                        Spacer()
+                        Text("No conversations")
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        Spacer()
+                    }
+                    .frame(minHeight: 300)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await loadInboxData()
+                }
+            } else {
+                List {
+                    Text("Inbox")
+                        .font(.largeTitle.bold())
+                        .listRowInsets(EdgeInsets(top: 60, leading: 16, bottom: 8, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    
+                    ForEach(items) { item in
                         inboxRow(conversation: item.conversation, profile: item.profile)
                             .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                     }
-                    .listStyle(.plain)
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await loadInboxData()
                 }
             }
-            .navigationTitle("Inbox")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: {
-                        Task {
-                            await loadInboxData()
-                        }
-                    }) {
-                        Image(systemName: "arrow.clockwise")
+            #else
+            if isLoading && items.isEmpty {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if items.isEmpty {
+                Spacer()
+                Text("No conversations")
+                    .foregroundColor(.secondary)
+                Spacer()
+            } else {
+                List(items) { item in
+                    inboxRow(conversation: item.conversation, profile: item.profile)
+                        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await loadInboxData()
+                }
+            }
+            #endif
+        }
+        #if os(iOS)
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .ignoresSafeArea(.container, edges: .top)
+        #else
+        .navigationTitle("Inbox")
+        #endif
+        #if !os(iOS) && !os(watchOS) && !os(tvOS)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: {
+                    Task {
+                        await loadInboxData()
                     }
+                }) {
+                    Image(systemName: "arrow.clockwise")
                 }
-            }
-            .refreshable {
-                await loadInboxData()
-            }
-            .task {
-                await loadInboxData()
             }
         }
+        #endif
+        .task {
+            await loadInboxData()
+        }
     }
-    
+
     private func loadInboxData() async {
         isLoading = true
         if let fetched = await inboxController.shared.fetchInboxes(depth: 3) {
