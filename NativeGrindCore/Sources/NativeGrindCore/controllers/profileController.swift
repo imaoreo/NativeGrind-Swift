@@ -81,6 +81,15 @@ public actor profileController {
             await errorManager.shared.error("profileController", "Failed to fetch or cache profile / profile history: \(error)")
             return nil
         }
-        
+    }
+    
+    // This is here for hyper caching and storing later on
+    public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
+        do {
+            let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+            return data
+        } catch {
+            return nil
+        }
     }
 }

@@ -8,6 +8,14 @@
 import SwiftUI
 import NativeGrindCore
 
+#if canImport(UIKit)
+import UIKit
+typealias PlatformImage = UIImage
+#elseif canImport(AppKit)
+import AppKit
+typealias PlatformImage = NSImage
+#endif
+
 struct inboxItem: Identifiable {
     let id: String
     let conversation: conversationData
@@ -75,26 +83,61 @@ struct inboxView: View {
     }
 }
 
+struct inboxAvatarView: View {
+    let conversation: conversationData
+    
+    @State private var avatarImage: Image? = nil
+    @State private var hasLoaded = false
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 48, height: 48)
+            
+            if let avatarImage {
+                avatarImage
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 48, height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else {
+                let displayName = conversation.name.isEmpty ? "Someone" : conversation.name
+                Text(String(displayName.prefix(1)).uppercased())
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+        }
+        .task(id: conversation.participants.first?.primaryMediaHash) {
+            guard let mediaHash = conversation.participants.first?.primaryMediaHash, !mediaHash.isEmpty else { return }
+            if hasLoaded { return }
+            
+            if let data = await profileController.shared.fetchProfileImage(size: .size1024, mediaHash: mediaHash) {
+                if let platformImage = PlatformImage(data: data) {
+                    #if canImport(UIKit)
+                        self.avatarImage = Image(uiImage: platformImage)
+                    #elseif canImport(AppKit)
+                        self.avatarImage = Image(nsImage: platformImage)
+                    #endif
+                }
+            }
+            hasLoaded = true
+        }
+    }
+}
+
 struct inboxRow: View {
     let conversation: conversationData
     let profile: profile?
     
     var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 44, height: 44)
-                
-                let displayName = conversation.name
-                Text(String(displayName.prefix(1)).uppercased())
-                    .font(.headline)
-                    .foregroundColor(.primary)
-            }
+        HStack(spacing: 16) {
+            inboxAvatarView(conversation: conversation)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text(conversation.name)
+                    let displayName = conversation.name.isEmpty ? "Someone" : conversation.name
+                    Text(displayName)
                         .font(.headline)
                         .foregroundColor(.primary)
                     Spacer()
@@ -112,6 +155,6 @@ struct inboxRow: View {
                     .lineLimit(1)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 }
