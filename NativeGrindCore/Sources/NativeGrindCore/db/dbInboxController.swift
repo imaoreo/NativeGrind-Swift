@@ -131,7 +131,7 @@ public actor dbInboxController {
         try context.save()
     }
     
-    public func clearDatabase() throws {
+    func clearDatabase() throws {
         let context = modelContext
         try context.delete(model: dbInbox.self)
         try context.delete(model: dbInboxDiff.self)

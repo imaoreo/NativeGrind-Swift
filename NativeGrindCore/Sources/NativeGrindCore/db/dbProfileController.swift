@@ -128,7 +128,7 @@ public actor dbProfileController {
         try context.save()
     }
     
-    public func clearDatabase() throws {
+    func clearDatabase() throws {
         let context = modelContext
         try context.delete(model: dbProfile.self)
         try context.delete(model: dbProfileDiff.self)
