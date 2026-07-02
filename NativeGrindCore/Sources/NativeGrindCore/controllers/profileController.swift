@@ -89,7 +89,10 @@ public actor profileController {
             let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
             return data
         } catch {
-            return nil
+            let isNetworkError = (error as? requestError) == .networkError
+            if !isNetworkError {
+                await errorManager.shared.warn("profileController", "Failed to fetch profile image: \(error)")
+            }
         }
     }
 }
