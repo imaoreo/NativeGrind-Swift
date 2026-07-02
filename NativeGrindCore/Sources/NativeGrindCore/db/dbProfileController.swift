@@ -68,7 +68,7 @@ public actor dbProfileController {
         
         // fetch all changes newest to oldest
         let predicate = #Predicate<dbProfileDiff> { $0.profileId == profileId }
-        var descriptor = FetchDescriptor<dbProfileDiff>(
+        let descriptor = FetchDescriptor<dbProfileDiff>(
             predicate: predicate,
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
@@ -125,6 +125,13 @@ public actor dbProfileController {
         }
         
         // commit changes
+        try context.save()
+    }
+    
+    func clearDatabase() throws {
+        let context = modelContext
+        try context.delete(model: dbProfile.self)
+        try context.delete(model: dbProfileDiff.self)
         try context.save()
     }
 }

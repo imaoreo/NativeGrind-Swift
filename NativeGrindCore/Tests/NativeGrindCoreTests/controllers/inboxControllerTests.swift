@@ -16,15 +16,26 @@ struct inboxControllerTests {
     
     init() {}
     
-    private func setupTestState() {
+    private func setupTestState() async {
         errorManager.shared.clearLogs()
         MockURLProtocol.shared.handler = nil
+        do {
+            try await inboxController.shared.dbController.clearDatabase()
+        } catch {
+            Issue.record("Failed to clear inbox database: \(error)")
+        }
+
+        do {
+            try await profileController.shared.dbController.clearDatabase()
+        } catch {
+            Issue.record("Failed to clear profile database: \(error)")
+        }
     }
     
     @Test("Verifies getHistoryForInbox with .inbox source bypasses network and fetches local diffs")
     func testGetHistoryFromLocalInbox() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             let controller = inboxController.shared
             let testId = "local-history-\(UUID().uuidString)"
             
@@ -42,7 +53,7 @@ struct inboxControllerTests {
     @Test("Verifies getHistoryForInbox with .id source triggers network fetch before returning history")
     func testGetHistoryFromIdTriggersNetwork() async throws {
         await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             let controller = inboxController.shared
             let testId = "net-history-\(UUID().uuidString)"
             
@@ -73,7 +84,7 @@ struct inboxControllerTests {
     @MainActor
     func testNetworkFetchOfflineHandling() async throws {
         await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             let controller = inboxController.shared
             
             keychainManager.shared.saveToken("mock-token", type: .sessionId)
@@ -103,7 +114,7 @@ struct inboxControllerTests {
     @Test("Verifies networkFetchInboxes logs warnings for non-network API failures")
     func testNetworkFetchApiErrorHandling() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             let controller = inboxController.shared
             keychainManager.shared.saveToken("mock-session", type: .sessionId)
             
@@ -136,7 +147,7 @@ struct inboxControllerTests {
     @Test("Verifies fetchInboxes with depth 0 skips network requests entirely")
     func testFetchInboxesDepthZero() async throws {
         await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             let controller = inboxController.shared
             
             let results = await controller.fetchInboxes(depth: 0)

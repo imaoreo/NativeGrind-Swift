@@ -12,7 +12,7 @@ public actor profileController {
     
     private init() {
         do {
-            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
+            let config = ModelConfiguration("profile", isStoredInMemoryOnly: appEnvironment.isTesting)
             let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
         } catch {
@@ -81,6 +81,19 @@ public actor profileController {
             await errorManager.shared.error("profileController", "Failed to fetch or cache profile / profile history: \(error)")
             return nil
         }
-        
+    }
+    
+    // This is here for hyper caching and storing later on
+    public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
+        do {
+            let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+            return data
+        } catch {
+            let isNetworkError = (error as? requestError) == .networkError
+            if !isNetworkError {
+                await errorManager.shared.warn("profileController", "Failed to fetch profile image: \(error)")
+            }
+            return nil
+        }
     }
 }

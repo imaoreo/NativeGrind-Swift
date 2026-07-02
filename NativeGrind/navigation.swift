@@ -16,7 +16,7 @@ enum unprotectedRoute: Hashable {
 
 enum protectedRoute: Hashable {
     case browse
-    case messages
+    case inbox
 }
 
 extension unprotectedRoute: View {
@@ -39,8 +39,8 @@ extension protectedRoute: View {
         switch self {
         case .browse:
             browseView()
-        case .messages:
-            Text("Messages")
+        case .inbox:
+            inboxView()
         }
     }
 }

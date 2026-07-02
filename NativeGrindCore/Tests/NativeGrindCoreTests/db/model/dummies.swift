@@ -15,12 +15,12 @@ func mockConversation(id: String, text: String = "Hello") -> conversationData {
         name: "Test",
         participants: [
             conversationParticipant(
-                profileId: "12345",
+                profileId: 12345,
                 primaryMediaHash: "",
-                lastOnline: "0",
-                onlineUntil: "100",
+                lastOnline: 0,
+                onlineUntil: 100,
                 distanceMetres: 10,
-                position: [.top],
+                position: .top,
                 isInAList: false,
                 hasDatingPotential: false
             )
@@ -32,7 +32,7 @@ func mockConversation(id: String, text: String = "Hello") -> conversationData {
                 conversationId: conversationIdObject(value: "100:100"),
                 messageId: "1234",
                 chat1MessageId: "1234",
-                senderId: "12345",
+                senderId: 12345,
                 type: .text,
                 chat1Type: .text,
                 text: text,
