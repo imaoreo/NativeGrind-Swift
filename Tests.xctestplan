@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "EFBC68CA-157E-48E4-BF52-CAEB198D54B7",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testInteropMode" : "complete",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NativeGrindCoreTests",
+        "name" : "NativeGrindCoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}

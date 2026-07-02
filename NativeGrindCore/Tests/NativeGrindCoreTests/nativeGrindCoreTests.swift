@@ -1,8 +1,12 @@
 import Testing
 @testable import NativeGrindCore
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    // Swift Testing Documentation
-    // https://developer.apple.com/documentation/testing
+@Suite("nativeGrindCoreTest") struct `nativeGrindCoreTest` {
+    @Test("Verifies that the test function works")
+    func testHelloPizza() {
+        let coreInstance = nativeGrindCore()
+        let result = coreInstance.test()
+        
+        #expect(result == "Hello Pizza")
+    }
 }

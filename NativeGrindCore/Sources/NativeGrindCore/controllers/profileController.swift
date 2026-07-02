@@ -12,10 +12,11 @@ public actor profileController {
     
     private init() {
         do {
-            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self)
+            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
+            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
         } catch {
-            fatalError("Failed to create SwiftData ModelContainer for profiles: \(error)")
+            fatalError("Container failed: \(error)")
         }
     }
     

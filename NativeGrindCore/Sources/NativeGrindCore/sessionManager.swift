@@ -39,8 +39,8 @@ public final class sessionManager: ObservableObject {
     }
     
     public init() {
-        Task {
-            await refreshToken(showError: false)
+        if !appEnvironment.isTesting {
+            Task { await refreshToken(showError: false) }
         }
     }
     

@@ -12,10 +12,11 @@ public actor inboxController {
     
     private init() {
         do {
-            let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self)
+            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
+            let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self, configurations: config)
             self.dbController = dbInboxController(modelContainer: container)
         } catch {
-            fatalError("Failed to create SwiftData ModelContainer for inboxes: \(error)")
+            fatalError("Container failed: \(error)")
         }
     }
     
