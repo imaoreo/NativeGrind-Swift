@@ -20,11 +20,21 @@ public final class keychainManager {
     @MainActor public static let shared = keychainManager()
     let service = "dev.imaoreo.NativeGrind"
     
+    private let lock = NSLock()
+    private var testStorage: [String: String] = [:]
+    
     private init() {}
     
     /// Saves or updates the authentication token in Keychain
     @discardableResult
     public func saveToken(_ token: String, type: keyType) -> Bool {
+        if appEnvironment.isTesting {
+            lock.lock()
+            defer { lock.unlock() }
+            testStorage[type.rawValue] = token
+            return true
+        }
+        
         guard let data = token.data(using: .utf8) else { return false }
         
         // Prepare query to check if there is a token
@@ -59,6 +69,12 @@ public final class keychainManager {
     
     /// Retrieves the token from the Keychain
     public func getToken(type: keyType) -> String? {
+        if appEnvironment.isTesting {
+            lock.lock()
+            defer { lock.unlock() }
+            return testStorage[type.rawValue]
+        }
+        
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -80,6 +96,13 @@ public final class keychainManager {
     /// Deletes the token from the Keychain
     @discardableResult
     public func deleteToken(type: keyType) -> Bool {
+        if appEnvironment.isTesting {
+            lock.lock()
+            defer { lock.unlock() }
+            testStorage.removeValue(forKey: type.rawValue)
+            return true
+        }
+        
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
