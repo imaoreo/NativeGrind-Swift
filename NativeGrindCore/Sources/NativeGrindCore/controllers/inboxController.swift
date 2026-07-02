@@ -52,7 +52,7 @@ public actor inboxController {
     
     // Fetches Inboxes
     // Bear in mind chemistryOnly doesn't seem to do anything
-    public func fetchInboxes(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false) async -> [(conversation: conversationData, profile: profile)]? {
+    public func fetchInboxes(depth: Int = 1, offset: Int = 0, unreadOnly: Bool? = nil, chemistryOnly: Bool? = nil, favoritesOnly: Bool? = nil, rightNowOnly: Bool? = nil, onlineNowOnly: Bool? = nil, distanceMeters: Double? = nil, positions: [sexualPosition]? = nil, minAge: Int? = nil, maxAge: Int? = nil, hideProfilesWithoutAge: Bool = false, pinnedAtTop: Bool? = true) async -> [(conversation: conversationData, profile: profile?)]? {
         do {
             await withTaskGroup(of: Void.self) { group in
                 guard depth > 0 else { return }
@@ -81,7 +81,7 @@ public actor inboxController {
             
             let profileMap = Dictionary(uniqueKeysWithValues: profiles.map { ($0.profileId, $0) })
                     
-            var results: [(conversation: conversationData, profile: profile)] = []
+            var results: [(conversation: conversationData, profile: profile?)] = []
             
             for inbox in inboxes {
                 // get the other user
@@ -105,7 +105,7 @@ public actor inboxController {
                 }
                 
                 // match the user with a Profile
-                if let matchedProfile = profileMap[firstParticipant.profileId] {
+                if let matchedProfile = profileMap["\(firstParticipant.profileId)"] {
                     if let onlineNowOnly, onlineNowOnly == true, let onlineUntil = matchedProfile.onlineUntil {
                         guard onlineUntil > Date().addingTimeInterval(-600) else { continue }
                     }
@@ -131,10 +131,22 @@ public actor inboxController {
                     }
                     
                     results.append((conversation: inbox, profile: matchedProfile))
+                } else {
+                    results.append((conversation: inbox, profile: nil))
                 }
             }
             
-            return results
+            let sortedResults = results.sorted { lhs, rhs in
+                if let pinnedAtTop, pinnedAtTop == true {
+                    if lhs.conversation.pinned != rhs.conversation.pinned {
+                        return lhs.conversation.pinned
+                    }
+                }
+                
+                return lhs.conversation.lastActivityTimestamp > rhs.conversation.lastActivityTimestamp
+            }
+            
+            return sortedResults
         } catch {
             await errorManager.shared.error("inboxController", "Failed to fetch inbox: \(error)")
             return nil
