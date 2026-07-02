@@ -93,6 +93,7 @@ public actor profileController {
             if !isNetworkError {
                 await errorManager.shared.warn("profileController", "Failed to fetch profile image: \(error)")
             }
+            return nil
         }
     }
 }
