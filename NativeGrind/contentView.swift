@@ -93,15 +93,15 @@ struct contentView: View {
                     .tag(protectedRoute.browse)
                     
                     NavigationStack(path: $router.protectedPath) {
-                        protectedRoute.messages
+                        protectedRoute.inbox
                             .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
-                        Label("Messages", systemImage: "bubble.left.and.bubble.right")
+                        Label("Inbox", systemImage: "bubble.left.and.bubble.right")
                     }
-                    .tag(protectedRoute.messages)
+                    .tag(protectedRoute.inbox)
                 }
                 .accentColor(.blue) // Changes the active tab highlight color
                 
