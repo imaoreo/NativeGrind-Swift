@@ -105,17 +105,22 @@ struct inboxControllerTests {
         try await TestSerializer.shared.run {
             setupTestState()
             let controller = inboxController.shared
+            keychainManager.shared.saveToken("mock-session", type: .sessionId)
             
             let config = URLSessionConfiguration.ephemeral
             config.protocolClasses = [MockURLProtocol.self]
             await APIClient.shared.setMockSession(URLSession(configuration: config))
             
             MockURLProtocol.shared.handler = { request in
-                let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
-                return (response, Data())
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                let badJSON = "this is obviously not valid json".data(using: .utf8)!
+                return (response, badJSON)
             }
             
-            defer { MockURLProtocol.shared.handler = nil }
+            defer {
+                MockURLProtocol.shared.handler = nil
+                keychainManager.shared.deleteToken(type: .sessionId)
+            }
             
             _ = await controller.fetchInboxes(depth: 1)
             
