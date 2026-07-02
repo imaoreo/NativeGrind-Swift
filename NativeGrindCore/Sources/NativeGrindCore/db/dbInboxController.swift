@@ -130,4 +130,11 @@ public actor dbInboxController {
         // commit changes
         try context.save()
     }
+    
+    public func clearDatabase() throws {
+        let context = modelContext
+        try context.delete(model: dbInbox.self)
+        try context.delete(model: dbInboxDiff.self)
+        try context.save()
+    }
 }
