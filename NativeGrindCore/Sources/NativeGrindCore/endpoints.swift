@@ -293,4 +293,17 @@ public extension endpoint {
             networkHandlers: []
         )
     }
+    
+    // Images
+    
+    static func getProfileImage(size: imageSizes, mediaHash: String) -> endpoint<Data> {
+        return endpoint<Data>(
+            path: "/images/profile/\(size.rawValue)/\(mediaHash)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: []
+        )
+    }
 }

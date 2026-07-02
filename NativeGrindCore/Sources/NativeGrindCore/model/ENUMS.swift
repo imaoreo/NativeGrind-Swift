@@ -212,3 +212,10 @@ public enum ageVerificationMethods: String, Codable, Sendable {
     case faceRecognition = "FACE_RECOGNITION"
     case documentVerification = "DOCUMENT_VERIFICATION"
 }
+
+public enum imageSizes: String, Codable, Sendable {
+    case size2048 = "2048x2048"
+    case size1024 = "1024x1024"
+    case size480 = "480x480"
+    case size320 = "320x320"
+}
