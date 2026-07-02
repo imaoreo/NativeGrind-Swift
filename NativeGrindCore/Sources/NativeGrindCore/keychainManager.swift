@@ -13,11 +13,12 @@ public enum keyType: String, Decodable, Sendable {
     case sessionId = "sessionId"
     case isEmail = "isEmail"
     case data = "data" // for email this is the email for third party this is the thirdparty user id
+    case keyId = "keyId" // used for NativeGrindServer
 }
 
-public final class keychainManager {
+public final class keychainManager: @unchecked Sendable {
     
-    @MainActor public static let shared = keychainManager()
+    public static let shared = keychainManager()
     let service = "dev.imaoreo.NativeGrind"
     
     private let lock = NSLock()
