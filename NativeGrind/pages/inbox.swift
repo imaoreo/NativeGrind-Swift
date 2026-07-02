@@ -69,9 +69,6 @@ struct inboxView: View {
                     .listRowBackground(Color.clear)
                 }
                 .listStyle(.plain)
-                .refreshable {
-                    await loadInboxData()
-                }
             } else {
                 List {
                     Text("Inbox")
@@ -86,9 +83,6 @@ struct inboxView: View {
                     }
                 }
                 .listStyle(.plain)
-                .refreshable {
-                    await loadInboxData()
-                }
             }
             #else
             if isLoading && items.isEmpty {
@@ -114,8 +108,10 @@ struct inboxView: View {
         }
         #if os(iOS)
         .navigationTitle("")
-        .toolbarBackground(.hidden, for: .navigationBar)
         .ignoresSafeArea(.container, edges: .top)
+        .refreshable {
+            await loadInboxData()
+        }
         #else
         .navigationTitle("Inbox")
         #endif
