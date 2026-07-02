@@ -35,27 +35,24 @@ struct inboxView: View {
     var body: some View {
         VStack(spacing: 0) {
             #if os(iOS)
-            if isLoading && items.isEmpty {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Inbox")
-                        .font(.largeTitle.bold())
-                        .padding(.horizontal, 16)
-                        .padding(.top, 60)
-                        .padding(.bottom, 8)
-                    
-                    Spacer()
-                    ProgressView()
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    Spacer()
+            List {
+                Text("Inbox")
+                    .font(.largeTitle.bold())
+                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                
+                if isLoading && items.isEmpty {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.top, 20)
+                        Spacer()
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
-            } else if items.isEmpty {
-                List {
-                    Text("Inbox")
-                        .font(.largeTitle.bold())
-                        .listRowInsets(EdgeInsets(top: 60, leading: 16, bottom: 8, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    
+                else if items.isEmpty {
                     VStack {
                         Spacer()
                         Text("No conversations")
@@ -68,22 +65,15 @@ struct inboxView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }
-                .listStyle(.plain)
-            } else {
-                List {
-                    Text("Inbox")
-                        .font(.largeTitle.bold())
-                        .listRowInsets(EdgeInsets(top: 60, leading: 16, bottom: 8, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    
+                else {
                     ForEach(items) { item in
                         inboxRow(conversation: item.conversation, profile: item.profile)
                             .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                     }
                 }
-                .listStyle(.plain)
             }
+            .listStyle(.plain)
+            
             #else
             if isLoading && items.isEmpty {
                 Spacer()
@@ -107,8 +97,7 @@ struct inboxView: View {
             #endif
         }
         #if os(iOS)
-        .navigationTitle("")
-        .ignoresSafeArea(.container, edges: .top)
+        .toolbar(.hidden, for: .navigationBar)
         .refreshable {
             await loadInboxData()
         }
