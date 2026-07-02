@@ -47,6 +47,7 @@ struct inboxView: View {
                 } else {
                     List(items) { item in
                         inboxRow(conversation: item.conversation, profile: item.profile)
+                            .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                     }
                     .listStyle(.plain)
                 }
@@ -155,6 +156,5 @@ struct inboxRow: View {
                     .lineLimit(1)
             }
         }
-        .padding(.vertical, 8)
     }
 }
