@@ -167,7 +167,11 @@ public extension endpoint {
         ]
         
         // Removes ones that are nil
-        let filteredBody = rawBody.compactMapValues { $0 }
+        var filteredBody: [String: Any]? = rawBody.compactMapValues { $0 }
+        
+        if filteredBody?.isEmpty == true {
+            filteredBody = nil
+        }
         
         return endpoint<inboxResponse>(
             path: "/v3/inbox",
