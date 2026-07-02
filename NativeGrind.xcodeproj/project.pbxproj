@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AF92FDF8331006DFD1F /* GoogleSignIn */; };
 		F8A33AFC2FDF8331006DFD1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, macos, ); productRef = F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */; };
+		F8A8E0992FF7048000919039 /* NativeGrindServer in Frameworks */ = {isa = PBXBuildFile; productRef = F8A8E0982FF7048000919039 /* NativeGrindServer */; };
 		F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B592FDF6328009A8974 /* NativeGrindCore */; };
 		F8AF4B5C2FDF6330009A8974 /* NativeGrindCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8AF4B5B2FDF6330009A8974 /* NativeGrindCore */; };
 		F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */; };
@@ -32,6 +33,7 @@
 		F8AF4B582FDF62F6009A8974 /* NativeGrindCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NativeGrindCore; sourceTree = "<group>"; };
 		F8BEB9A72FE4523600E9D5D5 /* WatchNativeGrind Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNativeGrind Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8F845912FF5AE6700E6575E /* Tests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tests.xctestplan; sourceTree = "<group>"; };
+		F8F845DF2FF6FEC300E6575E /* NativeGrindServer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NativeGrindServer; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -69,6 +71,7 @@
 				F8AF4B5A2FDF6328009A8974 /* NativeGrindCore in Frameworks */,
 				F8A33AFA2FDF8331006DFD1F /* GoogleSignIn in Frameworks */,
 				F8BEB9C02FE4629800E9D5D5 /* FacebookCore in Frameworks */,
+				F8A8E0992FF7048000919039 /* NativeGrindServer in Frameworks */,
 			);
 		};
 		F8B876B82FDA4DB50027450C /* Frameworks */ = {
@@ -83,6 +86,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				F8F845DF2FF6FEC300E6575E /* NativeGrindServer */,
 				F8F845912FF5AE6700E6575E /* Tests.xctestplan */,
 				F8AF4B582FDF62F6009A8974 /* NativeGrindCore */,
 				000000000000000000000010 /* NativeGrind */,
@@ -140,6 +144,7 @@
 				F8A33AFB2FDF8331006DFD1F /* GoogleSignInSwift */,
 				F8BEB9BF2FE4629800E9D5D5 /* FacebookCore */,
 				F8BEB9C12FE4629800E9D5D5 /* FacebookLogin */,
+				F8A8E0982FF7048000919039 /* NativeGrindServer */,
 			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* NativeGrind.app */;
@@ -629,6 +634,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F8A33AF82FDF8331006DFD1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		F8A8E0982FF7048000919039 /* NativeGrindServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NativeGrindServer;
 		};
 		F8AF4B592FDF6328009A8974 /* NativeGrindCore */ = {
 			isa = XCSwiftPackageProductDependency;
