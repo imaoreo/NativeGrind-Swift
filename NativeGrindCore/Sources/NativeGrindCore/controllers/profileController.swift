@@ -12,7 +12,7 @@ public actor profileController {
     
     private init() {
         do {
-            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
+            let config = ModelConfiguration("profile", isStoredInMemoryOnly: appEnvironment.isTesting)
             let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
             self.dbController = dbProfileController(modelContainer: container)
         } catch {

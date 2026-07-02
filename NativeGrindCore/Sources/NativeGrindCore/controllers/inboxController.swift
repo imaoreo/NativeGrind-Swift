@@ -12,7 +12,7 @@ public actor inboxController {
     
     private init() {
         do {
-            let config = ModelConfiguration(isStoredInMemoryOnly: appEnvironment.isTesting)
+            let config = ModelConfiguration("inbox", isStoredInMemoryOnly: appEnvironment.isTesting)
             let container = try ModelContainer(for: dbInbox.self, dbInboxDiff.self, configurations: config)
             self.dbController = dbInboxController(modelContainer: container)
         } catch {
