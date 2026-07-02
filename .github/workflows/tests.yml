@@ -20,4 +20,4 @@ jobs:
 
     - name: Run Swift Tests
       working-directory: ./NativeGrindCore
-      run: swift test
+      run: swift test --jobs 1
