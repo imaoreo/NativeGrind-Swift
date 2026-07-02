@@ -40,12 +40,12 @@ public struct conversationData: Codable, Sendable {
 }
 
 public struct conversationParticipant: Codable, Sendable {
-    public let profileId: String
-    public let primaryMediaHash: String
-    public let lastOnline: String
-    public let onlineUntil: String
-    public let distanceMetres: Double
-    public let position: [sexualPosition]
+    public let profileId: Int
+    public let primaryMediaHash: String?
+    public let lastOnline: Int?
+    public let onlineUntil: Int?
+    public let distanceMetres: Double?
+    public let position: sexualPosition?
     public let isInAList: Bool
     public let hasDatingPotential: Bool
 }
@@ -54,14 +54,14 @@ public struct conversationPreview: Codable, Sendable {
     public let conversationId: conversationIdObject
     public let messageId: String
     public let chat1MessageId: String // UUIDv4
-    public let senderId: String
+    public let senderId: Int
     public let type: messageType
     public let chat1Type: chat1MessageType
     public let text: String?
     public let url: String?
     public let lat: String?
     public let lon: String?
-    public let albumId: String?
+    public let albumId: Int?
     public let albumContentId: String?
     public let albumContentReply: String?
     public let duration: String?
