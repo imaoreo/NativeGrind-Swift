@@ -219,3 +219,8 @@ public enum imageSizes: String, Codable, Sendable {
     case size480 = "480x480"
     case size320 = "320x320"
 }
+
+public enum baseURL: String, Codable, Sendable {
+    case main = "https://grindr.mobi"
+    case cdn = "https://cdns.grindr.com"
+}

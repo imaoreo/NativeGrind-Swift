@@ -16,13 +16,10 @@ public struct endpoint<Response: Decodable> {
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
     public let shouldRetryOn401: Bool
-    
-    private var baseURL: String {
-        return "https://grindr.mobi"
-    }
+    public let baseURL: baseURL
     
     public var fullURLString: String {
-        return baseURL + path
+        return baseURL.rawValue + path
     }
     
     public init(
@@ -32,7 +29,8 @@ public struct endpoint<Response: Decodable> {
         body: [String: Any]? = nil,
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
-        shouldRetryOn401: Bool = true
+        shouldRetryOn401: Bool = true,
+        baseURL: baseURL = .main
     ) {
         self.path = path
         self.method = method
@@ -41,6 +39,7 @@ public struct endpoint<Response: Decodable> {
         self.isAuthedRoute = isAuthedRoute
         self.networkHandlers = networkHandlers
         self.shouldRetryOn401 = shouldRetryOn401
+        self.baseURL = baseURL
     }
 }
 
@@ -303,7 +302,8 @@ public extension endpoint {
             queryItems: nil,
             body: nil,
             isAuthedRoute: false,
-            networkHandlers: []
+            networkHandlers: [],
+            baseURL: .cdn
         )
     }
 }
