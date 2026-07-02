@@ -306,4 +306,33 @@ public extension endpoint {
             baseURL: .cdn
         )
     }
+    
+    // Native Servers
+    static func getChallengeForCheck() -> endpoint<challengeResponse> {
+        return endpoint<challengeResponse>(
+            path: "/v1/challenge",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer
+        )
+    }
+    
+    static func giveChallengeForCheck(keyId: String, attestation: String, challenge: String) -> endpoint<challengeCheckedResponse> {
+        return endpoint<challengeCheckedResponse>(
+            path: "/v1/challenge",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "keyId": keyId,
+                "attestation": attestation,
+                "challenge": challenge
+            ],
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer
+        )
+    }
 }
