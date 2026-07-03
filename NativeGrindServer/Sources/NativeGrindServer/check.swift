@@ -12,10 +12,8 @@ import NativeGrindCore
 
 public func performNativeServerChecks() async {
     #if os(macOS) || targetEnvironment(simulator) || targetEnvironment(macCatalyst)
-        await errorManager.shared.warn("NativeGrindServer", "App Attest is not supported on this platform/environment")
-        return
-    #endif
-
+    await errorManager.shared.warn("NativeGrindServer", "App Attest is not supported on this platform/environment")
+    #else
     if ProcessInfo.processInfo.isiOSAppOnMac {
         await errorManager.shared.warn("NativeGrindServer", "App Attest is not supported on Mac")
         return
@@ -51,4 +49,5 @@ public func performNativeServerChecks() async {
     } catch {
         await errorManager.shared.warn("NativeGrindServer", "Attestation failed: \(error)")
     }
+    #endif
 }

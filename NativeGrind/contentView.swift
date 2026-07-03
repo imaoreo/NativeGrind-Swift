@@ -43,6 +43,9 @@ struct myApp: App {
     #endif
     
     init() {
+        #if canImport(NativeGrindServer)
+        registerBodySigner()
+        #endif
         Task {
             await APIClient.shared.setup(
                 timezone: "Europe/London",

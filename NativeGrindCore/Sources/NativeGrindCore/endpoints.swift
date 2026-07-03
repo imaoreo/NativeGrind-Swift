@@ -17,6 +17,7 @@ public struct endpoint<Response: Decodable> {
     public let networkHandlers: [networkHandler]
     public let shouldRetryOn401: Bool
     public let baseURL: baseURL
+    public let shouldSignBody: Bool // This is NativeServer option only
     
     public var fullURLString: String {
         return baseURL.rawValue + path
@@ -30,7 +31,8 @@ public struct endpoint<Response: Decodable> {
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
         shouldRetryOn401: Bool = true,
-        baseURL: baseURL = .main
+        baseURL: baseURL = .main,
+        shouldSignBody: Bool = false
     ) {
         self.path = path
         self.method = method
@@ -40,6 +42,7 @@ public struct endpoint<Response: Decodable> {
         self.networkHandlers = networkHandlers
         self.shouldRetryOn401 = shouldRetryOn401
         self.baseURL = baseURL
+        self.shouldSignBody = shouldSignBody
     }
 }
 
