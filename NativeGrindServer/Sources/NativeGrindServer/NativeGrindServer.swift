@@ -3,7 +3,7 @@ import DeviceCheck
 import CryptoKit
 import NativeGrindCore
 
-public func signNativeBody(_ bodyData: Data?, url: String) async throws -> DeviceAssertion? {
+public func signNativeBody(_ bodyData: Data?, url: String) async throws -> deviceAssertion? {
     #if !os(macOS) && !targetEnvironment(simulator) && !targetEnvironment(macCatalyst)
     let service = DCAppAttestService.shared
     let keyId = await MainActor.run {

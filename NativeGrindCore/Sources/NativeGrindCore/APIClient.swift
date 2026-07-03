@@ -18,7 +18,7 @@ public enum HTTPMethod: String, Sendable, Codable {
 public actor APIClient {
     public static let shared = APIClient()
     
-    @MainActor public static var bodySigner: (@Sendable (Data?, String) async throws -> DeviceAssertion?)? = nil
+    @MainActor public static var bodySigner: (@Sendable (Data?, String) async throws -> deviceAssertion?)? = nil
     
     init() {}
     
@@ -156,7 +156,7 @@ public actor APIClient {
                         request.setValue("true", forHTTPHeaderField: "X-Device-Attest-Unsupported")
                     }
                 } catch {
-                    print("Request body signing failed: \(error)")
+                    await errorManager.shared.error("APIClient", "Request body signing failed: \(error)")
                     request.setValue("true", forHTTPHeaderField: "X-Device-Attest-Unsupported")
                 }
             } else {

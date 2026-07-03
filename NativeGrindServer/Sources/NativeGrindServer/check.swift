@@ -36,7 +36,7 @@ public func performNativeServerChecks() async {
         
         let attestationObject = try await service.attestKey(keyId, clientDataHash: challengeHash)
         
-        guard let challenge = try await APIClient.shared.request(.giveChallengeForCheck(
+        guard let checkedResponse = try await APIClient.shared.request(.giveChallengeForCheck(
             keyId: keyId,
             attestation: attestationObject.base64EncodedString(),
             challenge: challenge.challenge
@@ -45,7 +45,7 @@ public func performNativeServerChecks() async {
             return
         }
         
-        keychainManager.shared.saveToken(challenge.keyId, type: .keyId)
+        keychainManager.shared.saveToken(checkedResponse.keyId, type: .keyId)
     } catch {
         await errorManager.shared.warn("NativeGrindServer", "Attestation failed: \(error)")
     }

@@ -15,7 +15,7 @@ public struct challengeCheckedResponse: Codable, Sendable {
     public let keyId: String
 }
 
-public struct DeviceAssertion: Codable, Sendable {
+public struct deviceAssertion: Codable, Sendable {
     public let assertion: String
     public let keyId: String
     public let challenge: String
