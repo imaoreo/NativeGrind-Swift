@@ -338,4 +338,17 @@ public extension endpoint {
             baseURL: .nativeServer
         )
     }
+    
+    static func checkChallengeHealth() -> endpoint<challengeHealthResponse> {
+        return endpoint<challengeHealthResponse>(
+            path: "/api/v1/challenge/health",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer,
+            shouldSignBody: true
+        )
+    }
 }

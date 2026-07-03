@@ -26,3 +26,8 @@ public struct DeviceAssertion: Codable, Sendable {
         self.challenge = challenge
     }
 }
+
+public struct challengeHealthResponse: Codable, Sendable {
+    public let status: String
+    public let message: String
+}
