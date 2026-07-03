@@ -5,13 +5,26 @@
 //  Created by Jay Brammeld on 02/07/2026.
 //
 
+import Foundation
 import DeviceCheck
 import CryptoKit
 import NativeGrindCore
 
-func performNativeServerChecks() async {
+public func performNativeServerChecks() async {
+    #if os(macOS) || targetEnvironment(simulator) || targetEnvironment(macCatalyst)
+        await errorManager.shared.warn("NativeGrindServer", "App Attest is not supported on this platform/environment")
+        return
+    #endif
+
+    if ProcessInfo.processInfo.isiOSAppOnMac {
+        await errorManager.shared.warn("NativeGrindServer", "App Attest is not supported on Mac")
+        return
+    }
     let service = DCAppAttestService.shared
-    guard service.isSupported else { return }
+    guard service.isSupported else {
+        await errorManager.shared.warn("NativeGrindServer", "Client not supported")
+        return
+    }
 
     do {
         guard let challenge = try await APIClient.shared.request(.getChallengeForCheck()) else {
