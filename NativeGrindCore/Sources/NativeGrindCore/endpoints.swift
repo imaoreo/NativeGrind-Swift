@@ -17,6 +17,7 @@ public struct endpoint<Response: Decodable> {
     public let networkHandlers: [networkHandler]
     public let shouldRetryOn401: Bool
     public let baseURL: baseURL
+    public let shouldSignBody: Bool // This is NativeServer option only
     
     public var fullURLString: String {
         return baseURL.rawValue + path
@@ -30,7 +31,8 @@ public struct endpoint<Response: Decodable> {
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
         shouldRetryOn401: Bool = true,
-        baseURL: baseURL = .main
+        baseURL: baseURL = .main,
+        shouldSignBody: Bool = false
     ) {
         self.path = path
         self.method = method
@@ -40,6 +42,7 @@ public struct endpoint<Response: Decodable> {
         self.networkHandlers = networkHandlers
         self.shouldRetryOn401 = shouldRetryOn401
         self.baseURL = baseURL
+        self.shouldSignBody = shouldSignBody
     }
 }
 
@@ -304,6 +307,48 @@ public extension endpoint {
             isAuthedRoute: false,
             networkHandlers: [],
             baseURL: .cdn
+        )
+    }
+    
+    // Native Servers
+    static func getChallengeForCheck() -> endpoint<challengeResponse> {
+        return endpoint<challengeResponse>(
+            path: "/api/v1/challenge",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer
+        )
+    }
+    
+    static func giveChallengeForCheck(keyId: String, attestation: String, challenge: String) -> endpoint<challengeCheckedResponse> {
+        return endpoint<challengeCheckedResponse>(
+            path: "/api/v1/challenge",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "keyId": keyId,
+                "attestation": attestation,
+                "challenge": challenge
+            ],
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer
+        )
+    }
+    
+    static func checkChallengeHealth() -> endpoint<challengeHealthResponse> {
+        return endpoint<challengeHealthResponse>(
+            path: "/api/v1/challenge/health",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            baseURL: .nativeServer,
+            shouldSignBody: true
         )
     }
 }
