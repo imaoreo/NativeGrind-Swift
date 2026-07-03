@@ -223,5 +223,5 @@ public enum imageSizes: String, Codable, Sendable {
 public enum baseURL: String, Codable, Sendable {
     case main = "https://grindr.mobi"
     case cdn = "https://cdns.grindr.com"
-    case nativeServer = "https://nativeServer.imaoreo.dev"
+    case nativeServer = "https://nativeserver.imaoreo.dev"
 }
