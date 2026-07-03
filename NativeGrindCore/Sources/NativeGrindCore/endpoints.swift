@@ -310,7 +310,7 @@ public extension endpoint {
     // Native Servers
     static func getChallengeForCheck() -> endpoint<challengeResponse> {
         return endpoint<challengeResponse>(
-            path: "/v1/challenge",
+            path: "/api/v1/challenge",
             method: .get,
             queryItems: nil,
             body: nil,
@@ -322,7 +322,7 @@ public extension endpoint {
     
     static func giveChallengeForCheck(keyId: String, attestation: String, challenge: String) -> endpoint<challengeCheckedResponse> {
         return endpoint<challengeCheckedResponse>(
-            path: "/v1/challenge",
+            path: "/api/v1/challenge",
             method: .post,
             queryItems: nil,
             body: [
