@@ -101,4 +101,29 @@ struct endpointTests {
         #expect(loginEndpoint.isAuthedRoute == false)
         #expect(refreshEndpoint.isAuthedRoute == false)
     }
+    
+    @Test("Verifies challenge attestation and health endpoints configure correctly")
+    func testNativeServerChallengeEndpoints() {
+        let challengeEndpoint: endpoint<challengeResponse> = .getChallengeForCheck()
+        let submitEndpoint: endpoint<challengeCheckedResponse> = .giveChallengeForCheck(
+            keyId: "test-key-id",
+            attestation: "test-attestation",
+            challenge: "test-challenge"
+        )
+        let healthEndpoint: endpoint<challengeHealthResponse> = .checkChallengeHealth()
+        
+        #expect(challengeEndpoint.fullURLString == "https://nativeserver.imaoreo.dev/api/v1/challenge")
+        #expect(challengeEndpoint.method == .get)
+        #expect(challengeEndpoint.isAuthedRoute == false)
+        
+        #expect(submitEndpoint.fullURLString == "https://nativeserver.imaoreo.dev/api/v1/challenge")
+        #expect(submitEndpoint.method == .post)
+        #expect(submitEndpoint.body?["keyId"] as? String == "test-key-id")
+        #expect(submitEndpoint.body?["attestation"] as? String == "test-attestation")
+        #expect(submitEndpoint.body?["challenge"] as? String == "test-challenge")
+        
+        #expect(healthEndpoint.fullURLString == "https://nativeserver.imaoreo.dev/api/v1/challenge/health")
+        #expect(healthEndpoint.method == .post)
+        #expect(healthEndpoint.shouldSignBody == true)
+    }
 }
