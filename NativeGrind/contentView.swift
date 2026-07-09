@@ -89,7 +89,7 @@ struct myApp: App {
         Settings {
             if #available(macOS 15.0, *) {
                 TabView {
-                    Tab("Debug", systemImage: "gear") {
+                    Tab("Debug", systemImage: "ladybug") {
                         debugSettingsView()
                     }
                     Tab("Privacy & Security", systemImage: "star") {
@@ -150,7 +150,7 @@ struct contentView: View {
                             }
                     }
                     .tabItem {
-                        Label("Settings", systemImage: "bubble.left.and.bubble.right")
+                        Label("Settings", systemImage: "gear")
                     }
                     .tag(protectedRoute.settings)
                     #endif

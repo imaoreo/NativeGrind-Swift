@@ -15,7 +15,7 @@ struct settingsView: View {
                     NavigationLink {
                         debugSettingsView()
                     } label: {
-                        Label("Debug", systemImage: "person.crop.circle")
+                        Label("Debug", systemImage: "ladybug")
                     }
                     
                     NavigationLink {
