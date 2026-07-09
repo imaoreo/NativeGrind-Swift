@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// The generic container that binds a network route to a specific response model.
 public struct endpoint<Response: Decodable> {
     public let path: String
     public let method: HTTPMethod
@@ -46,7 +45,6 @@ public struct endpoint<Response: Decodable> {
     }
 }
 
-/// Routes with their corresponding response models.
 public extension endpoint {
     
     // Auth Routes
@@ -116,7 +114,7 @@ public extension endpoint {
     }
     
     // Public
-    static var getGenders: endpoint<[gender]> {
+    static func getGenders() -> endpoint<[gender]> {
         return endpoint<[gender]>(
             path: "/public/v2/genders",
             method: .get,
@@ -127,7 +125,7 @@ public extension endpoint {
         )
     }
     
-    static var getPronouns: endpoint<[pronoun]> {
+    static func getPronouns() -> endpoint<[pronoun]> {
         return endpoint<[pronoun]>(
             path: "/public/v1/pronouns",
             method: .get,
