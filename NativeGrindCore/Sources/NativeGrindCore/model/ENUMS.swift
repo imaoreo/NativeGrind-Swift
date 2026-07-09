@@ -225,3 +225,8 @@ public enum baseURL: String, Codable, Sendable {
     case cdn = "https://cdns.grindr.com"
     case nativeServer = "https://nativeserver.imaoreo.dev"
 }
+
+public enum wsDomain: String, Codable, Sendable {
+    case main = "wss://grindr.mobi/v1/ws"
+    case nativeServer = "wss://nativeserver.imaoreo.dev/ws"
+}
