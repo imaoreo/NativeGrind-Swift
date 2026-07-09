@@ -14,25 +14,53 @@ public final class wsController: ObservableObject {
     
     private var webSocketTasks: [wsDomain: URLSessionWebSocketTask] = [:]
     private var session: URLSession
+    private var pingTimer: Task<Void, Never>?
     
     public let incomingDataPublisher = PassthroughSubject<(domain: wsDomain, data: Data), Never>()
     
     @Published public private(set) var connectedDomains: Set<wsDomain> = []
     
-    public init(session: URLSession = .shared) {
+    public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
+    }
+    
+    public func connect(to domain: wsDomain) {
+        guard let url = URL(string: domain.rawValue) else { return }
+        connect(to: url, for: domain)
     }
     
     public func connect(to url: URL, for domain: wsDomain) {
         guard webSocketTasks[domain] == nil else { return }
         
-        let task = session.webSocketTask(with: url)
+        var targetUrl = url
+        if domain == .nativeServer {
+            if let apiKey = keychainManager.shared.getToken(type: .apiKey) {
+                if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+                    components.queryItems = [URLQueryItem(name: "apiKey", value: apiKey)]
+                    if let newUrl = components.url {
+                        targetUrl = newUrl
+                    }
+                }
+            }
+        }
+        
+        var request = URLRequest(url: targetUrl)
+        
+        if domain == .main {
+            request.setValue("Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)", forHTTPHeaderField: "User-Agent")
+            if let sessionId = keychainManager.shared.getToken(type: .sessionId) {
+                request.setValue("Grindr3 \(sessionId)", forHTTPHeaderField: "Authorization")
+            }
+        }
+        
+        let task = session.webSocketTask(with: request)
         webSocketTasks[domain] = task
         task.resume()
         
         connectedDomains.insert(domain)
         
         listen(to: domain)
+        startPingTimer()
     }
     
     public func disconnect(domain: wsDomain? = nil) {
@@ -46,6 +74,10 @@ public final class wsController: ObservableObject {
             }
             webSocketTasks.removeAll()
             connectedDomains.removeAll()
+        }
+        
+        if webSocketTasks.isEmpty {
+            stopPingTimer()
         }
     }
     
@@ -83,7 +115,27 @@ public final class wsController: ObservableObject {
                 Task { @MainActor in
                     errorManager.shared.log("wsController","WebSocket Receive Error for \(domain): \(error.localizedDescription)")
                     self.disconnect(domain: domain)
+                    self.scheduleReconnect(for: domain)
                 }
+            }
+        }
+    }
+    
+    private func scheduleReconnect(for domain: wsDomain) {
+        if domain == .main {
+            guard sessionManager.shared.isAuthenticated else { return }
+        }
+        
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                guard self.connectedDomains.contains(domain) == false else { return }
+                if domain == .main {
+                    guard sessionManager.shared.isAuthenticated else { return }
+                }
+                
+                errorManager.shared.log("wsController", "Attempting auto-reconnect for \(domain)...")
+                self.connect(to: domain)
             }
         }
     }
@@ -101,6 +153,35 @@ public final class wsController: ObservableObject {
                 
             @unknown default:
                 errorManager.shared.log("wsController","Unknown WebSocket message type received from \(domain).")
+            }
+        }
+    }
+    
+    private func startPingTimer() {
+        guard pingTimer == nil else { return }
+        pingTimer = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
+                guard !Task.isCancelled else { break }
+                
+                sendPings()
+            }
+        }
+    }
+    
+    private func stopPingTimer() {
+        pingTimer?.cancel()
+        pingTimer = nil
+    }
+    
+    private func sendPings() {
+        for (domain, task) in webSocketTasks {
+            task.sendPing { [weak self] error in
+                if let error = error {
+                    Task { @MainActor in
+                        errorManager.shared.log("wsController", "Ping failed for \(domain): \(error.localizedDescription)")
+                    }
+                }
             }
         }
     }
