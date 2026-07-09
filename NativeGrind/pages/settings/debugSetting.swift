@@ -1,5 +1,5 @@
 //
-//  debugPage.swift
+//  debugSetting.swift
 //  NativeGrind
 //
 //  Created by Jay Brammeld on 09/07/2026.
@@ -11,7 +11,7 @@ enum NotifyMeAboutType: String, Hashable {
     case directMessages, mentions, anything
 }
 
-struct debugSettingsView: View {
+struct debugSettingView: View {
     @State private var notifyMeAbout: NotifyMeAboutType = .anything
     @State private var playNotificationSounds = true
     @State private var sendReadReceipts = false
