@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import NativeGrindCore
 
 #if canImport(NativeGrindServer)
@@ -68,6 +69,20 @@ struct myApp: App {
             }
             #endif
         }
+        
+        Task { @MainActor in
+            #if canImport(NativeGrindServer)
+                wsController.shared.connect(to: .nativeServer)
+            #endif
+            
+            for await isAuthenticated in sessionManager.shared.$isAuthenticated.values {
+                if isAuthenticated {
+                    wsController.shared.connect(to: .main)
+                } else {
+                    wsController.shared.disconnect(domain: .main)
+                }
+            }
+        }
     }
     
     var body: some Scene {
@@ -90,10 +105,10 @@ struct myApp: App {
             if #available(macOS 15.0, *) {
                 TabView {
                     Tab("Debug", systemImage: "ladybug") {
-                        debugSettingsView()
+                        debugSettingView()
                     }
                     Tab("Privacy & Security", systemImage: "star") {
-                        privacySettingsView()
+                        privacySettingView()
                     }
                 }
                 .frame(width: 450, height: 400)
