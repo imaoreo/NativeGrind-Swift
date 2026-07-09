@@ -3,8 +3,18 @@ name: Swift Tests
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docs/**'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docs/**'
 
 jobs:
   test:
