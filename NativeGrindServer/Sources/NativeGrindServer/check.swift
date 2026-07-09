@@ -45,7 +45,7 @@ public func performNativeServerChecks() async {
             return
         }
         
-        keychainManager.shared.saveToken(checkedResponse.keyId, type: .keyId)
+        keychainManager.shared.saveToken(checkedResponse.keyId ?? keyId, type: .keyId)
     } catch {
         await errorManager.shared.warn("NativeGrindServer", "Attestation failed: \(error)")
     }
