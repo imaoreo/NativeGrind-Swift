@@ -14,7 +14,7 @@ struct endpointTests {
     
     @Test("Verifies fullURLString correctly appends path to the base URL")
     func testFullURLStringGeneration() {
-        let testEndpoint: endpoint<[gender]> = .getGenders
+        let testEndpoint: endpoint<[gender]> = .getGenders()
         
         #expect(testEndpoint.fullURLString == "https://grindr.mobi/public/v2/genders")
         #expect(testEndpoint.method == .get)
