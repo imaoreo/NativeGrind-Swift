@@ -22,11 +22,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Select Latest Xcode
+      - name: Select Xcode Version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 'latest' 
+          
+      - name: Verify Toolchain
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$XCODE_PATH" ]; then sudo xcode-select -s "$XCODE_PATH"; fi
           xcodebuild -version
+          swift --version
 
       - name: Clear Previous Build Artifacts
         run: rm -rf ./docs-out && mkdir -p ./docs-out
@@ -45,7 +49,17 @@ jobs:
           fi
           xcrun docc process-archive transform-for-static-hosting "$APP_ARCHIVE" --output-path ./docs-out/app --hosting-base-path "${{ github.event.repository.name }}/app"
 
-      # NativeGrindCore
+      - name: Build Docs for NativeGrindServer
+        run: |
+          set -euo pipefail
+          xcodebuild docbuild -scheme "NativeGrindServer" -derivedDataPath ./build/NativeGrindServer CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          SERVER_ARCHIVE=$(find ./build/NativeGrindServer -type d -name "NativeGrindServer.doccarchive" | head -1)
+          if [ -z "${SERVER_ARCHIVE:-}" ] || [ ! -d "$SERVER_ARCHIVE" ]; then
+            echo "NativeGrindServer.doccarchive not found"
+            exit 1
+          fi
+          xcrun docc process-archive transform-for-static-hosting "$SERVER_ARCHIVE" --output-path ./docs-out/server --hosting-base-path "${{ github.event.repository.name }}/server"
+
       - name: Build Docs for NativeGrindCore
         run: |
           set -euo pipefail
@@ -57,7 +71,6 @@ jobs:
           fi
           xcrun docc process-archive transform-for-static-hosting "$CORE_ARCHIVE" --output-path ./docs-out/core --hosting-base-path "${{ github.event.repository.name }}/core"
 
-      # NativeGrind Watch
       - name: Build Docs for NativeGrind Watch
         run: |
           set -euo pipefail
@@ -72,15 +85,17 @@ jobs:
           fi
           xcrun docc process-archive transform-for-static-hosting "$WATCH_ARCHIVE" --output-path ./docs-out/watch --hosting-base-path "${{ github.event.repository.name }}/watch"
 
-      # Landing Page
       - name: Create Root Landing Page
         run: |
           APP_DOC_PATH=$(find ./docs-out/app/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/app||')
           CORE_DOC_PATH=$(find ./docs-out/core/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/core||')
+          SERVER_DOC_PATH=$(find ./docs-out/server/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/server||')
+          WATCH_DOC_PATH=$(find ./docs-out/watch/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/watch||')
 
           APP_HREF="${APP_DOC_PATH:-/documentation/nativegrind}"
           CORE_HREF="${CORE_DOC_PATH:-/documentation/nativegrindcore}"
-          WATCH_HREF="/documentation/watchnativegrind_watch_app"
+          WATCH_HREF="${WATCH_DOC_PATH:-/documentation/watchnativegrind_watch_app}"
+          SERVER_HREF="${SERVER_DOC_PATH:-/documentation/nativegrindserver}"
 
           cat << EOF > ./docs-out/index.html
           <!DOCTYPE html>
@@ -102,6 +117,7 @@ jobs:
                   <h1>NativeGrind Documentation Portal</h1>
                 <a class="card" href="./app${APP_HREF}">NativeGrind iOS App Docs</a>
                 <a class="card" href="./core${CORE_HREF}">NativeGrindCore Framework Docs</a>
+                <a class="card" href="./server${SERVER_HREF}">NativeGrindServer Docs</a>
                 <a class="card" href="./watch${WATCH_HREF}">NativeGrind Watch Docs</a>
               </div>
           </body>
