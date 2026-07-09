@@ -29,7 +29,7 @@ public func signNativeBody(_ bodyData: Data?, url: String) async throws -> devic
     
     let assertion = try await service.generateAssertion(keyId, clientDataHash: clientDataHash)
     
-    return DeviceAssertion(
+    return deviceAssertion(
         assertion: assertion.base64EncodedString(),
         keyId: keyId,
         challenge: challenge
