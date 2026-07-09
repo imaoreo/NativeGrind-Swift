@@ -1,0 +1,130 @@
+NATIVE-GRIND PERSONAL USE LICENCE (NON-COMMERCIAL)
+Version 1.1
+
+Copyright © 2026 Jay Brammeld
+All rights reserved.
+
+TL;DR
+- Personal Use Only: You may use, copy, and modify the software for your own private, non-commercial projects.
+- No Commercial Gain: You are strictly prohibited from using the software for business, monetization, or paid services.
+- Hosting Ban: You are strictly prohibited from hosting, deploying, or running the Backend Server yourself, whether privately or publicly.
+- Authorization Required: You cannot connect any custom client to the NativeServer API without explicit authorization from the developer, following the [Developer Authorization Policy](./AUTHORIZATION.md)
+- Transparency Allowed: You are encouraged to share and study the source code for learning and collaboration, provided you keep the original credits intact.
+- Risk Acknowledgment: The software is provided "as is" and without warranty; you accept all risks, including potential account bans from third-party services.
+- Legal Jurisdiction: Any disputes are governed by the laws and courts of Scotland.
+
+1. Definitions
+
+"Software" means this project, including source code, binaries, assets,
+documentation, and any included files.
+
+"Personal Use" means private, non-commercial use by an individual for
+learning, testing, or personal projects, with no direct or indirect monetary
+benefit.
+
+"Commercial Use" includes, without limitation:
+- use by or for a business, company, organisation, or public body;
+- selling, licensing, or otherwise monetising the Software or derivative works;
+- hosting the Software or derivative works as a paid service;
+- use in any product or service that is sold or monetised (see Section 5 for exceptions regarding content creation).
+
+2. Grant of licence
+
+Subject to compliance with this licence, you are granted a limited,
+non-exclusive, non-transferable, revocable licence to:
+
+- use the Software for Personal Use;
+- copy the Software for Personal Use;
+- modify the Software for Personal Use.
+
+You may redistribute the Software in its original, unmodified form
+for Personal Use only, provided that all copyright and attribution
+notices are retained.
+
+Redistribution of modified versions is not permitted.
+
+3. Attribution and credit requirements
+
+You must keep the original credits intact and clearly visible.
+At minimum, the following credit must be preserved:
+
+"Credits: Jay Brammeld"
+
+This credit must be retained in:
+- source code distributions;
+- any "About" or equivalent in-app credits section;
+- accompanying documentation when documentation is provided.
+
+You must not remove, alter, obscure, or misrepresent ownership notices,
+copyright notices, or attribution text.
+
+4. Commercial rights reserved
+
+All Commercial Use is prohibited unless you have prior written permission from
+the copyright holder.
+
+To request commercial rights, contact the copyright holder via the information provided in the repository's README.md file.
+
+5. Restrictions
+
+You must not, without prior written permission:
+- use the Software in or for any business context;
+- sell, sublicense, lease, rent, or commercially distribute the Software;
+- provide the Software as a paid hosted service;
+- use the Software as the basis for a monetised product or service;
+- use the Software to conduct automated data scraping, bulk account creation, or spamming;
+- use the Software to harass, abuse, or maliciously target any individual or system;
+- use the Software to deliberately overload, bypass rate limits, or otherwise disrupt third-party backend infrastructure.
+
+Exception for Content Creation:
+You are expressly permitted to create, publicly share, and monetise informational, educational, or review content concerning the Software (such as YouTube videos, tutorials, blog posts, and social media content). Monetising this content through ad revenue, sponsorships, or paywalls is permitted, provided that you are not selling, charging for, or commercially distributing the Software itself as part of that content.
+
+6. Termination
+
+This licence terminates automatically if you breach any term of this licence.
+Upon termination, you must immediately stop all use and distribution of the
+Software and destroy all copies in your possession or control including any modified or partial copies.
+
+Sections 1, 3, 4, 7, 8, 9, 11, and 12 shall survive any termination of this licence.
+
+7. No warranty and assumption of risk
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+This Software interacts with third-party services in an unofficial capacity. The copyright holder has no control over the policies, API changes, or moderation actions of these third parties. By using this Software, you acknowledge and accept all risks associated with its use, including but not limited to the permanent suspension, termination, or banning of your third-party accounts. The copyright holder shall not be held liable for any loss of data, account access, or associated damages.
+
+8. Distribution, Server Usage, and API Governance
+
+Open Components: You are permitted to publish, share, and distribute copies or modified versions of the Frontend clients, Core package, and Server package for the purposes of transparency, learning, and collaboration, provided you comply with all other terms of this licence.
+
+Backend Server Restrictions: You are strictly prohibited from hosting, deploying, running, or otherwise executing the Backend Server in any environment, public or private. You may not sell, lease, or charge for access to any instance of the Backend Server.
+
+API and Server Access: Your custom client or derivative application is strictly prohibited from interacting with the NativeServer API unless granted explicit authorization by the copyright holder.
+
+9. Limitation of liability
+
+IN NO EVENT SHALL JAY BRAMMELD OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES,
+OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+10. Entire agreement
+
+This licence constitutes the entire agreement governing your use of the
+Software for Personal Use.
+
+11. Governing law
+
+This licence shall be governed by and construed in accordance with
+the laws of Scotland. Any disputes arising under or in connection
+with this licence shall be subject to the exclusive jurisdiction of the Scottish courts, and the parties hereby submit to the personal jurisdiction of such courts.
+
+12. Trademarks
+    
+"NativeGrind" and any associated logos or branding are trademarks of Jay Brammeld. You may not use the Software to create the impression that your project is an official or authorized product of the copyright holder. You may not use these trademarks without prior written permission.
+
+13.  Grindr
+   
+Grindr is a registered trademark of Grindr LLC. This project is an independent, unofficial client and is not affiliated with, authorised, sponsored, or endorsed by Grindr LLC in any way.
