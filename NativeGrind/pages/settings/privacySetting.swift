@@ -16,7 +16,6 @@ struct privacySettingsView: View {
             Text("Privacy & Security")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .padding(.top, 16)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
                 .listRowBackground(Color.clear)
