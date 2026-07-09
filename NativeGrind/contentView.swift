@@ -1,11 +1,21 @@
 import SwiftUI
 import NativeGrindCore
+
 #if canImport(NativeGrindServer)
 import NativeGrindServer
 #endif
+
 #if os(iOS)
 import FBSDKCoreKit
 import UIKit
+#endif // os(iOS)
+
+#if canImport(UIKit)
+import UIKit
+typealias PlatformImage = UIImage
+#elseif canImport(AppKit)
+import AppKit
+typealias PlatformImage = NSImage
 #endif
 
 #if os(iOS)
@@ -75,6 +85,24 @@ struct myApp: App {
                 }
                 #endif
         }
+        #if os(macOS)
+        Settings {
+            if #available(macOS 15.0, *) {
+                TabView {
+                    Tab("Debug", systemImage: "gear") {
+                        debugSettingsView()
+                    }
+                    Tab("Privacy & Security", systemImage: "star") {
+                        privacySettingsView()
+                    }
+                }
+                .frame(width: 450, height: 400)
+                .fixedSize()
+            } else {
+                settingsView()
+            }
+        }
+        #endif
     }
 }
 
@@ -113,6 +141,19 @@ struct contentView: View {
                         Label("Inbox", systemImage: "bubble.left.and.bubble.right")
                     }
                     .tag(protectedRoute.inbox)
+                    
+                    #if !os(macOS)
+                    NavigationStack(path: $router.protectedPath) {
+                        protectedRoute.settings
+                            .navigationDestination(for: protectedRoute.self) { route in
+                                route
+                            }
+                    }
+                    .tabItem {
+                        Label("Settings", systemImage: "bubble.left.and.bubble.right")
+                    }
+                    .tag(protectedRoute.settings)
+                    #endif
                 }
                 .accentColor(.blue) // Changes the active tab highlight color
                 
