@@ -8,14 +8,6 @@
 import SwiftUI
 import NativeGrindCore
 
-#if canImport(UIKit)
-import UIKit
-typealias PlatformImage = UIImage
-#elseif canImport(AppKit)
-import AppKit
-typealias PlatformImage = NSImage
-#endif
-
 struct inboxItem: Identifiable {
     let id: String
     let conversation: conversationData
