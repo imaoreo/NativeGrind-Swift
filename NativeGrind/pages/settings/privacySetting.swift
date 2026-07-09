@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct privacySettingsView: View {
+struct privacySettingView: View {
     @State private var shareDiagnostics = false
         
     var body: some View {
