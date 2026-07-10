@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import DeviceCheck
 @testable import NativeGrindServer
 import NativeGrindCore
 
@@ -18,6 +19,12 @@ struct NativeGrindServerTests {
         setupTestState()
         WebSocketAttestManager.shared.start()
         
-        #expect(wsController.isAppAttestSupported == false)
+        #if !os(macOS) && !targetEnvironment(simulator) && !targetEnvironment(macCatalyst)
+        let expectedValue = DCAppAttestService.shared.isSupported
+        #else
+        let expectedValue = false
+        #endif
+        
+        #expect(wsController.isAppAttestSupported == expectedValue)
     }
 }
