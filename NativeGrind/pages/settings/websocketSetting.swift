@@ -60,21 +60,16 @@ struct websocketsSettingView: View {
                         logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
                     }
                     .disabled(customSessionId.isEmpty)
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-            }
-            
-            Section(header: Text("Actions (Main WS)")) {
                 VStack(alignment: .leading) {
                     TextField("API Key", text: $customApiKey)
                         .textFieldStyle(.roundedBorder)
                     Button("Send Auth Request") {
                         wsController.shared.send(request: wsRequest<[String: String]>.auth(apiKey: customApiKey))
-                        logAction(domain: .main, "Sent: auth(apiKey: \(customApiKey))")
+                        logAction(domain: .nativeServer, "Sent: auth(apiKey: \(customApiKey))")
                     }
                     .disabled(customApiKey.isEmpty)
                 }
-                .disabled(!controller.connectedDomains.contains(.main))
+                .disabled(!controller.connectedDomains.contains(.nativeServer))
             }
             
             Section(header: HStack {
