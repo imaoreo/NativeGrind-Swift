@@ -17,7 +17,11 @@ public final class wsController: ObservableObject {
     private var pingTimer: Task<Void, Never>?
     private var desiredDomains: Set<wsDomain> = []
     
-    public let incomingDataPublisher = PassthroughSubject<(domain: wsDomain, data: Data), Never>()
+    private let incomingDataSubject = PassthroughSubject<(domain: wsDomain, data: Data), Never>()
+    
+    public var incomingDataPublisher: AnyPublisher<(domain: wsDomain, data: Data), Never> {
+        incomingDataSubject.eraseToAnyPublisher()
+    }
     
     @Published public private(set) var connectedDomains: Set<wsDomain> = []
     
@@ -149,11 +153,11 @@ public final class wsController: ObservableObject {
         Task { @MainActor in
             switch message {
             case .data(let data):
-                self.incomingDataPublisher.send((domain: domain, data: data))
+                self.incomingDataSubject.send((domain: domain, data: data))
                 
             case .string(let string):
                 if let data = string.data(using: .utf8) {
-                    self.incomingDataPublisher.send((domain: domain, data: data))
+                    self.incomingDataSubject.send((domain: domain, data: data))
                 }
                 
             @unknown default:
