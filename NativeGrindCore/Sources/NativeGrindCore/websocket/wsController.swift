@@ -32,7 +32,7 @@ public final class wsController: ObservableObject {
     public func connect(to url: URL, for domain: wsDomain) {
         guard webSocketTasks[domain] == nil else { return }
         
-        var request = URLRequest(url: targetUrl)
+        var request = URLRequest(url: url)
         
         if domain == .main {
             request.setValue("Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)", forHTTPHeaderField: "User-Agent")
@@ -151,7 +151,7 @@ public final class wsController: ObservableObject {
     
     private func startPingTimer() {
         guard pingTimer == nil else { return }
-        pingTimer = Task {
+        pingTimer = Task { @MainActor in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
                 guard !Task.isCancelled else { break }
