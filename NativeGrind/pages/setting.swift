@@ -13,13 +13,19 @@ struct settingsView: View {
             Form {
                 Section {
                     NavigationLink {
-                        debugSettingsView()
+                        debugSettingView()
                     } label: {
                         Label("Debug", systemImage: "ladybug")
                     }
                     
                     NavigationLink {
-                        privacySettingsView()
+                        websocketsSettingView()
+                    } label: {
+                        Label("WebSockets", systemImage: "network")
+                    }
+                    
+                    NavigationLink {
+                        privacySettingView()
                     } label: {
                         Label("Privacy & Security", systemImage: "lock.shield")
                     }

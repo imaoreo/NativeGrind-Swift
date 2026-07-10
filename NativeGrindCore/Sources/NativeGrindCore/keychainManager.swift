@@ -14,6 +14,7 @@ public enum keyType: String, Decodable, Sendable {
     case isEmail = "isEmail"
     case data = "data" // for email this is the email for third party this is the thirdparty user id
     case keyId = "keyId" // used for NativeGrindServer
+    case apiKey = "apiKey" // used for NativeGrindServer (non-App-Attest)
 }
 
 public final class keychainManager: @unchecked Sendable {

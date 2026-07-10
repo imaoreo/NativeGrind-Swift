@@ -84,23 +84,17 @@ struct loginView: View {
 
         loginManager.logIn(permissions: ["public_profile", "email"], from: nil) { result, error in
             if let error = error {
-                Task {
-                    await errorManager.shared.error("FacebookLogin", "Authentication failed: \(error.localizedDescription)")
-                }
+                errorManager.shared.error("FacebookLogin", "Authentication failed: \(error.localizedDescription)")
                 return
             }
 
             guard let result = result, !result.isCancelled else {
-                Task {
-                    await errorManager.shared.error("FacebookLogin", "Configuration flow cancelled")
-                }
+                errorManager.shared.error("FacebookLogin", "Configuration flow cancelled")
                 return
             }
             
             guard let accessToken = result.authenticationToken?.tokenString else {
-                Task {
-                    await errorManager.shared.error("FacebookLogin", "Failed to get Facebook access token")
-                }
+                errorManager.shared.error("FacebookLogin", "Failed to get Facebook access token")
                 return
             }
 
