@@ -16,6 +16,7 @@ public final class sessionManager: ObservableObject {
     @Published public private(set) var isLoading: Bool = false
     
     private let keychain = keychainManager.shared
+    private var activeRefreshTask: Task<Void, Never>? = nil
     
     private func handleAuth(provider: String, showErrors: Bool = true, function: () async throws -> Void) async {
         do {
@@ -210,9 +211,21 @@ public final class sessionManager: ObservableObject {
     }
     
     public func refreshToken(showError: Bool = true) async {
-        await handleAuth(provider: "Refresh Token", showErrors: showError) {
-            try await _refreshToken()
+        if let existingTask = activeRefreshTask {
+            _ = await existingTask.result
+            return
         }
+        
+        let newTask = Task { @MainActor in
+            await handleAuth(provider: "Refresh Token", showErrors: showError) {
+                try await _refreshToken()
+            }
+        }
+        activeRefreshTask = newTask
+        
+        _ = await newTask.result
+        
+        activeRefreshTask = nil
     }
     
     /// Clears credentials and tears down the active state
