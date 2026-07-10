@@ -137,7 +137,14 @@ public final class wsController: ObservableObject {
                 
             case .failure(let error):
                 Task { @MainActor in
-                    errorManager.shared.log("wsController","WebSocket Receive Error for \(domain): \(error.localizedDescription)")
+                    let closeCode = task.closeCode.rawValue
+                    errorManager.shared.log("wsController", "WebSocket closed with code \(closeCode) for \(domain): \(error.localizedDescription)")
+                    
+                    if domain == .main && (closeCode == 4401 || closeCode == 57013) {
+                        errorManager.shared.log("wsController", "Session token expired (code: \(closeCode)). Refreshing session...")
+                        await sessionManager.shared.refreshToken(showError: false)
+                    }
+                    
                     self.disconnect(domain: domain)
                     self.scheduleReconnect(for: domain)
                 }
