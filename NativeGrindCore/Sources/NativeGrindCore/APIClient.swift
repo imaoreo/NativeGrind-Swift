@@ -18,8 +18,6 @@ public enum HTTPMethod: String, Sendable, Codable {
 public actor APIClient {
     public static let shared = APIClient()
     
-    @MainActor public static var bodySigner: (@Sendable (Data?, String) async throws -> deviceAssertion?)? = nil
-    
     init() {}
     
     var session: URLSession? = nil
@@ -88,8 +86,7 @@ public actor APIClient {
         url: String,
         queryItems: [String: String]? = nil,
         body: [String: Any]? = nil,
-        isAuthed: Bool = true,
-        shouldSignBody: Bool = false
+        isAuthed: Bool = true
     ) async throws -> (Data, HTTPURLResponse) {
         
         // Translates the url string into a URL Type
@@ -145,25 +142,6 @@ public actor APIClient {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
         }
         
-        if shouldSignBody {
-            if let signer = await APIClient.bodySigner {
-                do {
-                    if let result = try await signer(request.httpBody, url) {
-                        request.setValue(result.keyId, forHTTPHeaderField: "X-Device-Key-ID")
-                        request.setValue(result.assertion, forHTTPHeaderField: "X-Device-Assertion")
-                        request.setValue(result.challenge, forHTTPHeaderField: "X-Device-Challenge")
-                    } else {
-                        request.setValue("true", forHTTPHeaderField: "X-Device-Attest-Unsupported")
-                    }
-                } catch {
-                    await errorManager.shared.error("APIClient", "Request body signing failed: \(error)")
-                    request.setValue("true", forHTTPHeaderField: "X-Device-Attest-Unsupported")
-                }
-            } else {
-                request.setValue("true", forHTTPHeaderField: "X-Device-Attest-Unsupported")
-            }
-        }
-        
         // Check there is a active session
         guard let activeSession = session else {
             throw requestError.uninitializedSession
@@ -187,8 +165,7 @@ public actor APIClient {
                 url: endpoint.fullURLString,
                 queryItems: endpoint.queryItems,
                 body: endpoint.body,
-                isAuthed: endpoint.isAuthedRoute,
-                shouldSignBody: endpoint.shouldSignBody
+                isAuthed: endpoint.isAuthedRoute
             )
             
             if (200...299).contains(response.statusCode) {

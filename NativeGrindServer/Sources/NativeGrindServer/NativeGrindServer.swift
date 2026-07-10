@@ -9,12 +9,6 @@ import Foundation
 import NativeGrindCore
 
 @MainActor
-public func registerBodySigner() {
-    APIClient.bodySigner = signNativeBody
-    registerWebSocketAppAttestHandler()
-}
-
-@MainActor
 public func registerWebSocketAppAttestHandler() {
     WebSocketAttestManager.shared.start()
 }

@@ -55,7 +55,7 @@ struct myApp: App {
     
     init() {
         #if canImport(NativeGrindServer)
-        registerBodySigner()
+        registerWebSocketAppAttestHandler()
         #endif
         Task {
             await APIClient.shared.setup(
