@@ -55,6 +55,10 @@ struct websocketsSettingView: View {
                 VStack(alignment: .leading) {
                     TextField("Session ID", text: $customSessionId)
                         .textFieldStyle(.roundedBorder)
+                        .autocorrectionDisabled(true)
+                        #if !os(macOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
                     Button("Send Authorize Companion") {
                         wsController.shared.send(request: wsRequest<authorizeCompanionRequest>.authorizeCompanion(sessionId: customSessionId))
                         logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
@@ -64,8 +68,13 @@ struct websocketsSettingView: View {
                 .disabled(!controller.connectedDomains.contains(.nativeServer))
                 
                 VStack(alignment: .leading) {
-                    TextField("API Key", text: $customApiKey)
+                    SecureField("API Key", text: $customApiKey)
                         .textFieldStyle(.roundedBorder)
+                        .privacySensitive()
+                        .autocorrectionDisabled(true)
+                        #if !os(macOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
                     Button("Send Auth Request") {
                         wsController.shared.send(request: wsRequest<[String: String]>.auth(apiKey: customApiKey))
                         logAction(domain: .nativeServer, "Sent: auth(apiKey: \(customApiKey))")
