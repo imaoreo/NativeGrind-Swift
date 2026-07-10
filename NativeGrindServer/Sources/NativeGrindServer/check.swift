@@ -44,8 +44,12 @@ public func performNativeServerChecks() async {
             await errorManager.shared.warn("NativeGrindServer", "Failed device check")
             return
         }
+        guard let serverKeyId = checkedResponse.keyId else {
+            await errorManager.shared.warn("NativeGrindServer", "Verification failed: Server did not return a verified Key ID")
+            return
+        }
         
-        keychainManager.shared.saveToken(checkedResponse.keyId ?? keyId, type: .keyId)
+        keychainManager.shared.saveToken(serverKeyId, type: .keyId)
     } catch {
         await errorManager.shared.warn("NativeGrindServer", "Attestation failed: \(error)")
     }
