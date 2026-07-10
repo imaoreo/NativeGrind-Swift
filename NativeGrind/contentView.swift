@@ -63,11 +63,6 @@ struct myApp: App {
                 language: "en-gb",
                 deviceId: "E812B63B-F645-4C58-8FAB-40F457BAF456"
             )
-            #if canImport(NativeGrindServer)
-            if keychainManager.shared.getToken(type: .keyId) == nil {
-                await performNativeServerChecks()
-            }
-            #endif
         }
         
         Task { @MainActor in

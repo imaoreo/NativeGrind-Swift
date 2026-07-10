@@ -50,15 +50,7 @@ struct browseView: View {
             
             Button(action: {
                 Task {
-                    do {
-                        if let res = try await APIClient.shared.request(.checkChallengeHealth()) {
-                            errorManager.shared.warn("Attest Health", "\(res.message) [Status: \(res.status)]")
-                        } else {
-                            errorManager.shared.error("Attest Health", "Failed to retrieve health status")
-                        }
-                    } catch {
-                        errorManager.shared.error("Attest Health", error.localizedDescription)
-                    }
+                    wsController.shared.send(request: wsRequest<String>.getChallenge())
                 }
             }) {
                 Text("test attest")
