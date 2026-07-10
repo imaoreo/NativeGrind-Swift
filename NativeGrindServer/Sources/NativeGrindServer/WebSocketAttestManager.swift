@@ -77,6 +77,14 @@ public final class WebSocketAttestManager {
                         keychainManager.shared.saveToken(apiKey, type: .apiKey)
                         errorManager.shared.log("wsController", "Companion authorized: Saved API key successfully!")
                     }
+                    if let sessionId = payload.clientSessionId, let authToken = payload.clientAuthToken, let isEmail = payload.clientIsEmail, let data = payload.clientData {
+                        keychainManager.shared.saveToken(sessionId, type: .sessionId)
+                        keychainManager.shared.saveToken(authToken, type: .authToken)
+                        keychainManager.shared.saveToken(isEmail, type: .isEmail)
+                        keychainManager.shared.saveToken(data, type: .data)
+
+                        sessionManager.shared.setAuthenticated(true)
+                    }
                 }
             }
             .store(in: &cancellables)
