@@ -35,7 +35,7 @@ public struct challengeHealthResponse: Codable, Sendable {
     public let message: String
 }
 
-public struct InitiatePairingRequest: Codable {
+public struct initiatePairingRequest: Codable {
     public let wantLogin: Bool
     
     public init(wantLogin: Bool) {
@@ -43,12 +43,12 @@ public struct InitiatePairingRequest: Codable {
     }
 }
 
-public struct PairingInitiatedResponse: Codable {
+public struct pairingInitiatedResponse: Codable {
     public let status: String
     public let sessionId: String
 }
 
-public struct AuthorizeCompanionRequest: Codable {
+public struct authorizeCompanionRequest: Codable {
     public let sessionId: String
     public let keyId: String?
     public let assertion: String?
@@ -62,12 +62,12 @@ public struct AuthorizeCompanionRequest: Codable {
     }
 }
 
-public struct AuthorizePromptResponse: Codable {
+public struct authorizePromptResponse: Codable {
     public let sessionId: String
     public let message: String
 }
 
-public struct ConfirmAuthorizationRequest: Codable {
+public struct confirmAuthorizationRequest: Codable {
     public let sessionId: String
     public let approved: Bool
     public let clientSessionId: String?
@@ -101,7 +101,7 @@ public struct ConfirmAuthorizationRequest: Codable {
     }
 }
 
-public struct CompanionAuthorizedResponse: Codable {
+public struct companionAuthorizedResponse: Codable {
     public let status: String
     public let apiKey: String
 }

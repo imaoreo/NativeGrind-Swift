@@ -30,16 +30,16 @@ public extension wsEvent {
         return wsEvent<challengeCheckedResponse>(domain: .nativeServer, eventName: "identity_verified")
     }
 
-    static var onPairingInitiated: wsEvent<PairingInitiatedResponse> {
-        return wsEvent<PairingInitiatedResponse>(domain: .nativeServer, eventName: "pairing_initiated")
+    static var onPairingInitiated: wsEvent<pairingInitiatedResponse> {
+        return wsEvent<pairingInitiatedResponse>(domain: .nativeServer, eventName: "pairing_initiated")
     }
 
-    static var onAuthorizePrompt: wsEvent<AuthorizePromptResponse> {
-        return wsEvent<AuthorizePromptResponse>(domain: .nativeServer, eventName: "authorize_prompt")
+    static var onAuthorizePrompt: wsEvent<authorizePromptResponse> {
+        return wsEvent<authorizePromptResponse>(domain: .nativeServer, eventName: "authorize_prompt")
     }
 
-    static var onCompanionAuthorized: wsEvent<CompanionAuthorizedResponse> {
-        return wsEvent<CompanionAuthorizedResponse>(domain: .nativeServer, eventName: "companion_authorized")
+    static var onCompanionAuthorized: wsEvent<companionAuthorizedResponse> {
+        return wsEvent<companionAuthorizedResponse>(domain: .nativeServer, eventName: "companion_authorized")
     }
 
     static var onCompanionNotification: wsEvent<wsCompanionNotification> {

@@ -46,7 +46,7 @@ struct websocketsSettingView: View {
                 VStack(alignment: .leading) {
                     Toggle("Want Login", isOn: $wantLogin)
                     Button("Send Initiate Pairing") {
-                        wsController.shared.send(request: wsRequest<InitiatePairingRequest>.initiatePairing(wantLogin: wantLogin))
+                        wsController.shared.send(request: wsRequest<initiatePairingRequest>.initiatePairing(wantLogin: wantLogin))
                         logAction(domain: .nativeServer, "Sent: initiatePairing(wantLogin: \(wantLogin))")
                     }
                 }
@@ -56,7 +56,7 @@ struct websocketsSettingView: View {
                     TextField("Session ID", text: $customSessionId)
                         .textFieldStyle(.roundedBorder)
                     Button("Send Authorize Companion") {
-                        wsController.shared.send(request: wsRequest<AuthorizeCompanionRequest>.authorizeCompanion(sessionId: customSessionId))
+                        wsController.shared.send(request: wsRequest<authorizeCompanionRequest>.authorizeCompanion(sessionId: customSessionId))
                         logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
                     }
                     .disabled(customSessionId.isEmpty)

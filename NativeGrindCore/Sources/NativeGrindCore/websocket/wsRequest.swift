@@ -59,19 +59,19 @@ public extension wsRequest {
         )
     }
 
-    static func initiatePairing(wantLogin: Bool) -> wsRequest<InitiatePairingRequest> {
-        return wsRequest<InitiatePairingRequest>(
+    static func initiatePairing(wantLogin: Bool) -> wsRequest<initiatePairingRequest> {
+        return wsRequest<initiatePairingRequest>(
             domain: .nativeServer,
             eventName: "initiate_pairing",
-            payload: InitiatePairingRequest(wantLogin: wantLogin)
+            payload: initiatePairingRequest(wantLogin: wantLogin)
         )
     }
 
-    static func authorizeCompanion(sessionId: String, keyId: String? = nil, assertion: String? = nil, challenge: String? = nil) -> wsRequest<AuthorizeCompanionRequest> {
-        return wsRequest<AuthorizeCompanionRequest>(
+    static func authorizeCompanion(sessionId: String, keyId: String? = nil, assertion: String? = nil, challenge: String? = nil) -> wsRequest<authorizeCompanionRequest> {
+        return wsRequest<authorizeCompanionRequest>(
             domain: .nativeServer,
             eventName: "authorize_companion",
-            payload: AuthorizeCompanionRequest(sessionId: sessionId, keyId: keyId, assertion: assertion, challenge: challenge)
+            payload: authorizeCompanionRequest(sessionId: sessionId, keyId: keyId, assertion: assertion, challenge: challenge)
         )
     }
 
@@ -85,11 +85,11 @@ public extension wsRequest {
         keyId: String? = nil,
         assertion: String? = nil,
         challenge: String? = nil
-    ) -> wsRequest<ConfirmAuthorizationRequest> {
-        return wsRequest<ConfirmAuthorizationRequest>(
+    ) -> wsRequest<confirmAuthorizationRequest> {
+        return wsRequest<confirmAuthorizationRequest>(
             domain: .nativeServer,
             eventName: "confirm_authorization",
-            payload: ConfirmAuthorizationRequest(
+            payload: confirmAuthorizationRequest(
                 sessionId: sessionId,
                 approved: approved,
                 clientSessionId: clientSessionId,
