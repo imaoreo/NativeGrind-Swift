@@ -60,6 +60,9 @@ struct websocketsSettingView: View {
                         logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
                     }
                     .disabled(customSessionId.isEmpty)
+                }
+                .disabled(!controller.connectedDomains.contains(.nativeServer))
+                
                 VStack(alignment: .leading) {
                     TextField("API Key", text: $customApiKey)
                         .textFieldStyle(.roundedBorder)
