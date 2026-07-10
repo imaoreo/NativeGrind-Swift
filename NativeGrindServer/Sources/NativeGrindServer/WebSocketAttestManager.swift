@@ -19,6 +19,8 @@ public final class WebSocketAttestManager {
     private init() {}
     
     public func start() {
+        cancellables.removeAll()
+        
         #if !os(macOS) && !targetEnvironment(simulator) && !targetEnvironment(macCatalyst)
         wsController.isAppAttestSupported = DCAppAttestService.shared.isSupported
         #else
@@ -27,7 +29,7 @@ public final class WebSocketAttestManager {
         
         wsController.shared.publisher(for: .onChallenge)
             .sink { payload in
-                Task {
+                Task { @MainActor in
                     await self.performWebSocketAppAttest(challenge: payload.challenge)
                 }
             }
@@ -35,39 +37,46 @@ public final class WebSocketAttestManager {
             
         wsController.shared.publisher(for: .onAttestVerify)
             .sink { payload in
-                if payload.status == "success" {
-                    if let pending = wsController.shared.pendingKeyId {
-                        keychainManager.shared.saveToken(pending, type: .keyId)
+                Task { @MainActor in
+                    if payload.status == "success" {
+                        let keyIdToSave = payload.keyId ?? wsController.shared.pendingKeyId
+                        if let key = keyIdToSave {
+                            keychainManager.shared.saveToken(key, type: .keyId)
+                        }
+                        wsController.shared.pendingKeyId = nil
+                        wsController.shared.setConnected(domain: .nativeServer, connected: true)
+                        errorManager.shared.log("wsController", "App Attest attestation verified successfully!")
+                    } else {
+                        let errMsg = payload.error ?? "Unknown verification error"
+                        errorManager.shared.log("wsController", "App Attest verification failed: \(errMsg)")
                         wsController.shared.pendingKeyId = nil
                     }
-                    wsController.shared.setConnected(domain: .nativeServer, connected: true)
-                    errorManager.shared.log("wsController", "App Attest attestation verified successfully!")
-                } else {
-                    let errMsg = payload.error ?? "Unknown verification error"
-                    errorManager.shared.log("wsController", "App Attest verification failed: \(errMsg)")
-                    wsController.shared.pendingKeyId = nil
                 }
             }
             .store(in: &cancellables)
             
         wsController.shared.publisher(for: .onIdentityVerify)
             .sink { payload in
-                if payload.status == "success" {
-                    wsController.shared.setConnected(domain: .nativeServer, connected: true)
-                    errorManager.shared.log("wsController", "App Attest identity assertion verified successfully!")
-                } else {
-                    let errMsg = payload.error ?? "Unknown assertion error"
-                    errorManager.shared.log("wsController", "App Attest assertion failed: \(errMsg)")
-                    keychainManager.shared.deleteToken(type: .keyId)
+                Task { @MainActor in
+                    if payload.status == "success" {
+                        wsController.shared.setConnected(domain: .nativeServer, connected: true)
+                        errorManager.shared.log("wsController", "App Attest identity assertion verified successfully!")
+                    } else {
+                        let errMsg = payload.error ?? "Unknown assertion error"
+                        errorManager.shared.log("wsController", "App Attest assertion failed: \(errMsg)")
+                        keychainManager.shared.deleteToken(type: .keyId)
+                    }
                 }
             }
             .store(in: &cancellables)
             
         wsController.shared.publisher(for: .onCompanionNotification)
             .sink { payload in
-                if let apiKey = payload.apiKey {
-                    keychainManager.shared.saveToken(apiKey, type: .apiKey)
-                    errorManager.shared.log("wsController", "Companion authorized: Saved API key successfully!")
+                Task { @MainActor in
+                    if let apiKey = payload.apiKey {
+                        keychainManager.shared.saveToken(apiKey, type: .apiKey)
+                        errorManager.shared.log("wsController", "Companion authorized: Saved API key successfully!")
+                    }
                 }
             }
             .store(in: &cancellables)
