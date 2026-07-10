@@ -221,14 +221,15 @@ public final class wsController: ObservableObject {
     }
     
     public func publisher<T: Decodable>(for event: wsEvent<T>) -> AnyPublisher<T, Never> {
-        incomingDataPublisher
+        let decoder = JSONDecoder()
+        return incomingDataPublisher
             .filter { $0.domain == event.domain }
             .compactMap { tuple -> T? in
-                guard let raw = try? JSONDecoder().decode(wsRawEnvelope.self, from: tuple.data),
+                guard let raw = try? decoder.decode(wsRawEnvelope.self, from: tuple.data),
                       raw.event == event.eventName else {
                     return nil
                 }
-                let decoded = try? JSONDecoder().decode(wsMessageEnvelope<T>.self, from: tuple.data)
+                let decoded = try? decoder.decode(wsMessageEnvelope<T>.self, from: tuple.data)
                 return decoded?.payload
             }
             .eraseToAnyPublisher()
