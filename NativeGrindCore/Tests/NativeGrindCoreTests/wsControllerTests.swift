@@ -2,7 +2,7 @@
 //  wsControllerTests.swift
 //  NativeGrindCore
 //
-//  Created by Antigravity on 10/07/2026.
+//  Created by Jay Brammeld on 10/07/2026.
 //
 
 import Testing
