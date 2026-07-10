@@ -15,6 +15,7 @@ public final class wsController: ObservableObject {
     private var webSocketTasks: [wsDomain: URLSessionWebSocketTask] = [:]
     private var session: URLSession
     private var pingTimer: Task<Void, Never>?
+    private var desiredDomains: Set<wsDomain> = []
     
     public let incomingDataPublisher = PassthroughSubject<(domain: wsDomain, data: Data), Never>()
     
@@ -32,6 +33,7 @@ public final class wsController: ObservableObject {
     }
     
     public func connect(to url: URL, for domain: wsDomain) {
+        desiredDomains.insert(domain)
         guard webSocketTasks[domain] == nil else { return }
         
         var request = URLRequest(url: url)
@@ -62,10 +64,12 @@ public final class wsController: ObservableObject {
     
     public func disconnect(domain: wsDomain? = nil) {
         if let domain = domain {
+            desiredDomains.remove(domain)
             webSocketTasks[domain]?.cancel(with: .normalClosure, reason: nil)
             webSocketTasks.removeValue(forKey: domain)
             connectedDomains.remove(domain)
         } else {
+            desiredDomains.removeAll()
             for task in webSocketTasks.values {
                 task.cancel(with: .normalClosure, reason: nil)
             }
@@ -121,6 +125,7 @@ public final class wsController: ObservableObject {
     }
     
     private func scheduleReconnect(for domain: wsDomain) {
+        guard desiredDomains.contains(domain) else { return }
         if domain == .main {
             guard sessionManager.shared.isAuthenticated else { return }
         }
@@ -128,6 +133,7 @@ public final class wsController: ObservableObject {
         Task {
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             await MainActor.run {
+                guard self.desiredDomains.contains(domain) else { return }
                 guard self.connectedDomains.contains(domain) == false else { return }
                 if domain == .main {
                     guard sessionManager.shared.isAuthenticated else { return }
