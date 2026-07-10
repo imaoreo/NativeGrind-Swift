@@ -32,24 +32,16 @@ public final class wsController: ObservableObject {
     public func connect(to url: URL, for domain: wsDomain) {
         guard webSocketTasks[domain] == nil else { return }
         
-        var targetUrl = url
-        if domain == .nativeServer {
-            if let apiKey = keychainManager.shared.getToken(type: .apiKey) {
-                if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
-                    components.queryItems = [URLQueryItem(name: "apiKey", value: apiKey)]
-                    if let newUrl = components.url {
-                        targetUrl = newUrl
-                    }
-                }
-            }
-        }
-        
         var request = URLRequest(url: targetUrl)
         
         if domain == .main {
             request.setValue("Grindr3/26.9.2.99239.060331878.99 (99239.060331878.99; iPhone99,11; iOS 26.1)", forHTTPHeaderField: "User-Agent")
             if let sessionId = keychainManager.shared.getToken(type: .sessionId) {
                 request.setValue("Grindr3 \(sessionId)", forHTTPHeaderField: "Authorization")
+            }
+        } else if domain == .nativeServer {
+            if let apiKey = keychainManager.shared.getToken(type: .apiKey) {
+                request.setValue(apiKey, forHTTPHeaderField: "x-companion-api-key")
             }
         }
         
