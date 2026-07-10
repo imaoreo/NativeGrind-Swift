@@ -11,11 +11,14 @@ import Combine
 @MainActor
 public final class wsController: ObservableObject {
     public static let shared = wsController()
+    public static var isAppAttestSupported = false
     
     private var webSocketTasks: [wsDomain: URLSessionWebSocketTask] = [:]
     private var session: URLSession
     private var pingTimer: Task<Void, Never>?
     private var desiredDomains: Set<wsDomain> = []
+    
+    public var pendingKeyId: String?
     
     private let incomingDataSubject = PassthroughSubject<(domain: wsDomain, data: Data), Never>()
     
@@ -60,7 +63,21 @@ public final class wsController: ObservableObject {
         
         task.resume()
         
-        connectedDomains.insert(domain)
+        if domain == .main {
+            connectedDomains.insert(domain)
+        } else if domain == .nativeServer {
+            if keychainManager.shared.getToken(type: .apiKey) != nil {
+                connectedDomains.insert(domain)
+            } else {
+                if wsController.isAppAttestSupported {
+                    errorManager.shared.log("wsController", "No API key found. Initiating App Attest handshake...")
+                    send(request: wsRequest<String>.getChallenge())
+                } else {
+                    errorManager.shared.log("wsController", "No API key found and App Attest is not supported. Connecting as Unauthorized.")
+                    connectedDomains.insert(domain)
+                }
+            }
+        }
         
         listen(to: domain)
         startPingTimer()
@@ -193,5 +210,28 @@ public final class wsController: ObservableObject {
                 }
             }
         }
+    }
+    
+    public func setConnected(domain: wsDomain, connected: Bool) {
+        if connected {
+            connectedDomains.insert(domain)
+        } else {
+            connectedDomains.remove(domain)
+        }
+    }
+    
+    public func publisher<T: Decodable>(for event: wsEvent<T>) -> AnyPublisher<T, Never> {
+        let decoder = JSONDecoder()
+        return incomingDataPublisher
+            .filter { $0.domain == event.domain }
+            .compactMap { tuple -> T? in
+                guard let raw = try? decoder.decode(wsRawEnvelope.self, from: tuple.data),
+                      raw.event == event.eventName else {
+                    return nil
+                }
+                let decoded = try? decoder.decode(wsMessageEnvelope<T>.self, from: tuple.data)
+                return decoded?.payload
+            }
+            .eraseToAnyPublisher()
     }
 }

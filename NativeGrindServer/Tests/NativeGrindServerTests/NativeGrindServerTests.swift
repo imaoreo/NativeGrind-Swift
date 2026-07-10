@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import DeviceCheck
 @testable import NativeGrindServer
 import NativeGrindCore
 
@@ -13,23 +14,17 @@ struct NativeGrindServerTests {
         errorManager.shared.clearLogs()
     }
     
-    @Test("Verifies signNativeBody returns nil in unsupported environments (e.g. macOS test runner)")
-    func testSignNativeBodyUnsupported() async throws {
+    @Test("Verifies WebSocketAttestManager start configures App Attest support status")
+    func testWebSocketAttestManagerStart() async throws {
         setupTestState()
-        let result = try await signNativeBody(nil, url: "https://example.com")
-        #expect(result == nil)
-    }
-    
-    @Test("Verifies performNativeServerChecks warns in unsupported environments")
-    func testPerformNativeServerChecksUnsupported() async throws {
-        setupTestState()
-        await performNativeServerChecks()
+        WebSocketAttestManager.shared.start()
         
-        let logs = errorManager.shared.logs
-        let hasWarning = logs.contains { log in
-            log.prefix == "NativeGrindServer" && 
-            log.message == "App Attest is not supported on this platform/environment"
-        }
-        #expect(hasWarning == true)
+        #if !os(macOS) && !targetEnvironment(simulator) && !targetEnvironment(macCatalyst)
+        let expectedValue = DCAppAttestService.shared.isSupported
+        #else
+        let expectedValue = false
+        #endif
+        
+        #expect(wsController.isAppAttestSupported == expectedValue)
     }
 }

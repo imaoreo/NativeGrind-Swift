@@ -55,7 +55,7 @@ struct myApp: App {
     
     init() {
         #if canImport(NativeGrindServer)
-        registerBodySigner()
+        registerWebSocketAppAttestHandler()
         #endif
         Task {
             await APIClient.shared.setup(
@@ -63,11 +63,6 @@ struct myApp: App {
                 language: "en-gb",
                 deviceId: "E812B63B-F645-4C58-8FAB-40F457BAF456"
             )
-            #if canImport(NativeGrindServer)
-            if keychainManager.shared.getToken(type: .keyId) == nil {
-                await performNativeServerChecks()
-            }
-            #endif
         }
         
         Task { @MainActor in
@@ -106,6 +101,9 @@ struct myApp: App {
                 TabView {
                     Tab("Debug", systemImage: "ladybug") {
                         debugSettingView()
+                    }
+                    Tab("WebSockets", systemImage: "network") {
+                        websocketsSettingView()
                     }
                     Tab("Privacy & Security", systemImage: "star") {
                         privacySettingView()
