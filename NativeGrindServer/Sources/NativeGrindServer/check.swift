@@ -45,7 +45,8 @@ public func performNativeServerChecks() async {
             return
         }
         guard let serverKeyId = checkedResponse.keyId else {
-            await errorManager.shared.warn("NativeGrindServer", "Verification failed: Server did not return a verified Key ID")
+            let serverError = checkedResponse.error ?? "Server did not return a verified Key ID"
+            await errorManager.shared.warn("NativeGrindServer", "Verification failed: \(serverError)")
             return
         }
         
