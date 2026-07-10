@@ -107,6 +107,9 @@ struct myApp: App {
                     Tab("Debug", systemImage: "ladybug") {
                         debugSettingView()
                     }
+                    Tab("WebSockets", systemImage: "network") {
+                        websocketsSettingView()
+                    }
                     Tab("Privacy & Security", systemImage: "star") {
                         privacySettingView()
                     }
