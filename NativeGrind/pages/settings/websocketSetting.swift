@@ -111,7 +111,9 @@ struct websocketsSettingView: View {
         }
         .navigationTitle("WebSocket Test")
         .formStyle(.grouped)
-        .onReceive(wsController.shared.incomingDataPublisher) { domain, data in
+        .onReceive(wsController.shared.incomingDataPublisher) { tuple in
+            let domain = tuple.domain
+            let data = tuple.data
             let messageString: String
             if let str = String(data: data, encoding: .utf8) {
                 messageString = str

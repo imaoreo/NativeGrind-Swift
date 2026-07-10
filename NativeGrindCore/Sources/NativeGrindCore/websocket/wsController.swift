@@ -24,6 +24,8 @@ public final class wsController: ObservableObject {
         self.session = session
     }
     
+    internal var shouldResumeTasks = true
+    
     public func connect(to domain: wsDomain) {
         guard let url = URL(string: domain.rawValue) else { return }
         connect(to: url, for: domain)
@@ -47,6 +49,9 @@ public final class wsController: ObservableObject {
         
         let task = session.webSocketTask(with: request)
         webSocketTasks[domain] = task
+        
+        guard shouldResumeTasks else { return }
+        
         task.resume()
         
         connectedDomains.insert(domain)
@@ -85,7 +90,9 @@ public final class wsController: ObservableObject {
                 let message = URLSessionWebSocketTask.Message.data(data)
                 try await task.send(message)
             } catch {
-                errorManager.shared.log("wsController","WebSocket Send Error for \(request.domain): \(error.localizedDescription)")
+                Task { @MainActor in
+                    errorManager.shared.log("wsController","WebSocket Send Error for \(request.domain): \(error.localizedDescription)")
+                }
             }
         }
     }

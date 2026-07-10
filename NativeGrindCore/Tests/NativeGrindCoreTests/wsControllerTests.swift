@@ -52,6 +52,7 @@ struct wsControllerTests {
             
             let mockSession = mockURLSession()
             let controller = wsController(session: mockSession)
+            controller.shouldResumeTasks = false
             
             let url = URL(string: "wss://nativeserver.imaoreo.dev/ws")!
             controller.connect(to: url, for: .nativeServer)
@@ -77,6 +78,7 @@ struct wsControllerTests {
             
             let mockSession = mockURLSession()
             let controller = wsController(session: mockSession)
+            controller.shouldResumeTasks = false
             
             let url = URL(string: "wss://grindr.mobi/v1/ws")!
             controller.connect(to: url, for: .main)
