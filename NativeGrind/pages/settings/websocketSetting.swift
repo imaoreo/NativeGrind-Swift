@@ -37,36 +37,6 @@ struct websocketsSettingView: View {
                 }
                 .disabled(!controller.connectedDomains.contains(.nativeServer))
                 
-                Button("Send Get Auth Status") {
-                    wsController.shared.send(request: wsRequest<String>.getAuthStatus())
-                    logAction(domain: .nativeServer, "Sent: getAuthStatus")
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    Toggle("Want Login", isOn: $wantLogin)
-                    Button("Send Initiate Pairing") {
-                        wsController.shared.send(request: wsRequest<initiatePairingRequest>.initiatePairing(wantLogin: wantLogin))
-                        logAction(domain: .nativeServer, "Sent: initiatePairing(wantLogin: \(wantLogin))")
-                    }
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    TextField("Session ID", text: $customSessionId)
-                        .textFieldStyle(.roundedBorder)
-                        .autocorrectionDisabled(true)
-                        #if !os(macOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                    Button("Send Authorize Companion") {
-                        wsController.shared.send(request: wsRequest<authorizeCompanionRequest>.authorizeCompanion(sessionId: customSessionId))
-                        logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
-                    }
-                    .disabled(customSessionId.isEmpty)
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
                 VStack(alignment: .leading) {
                     SecureField("API Key", text: $customApiKey)
                         .textFieldStyle(.roundedBorder)
