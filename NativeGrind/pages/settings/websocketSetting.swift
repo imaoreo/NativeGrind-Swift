@@ -27,31 +27,9 @@ struct websocketsSettingView: View {
         Form {
             Section(header: Text("Websocket Connections")) {
                 connectionRow(domain: .main, displayName: "Grindr Main WS")
+                #if INCLUDE_SERVER
                 connectionRow(domain: .nativeServer, displayName: "Native Server WS")
-            }
-            
-            Section(header: Text("Actions (Native Server)")) {
-                Button("Send Get Challenge") {
-                    wsController.shared.send(request: wsRequest<String>.getChallenge())
-                    logAction(domain: .nativeServer, "Sent: getChallenge")
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    SecureField("API Key", text: $customApiKey)
-                        .textFieldStyle(.roundedBorder)
-                        .privacySensitive()
-                        .autocorrectionDisabled(true)
-                        #if !os(macOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                    Button("Send Auth Request") {
-                        wsController.shared.send(request: wsRequest<[String: String]>.auth(apiKey: customApiKey))
-                        logAction(domain: .nativeServer, "Sent: auth(apiKey: \(customApiKey))")
-                    }
-                    .disabled(customApiKey.isEmpty)
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
+                #endif
             }
             
             Section(header: HStack {
