@@ -47,21 +47,6 @@ struct browseView: View {
                 .cornerRadius(10)
             }
             .buttonStyle(.plain)
-            
-            Button(action: {
-                Task {
-                    wsController.shared.send(request: wsRequest<String>.getChallenge())
-                }
-            }) {
-                Text("test attest")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
-            }
-            .buttonStyle(.plain)
             #endif
             
             Button(action: {
