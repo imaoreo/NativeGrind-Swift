@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import NativeGrindCore
 
-#if canImport(NativeGrindServer)
+#if INCLUDE_SERVER
 import NativeGrindServer
 #endif
 
@@ -54,9 +54,10 @@ struct myApp: App {
     #endif
     
     init() {
-        #if canImport(NativeGrindServer)
-        registerWebSocketAppAttestHandler()
+        #if INCLUDE_SERVER
+            registerWebSocketAppAttestHandler()
         #endif
+        
         Task {
             await APIClient.shared.setup(
                 timezone: "Europe/London",
@@ -66,7 +67,7 @@ struct myApp: App {
         }
         
         Task { @MainActor in
-            #if canImport(NativeGrindServer)
+            #if INCLUDE_SERVER
                 wsController.shared.connect(to: .nativeServer)
             #endif
             
