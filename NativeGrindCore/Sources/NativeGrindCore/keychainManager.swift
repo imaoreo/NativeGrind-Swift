@@ -13,8 +13,8 @@ public enum keyType: String, Decodable, Sendable {
     case sessionId = "sessionId"
     case isEmail = "isEmail"
     case data = "data" // for email this is the email for third party this is the thirdparty user id
-    case keyId = "keyId" // used for NativeGrindServer
-    case apiKey = "apiKey" // used for NativeGrindServer (non-App-Attest)
+    case deviceId = "deviceId"
+    case deviceKeyPointer = "deviceKeyPointer"
 }
 
 public final class keychainManager: @unchecked Sendable {
@@ -24,6 +24,7 @@ public final class keychainManager: @unchecked Sendable {
     
     private let lock = NSLock()
     private var testStorage: [String: String] = [:]
+    private var testDataStorage: [String: Data] = [:]
     
     private init() {}
     
@@ -102,6 +103,7 @@ public final class keychainManager: @unchecked Sendable {
             lock.lock()
             defer { lock.unlock() }
             testStorage.removeValue(forKey: type.rawValue)
+            testDataStorage.removeValue(forKey: type.rawValue)
             return true
         }
         
@@ -113,5 +115,61 @@ public final class keychainManager: @unchecked Sendable {
         
         let status = SecItemDelete(query as CFDictionary)
         return status == errSecSuccess || status == errSecItemNotFound
+    }
+    
+    /// Raw Data Saving mainly fordeviceKeyPointer
+    public func saveData(_ data: Data, type: keyType) -> Bool {
+        if appEnvironment.isTesting {
+            lock.lock()
+            defer { lock.unlock() }
+            testDataStorage[type.rawValue] = data
+            return true
+        }
+        
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: type.rawValue
+        ]
+        
+        let status = SecItemCopyMatching(query as CFDictionary, nil)
+        
+        if status == errSecSuccess {
+            let attributesToUpdate: [String: Any] = [kSecValueData as String: data]
+            let updateStatus = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+            return updateStatus == errSecSuccess
+        } else {
+            var newItem = query
+            newItem[kSecValueData as String] = data
+            newItem[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+            
+            let addStatus = SecItemAdd(newItem as CFDictionary, nil)
+            return addStatus == errSecSuccess
+        }
+    }
+    
+    public func getData(type: keyType) -> Data? {
+        if appEnvironment.isTesting {
+            lock.lock()
+            defer { lock.unlock() }
+            return testDataStorage[type.rawValue]
+        }
+        
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: type.rawValue,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        guard status == errSecSuccess, let data = dataTypeRef as? Data else {
+            return nil
+        }
+        
+        return data
     }
 }
