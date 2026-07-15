@@ -25,4 +25,37 @@ public extension wsEvent {
     static var onAccountInfomation: wsEvent<nsAccountInfomationResponse> {
         return wsEvent<nsAccountInfomationResponse>(domain: .nativeServer, eventName: "get_account_info")
     }
+    
+    static var onDeviceAuth: wsEvent<nsDeviceAuthResponse> {
+        return wsEvent<nsDeviceAuthResponse>(domain: .nativeServer, eventName: "device_authenticated")
+    }
+    
+    static var onAccountCreated: wsEvent<nsAccountCreatedResponse> {
+        return wsEvent<nsAccountCreatedResponse>(domain: .nativeServer, eventName: "create_account")
+    }
+    
+    static var onDeviceList: wsEvent<nsDeviceListResponse> {
+        return wsEvent<nsDeviceListResponse>(domain: .nativeServer, eventName: "list_devices")
+    }
+    
+    static var onDeviceRemovedDevice: wsEvent<nsDeviceRemovedDeviceResponse> { // If this is call this is the device that was removed.
+        return wsEvent<nsDeviceRemovedDeviceResponse>(domain: .nativeServer, eventName: "device_removed_device")
+    }
+    
+    static var onDeviceRemoved: wsEvent<nsDeviceRemovedResponse> {
+        return wsEvent<nsDeviceRemovedResponse>(domain: .nativeServer, eventName: "device_removed")
+    }
+    
+    static var onCodeLinkGenerated: wsEvent<nsDeviceRemovedResponse> {
+        return wsEvent<nsDeviceRemovedResponse>(domain: .nativeServer, eventName: "link_code_generated")
+    }
+    
+    static var onDeviceAdded: wsEvent<nsDeviceAddedResponse> { // Added to a account called once the link is inputed
+        return wsEvent<nsDeviceAddedResponse>(domain: .nativeServer, eventName: "device_connected")
+    }
+
+    static var onDeviceLinked: wsEvent<nsDeviceLinkedResponse> {
+        return wsEvent<nsDeviceLinkedResponse>(domain: .nativeServer, eventName: "device_linked")
+    }
+
 }

@@ -50,4 +50,47 @@ public extension wsRequest {
         )
     }
     
+    static func createAccount() -> wsRequest<String> {
+        return wsRequest<String>(
+            domain: .nativeServer,
+            eventName: "create_account",
+            payload: ""
+        )
+    }
+    
+    static func listDevices() -> wsRequest<String> {
+        return wsRequest<String>(
+            domain: .nativeServer,
+            eventName: "list_devices",
+            payload: ""
+        )
+    }
+    
+    static func removeDevice(deviceId: String) -> wsRequest<nsDeviceRemoved> {
+        return wsRequest<nsDeviceRemoved>(
+            domain: .nativeServer,
+            eventName: "remove_device",
+            payload: nsDeviceRemoved(
+                deviceId: deviceId
+            )
+        )
+    }
+    
+    static func generateLinkCode() -> wsRequest<String> {
+        return wsRequest<String>(
+            domain: .nativeServer,
+            eventName: "generate_link_code",
+            payload: ""
+        )
+    }
+    
+    static func addDevice(code: String) -> wsRequest<nsConnectDevice> {
+        return wsRequest<nsConnectDevice>(
+            domain: .nativeServer,
+            eventName: "link_device_via_code",
+            payload: nsConnectDevice(
+                code: code
+            )
+        )
+    }
 }
