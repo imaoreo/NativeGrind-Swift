@@ -51,8 +51,19 @@ public final class wsController: ObservableObject {
                 request.setValue("Grindr3 \(sessionId)", forHTTPHeaderField: "Authorization")
             }
         } else if domain == .nativeServer {
-            if let apiKey = keychainManager.shared.getToken(type: .apiKey) {
-                request.setValue(apiKey, forHTTPHeaderField: "x-companion-api-key")
+            var currentDeviceId = keychainManager.shared.getToken(type: .deviceId)
+            
+            if currentDeviceId == nil {
+                do {
+                    let _ = try cryptoController.shared.generateAndStoreKeyPair()
+                    
+                    let newDeviceId = UUID().uuidString
+                    keychainManager.shared.saveToken(newDeviceId, type: .deviceId)
+                    
+                    currentDeviceId = newDeviceId
+                } catch {
+                    errorManager.shared.error("wsController", "Failed to generate hardware keys - \(error)")
+                }
             }
         }
         
@@ -63,21 +74,7 @@ public final class wsController: ObservableObject {
         
         task.resume()
         
-        if domain == .main {
-            connectedDomains.insert(domain)
-        } else if domain == .nativeServer {
-            if keychainManager.shared.getToken(type: .apiKey) != nil {
-                connectedDomains.insert(domain)
-            } else {
-                if wsController.isAppAttestSupported {
-                    errorManager.shared.log("wsController", "No API key found. Initiating App Attest handshake...")
-                    send(request: wsRequest<String>.getChallenge())
-                } else {
-                    errorManager.shared.log("wsController", "No API key found and App Attest is not supported. Connecting as Unauthorized.")
-                    connectedDomains.insert(domain)
-                }
-            }
-        }
+        connectedDomains.insert(domain)
         
         listen(to: domain)
         startPingTimer()
