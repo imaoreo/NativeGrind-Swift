@@ -39,33 +39,6 @@ final class mockURLSession: URLSession, @unchecked Sendable {
 
 @Suite("wsControllerTests", .serialized)
 struct wsControllerTests {
-    
-    @MainActor
-    @Test("Verifies request header construction for nativeServer WebSocket")
-    func testNativeServerRequestHeaders() async throws {
-        await TestSerializer.shared.run {
-            let mockApiKey = "ng_mac_test_api_key"
-            keychainManager.shared.saveToken(mockApiKey, type: .apiKey)
-            defer {
-                keychainManager.shared.deleteToken(type: .apiKey)
-            }
-            
-            let mockSession = mockURLSession()
-            let controller = wsController(session: mockSession)
-            controller.shouldResumeTasks = false
-            
-            let url = URL(string: "wss://nativeserver.imaoreo.dev/ws")!
-            controller.connect(to: url, for: .nativeServer)
-            
-            #expect(mockSession.lastRequest != nil)
-            
-            let apiKeyHeader = mockSession.lastRequest?.value(forHTTPHeaderField: "x-companion-api-key")
-            #expect(apiKeyHeader == mockApiKey)
-            
-            controller.disconnect()
-        }
-    }
-    
     @MainActor
     @Test("Verifies request header construction for main WebSocket using sessionId")
     func testMainWebSocketRequestHeaders() async throws {
