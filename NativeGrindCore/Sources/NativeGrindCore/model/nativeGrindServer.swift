@@ -7,32 +7,37 @@
 
 import Foundation
 
-public struct challengeResponse: Codable, Sendable {
+public struct nsAuthChallengeResponse: Codable, Sendable {
     public let challenge: String
-    public let ttl: Int
 }
 
-public struct challengeCheckedResponse: Codable, Sendable {
-    public let status: String
-    public let keyId: String?
-    public let error: String?
+public protocol nsResponseProtocol {
+    var status: String { get } // "success" or "failed"
+    var message: String { get } // "Account created", "Account creation failed cause x,y,z"
 }
 
-public struct deviceAssertion: Codable, Sendable {
-    public let assertion: String
-    public let keyId: String
-    public let challenge: String
-    
-    public init(assertion: String, keyId: String, challenge: String) {
-        self.assertion = assertion
-        self.keyId = keyId
-        self.challenge = challenge
-    }
-}
-
-public struct challengeHealthResponse: Codable, Sendable {
+public struct nsResponse: nsResponseProtocol, Codable {
     public let status: String
     public let message: String
 }
 
+public struct nsAuthentication: Codable {
+    public let deviceId: String
+    public let deviceName: String?
+    public let publicKey: String
+    public let signature: String
+    public let challenge: String
+}
 
+public struct nsAuthenticationResponse: nsResponseProtocol, Codable {
+    public let status: String
+    public let message: String
+    public let accountId: String?
+}
+
+public struct nsAccountInfomationResponse: nsResponseProtocol, Codable {
+    public let status: String
+    public let message: String
+    public let accountId: String?
+    public let deviceId: String?
+}

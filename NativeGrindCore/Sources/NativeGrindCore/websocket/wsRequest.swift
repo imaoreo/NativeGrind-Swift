@@ -27,87 +27,27 @@ public struct wsRequest<Payload: Codable> {
 
 public extension wsRequest {
 
-     static func getChallenge() -> wsRequest<String> {
-        return wsRequest<String>(
+    // authorizes the current users device
+    static func authorizeDevice(deviceId: String, deviceName: String?, publicKey: String, signature: String, challenge: String) -> wsRequest<nsAuthentication> {
+        return wsRequest<nsAuthentication>(
             domain: .nativeServer,
-            eventName: "get_challenge",
-            payload: nil
-        )
-    }
-
-    static func verifyAttestation(keyId: String, attestation: String, challenge: String) -> wsRequest<deviceAssertion> {
-        return wsRequest<deviceAssertion>(
-            domain: .nativeServer,
-            eventName: "verify_attestation",
-            payload: deviceAssertion(assertion: attestation, keyId: keyId, challenge: challenge)
-        )
-    }
-
-    static func assertIdentity(keyId: String, assertion: String, challenge: String) -> wsRequest<deviceAssertion> {
-        return wsRequest<deviceAssertion>(
-            domain: .nativeServer,
-            eventName: "assert_identity",
-            payload: deviceAssertion(assertion: assertion, keyId: keyId, challenge: challenge)
-        )
-    }
-
-    static func auth(apiKey: String) -> wsRequest<[String: String]> {
-        return wsRequest<[String: String]>(
-            domain: .nativeServer,
-            eventName: "auth",
-            payload: ["apiKey": apiKey]
-        )
-    }
-
-    static func initiatePairing(wantLogin: Bool) -> wsRequest<initiatePairingRequest> {
-        return wsRequest<initiatePairingRequest>(
-            domain: .nativeServer,
-            eventName: "initiate_pairing",
-            payload: initiatePairingRequest(wantLogin: wantLogin)
-        )
-    }
-
-    static func authorizeCompanion(sessionId: String, keyId: String? = nil, assertion: String? = nil, challenge: String? = nil) -> wsRequest<authorizeCompanionRequest> {
-        return wsRequest<authorizeCompanionRequest>(
-            domain: .nativeServer,
-            eventName: "authorize_companion",
-            payload: authorizeCompanionRequest(sessionId: sessionId, keyId: keyId, assertion: assertion, challenge: challenge)
-        )
-    }
-
-    static func confirmAuthorization(
-        sessionId: String,
-        approved: Bool,
-        clientSessionId: String? = nil,
-        clientAuthToken: String? = nil,
-        clientIsEmail: String? = nil,
-        clientData: String? = nil,
-        keyId: String? = nil,
-        assertion: String? = nil,
-        challenge: String? = nil
-    ) -> wsRequest<confirmAuthorizationRequest> {
-        return wsRequest<confirmAuthorizationRequest>(
-            domain: .nativeServer,
-            eventName: "confirm_authorization",
-            payload: confirmAuthorizationRequest(
-                sessionId: sessionId,
-                approved: approved,
-                clientSessionId: clientSessionId,
-                clientAuthToken: clientAuthToken,
-                clientIsEmail: clientIsEmail,
-                clientData: clientData,
-                keyId: keyId,
-                assertion: assertion,
+            eventName: "authorize_device",
+            payload: nsAuthentication(
+                deviceId: deviceId,
+                deviceName: deviceName,
+                publicKey: publicKey,
+                signature: signature,
                 challenge: challenge
             )
         )
     }
-
-    static func getAuthStatus() -> wsRequest<String> {
+    
+    static func getAccountInfo() -> wsRequest<String> {
         return wsRequest<String>(
             domain: .nativeServer,
-            eventName: "get_auth_status",
-            payload: nil
+            eventName: "get_account_info",
+            payload: ""
         )
     }
+    
 }
