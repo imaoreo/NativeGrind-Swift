@@ -10,5 +10,5 @@ import NativeGrindCore
 
 @MainActor
 public func registerWebSocketAppAttestHandler() {
-    WebSocketAttestManager.shared.start()
+    webSocketAttestManager.shared.start()
 }
