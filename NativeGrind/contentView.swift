@@ -211,29 +211,6 @@ struct contentView: View {
                     }
                     .tag(unprotectedRoute.loginWQR)
                     #endif
-                    
-                    
-                    NavigationStack(path: $router.unprotectedPath) {
-                        unprotectedRoute.resetPassword
-                            .navigationDestination(for: unprotectedRoute.self) { route in
-                                route
-                            }
-                    }
-                    .tabItem {
-                        Label("Reset Password", systemImage: "person.badge.key")
-                    }
-                    .tag(unprotectedRoute.resetPassword)
-                    
-                    NavigationStack(path: $router.unprotectedPath) {
-                        unprotectedRoute.register
-                            .navigationDestination(for: unprotectedRoute.self) { route in
-                                route
-                            }
-                    }
-                    .tabItem {
-                        Label("Register", systemImage: "person.badge.plus")
-                    }
-                    .tag(unprotectedRoute.register)
                 }
             }
         }
