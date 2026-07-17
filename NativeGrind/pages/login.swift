@@ -122,7 +122,7 @@ struct loginView: View {
             VStack(
                 spacing: 10
             ) {
-                Text("Login")
+                Text("Welcome Back")
                     .font(.system(textSize, design: .rounded))
                     .bold()
                     .multilineTextAlignment(.center)
@@ -155,7 +155,7 @@ struct loginView: View {
             Button(action: {
                 handleEmailSignIn()
             }) {
-                Text("Login")
+                Text("Sign In")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
