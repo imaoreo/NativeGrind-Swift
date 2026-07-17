@@ -46,8 +46,8 @@ public extension wsEvent {
         return wsEvent<nsDeviceRemovedResponse>(domain: .nativeServer, eventName: "device_removed")
     }
     
-    static var onCodeLinkGenerated: wsEvent<nsDeviceRemovedResponse> {
-        return wsEvent<nsDeviceRemovedResponse>(domain: .nativeServer, eventName: "link_code_generated")
+    static var onCodeLinkGenerated: wsEvent<nsLinkCodeResponse> {
+        return wsEvent<nsLinkCodeResponse>(domain: .nativeServer, eventName: "link_code_generated")
     }
     
     static var onDeviceAdded: wsEvent<nsDeviceAddedResponse> { // Added to a account called once the link is inputed
