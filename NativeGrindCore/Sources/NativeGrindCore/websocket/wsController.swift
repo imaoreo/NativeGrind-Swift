@@ -77,7 +77,6 @@ public final class wsController: ObservableObject {
         connectedDomains.insert(domain)
         
         listen(to: domain)
-        startPingTimer()
     }
     
     public func disconnect(domain: wsDomain? = nil) {
@@ -93,10 +92,6 @@ public final class wsController: ObservableObject {
             }
             webSocketTasks.removeAll()
             connectedDomains.removeAll()
-        }
-        
-        if webSocketTasks.isEmpty {
-            stopPingTimer()
         }
     }
     
@@ -187,35 +182,6 @@ public final class wsController: ObservableObject {
         }
     }
     
-    private func startPingTimer() {
-        guard pingTimer == nil else { return }
-        pingTimer = Task { @MainActor in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
-                guard !Task.isCancelled else { break }
-                
-                sendPings()
-            }
-        }
-    }
-    
-    private func stopPingTimer() {
-        pingTimer?.cancel()
-        pingTimer = nil
-    }
-    
-    private func sendPings() {
-        for (domain, task) in webSocketTasks {
-            task.sendPing { [weak self] error in
-                if let error = error {
-                    Task { @MainActor in
-                        errorManager.shared.log("wsController", "Ping failed for \(domain): \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
-    }
-    
     public func setConnected(domain: wsDomain, connected: Bool) {
         if connected {
             connectedDomains.insert(domain)
@@ -238,4 +204,19 @@ public final class wsController: ObservableObject {
             }
             .eraseToAnyPublisher()
     }
+
+    public func sendAndWait<Req: Codable & Sendable, Res: Decodable & Sendable>(
+        request: wsRequest<Req>,
+        expectedEvent: wsEvent<Res>,
+        timeout: TimeInterval = 10.0
+    ) async -> Res? {
+        
+        let waiter = wsWaiter<Res>()
+        let pub = publisher(for: expectedEvent)
+        
+        return await waiter.wait(publisher: pub, timeout: timeout) {
+            self.send(request: request)
+        }
+    }
 }
+
