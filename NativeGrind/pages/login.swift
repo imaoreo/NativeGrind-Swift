@@ -121,12 +121,12 @@ struct loginView: View {
             VStack(
                 spacing: 10
             ) {
-                Text("Please Login To NativeGrind")
+                Text("Login")
                     .font(.system(textSize, design: .rounded))
                     .bold()
                     .multilineTextAlignment(.center)
 
-                Text("Welcome Back! Please enter your credentials to access your account.")
+                Text("Enter your login details or connect with your other accounts")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
