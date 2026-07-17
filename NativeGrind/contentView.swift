@@ -199,6 +199,20 @@ struct contentView: View {
                     }
                     .tag(unprotectedRoute.advancedLogin)
                     
+                    #if INCLUDE_SERVER
+                    NavigationStack(path: $router.unprotectedPath) {
+                        unprotectedRoute.loginWQR
+                            .navigationDestination(for: unprotectedRoute.self) { route in
+                                route
+                            }
+                    }
+                    .tabItem {
+                        Label("QR Login", systemImage: "key")
+                    }
+                    .tag(unprotectedRoute.loginWQR)
+                    #endif
+                    
+                    
                     NavigationStack(path: $router.unprotectedPath) {
                         unprotectedRoute.resetPassword
                             .navigationDestination(for: unprotectedRoute.self) { route in

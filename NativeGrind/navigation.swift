@@ -12,6 +12,7 @@ enum unprotectedRoute: Hashable {
     case advancedLogin
     case register
     case resetPassword
+    case loginWQR
 }
 
 enum protectedRoute: Hashable {
@@ -31,6 +32,8 @@ extension unprotectedRoute: View {
             Text("Register")
         case .resetPassword:
             Text("Reset Password")
+        case .loginWQR:
+            loginWithQRView()
         }
     }
 }
