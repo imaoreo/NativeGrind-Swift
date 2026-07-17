@@ -86,8 +86,12 @@ public struct nsDeviceRemoved: Codable {
 
 public struct nsConnectDevice: Codable {
     public let code: String
+    public let key: String // the account private key encrypted with the public key from before
 }
 
+public struct nsDevicePublicKey: Codable {
+    public let code: String
+}
 
 public struct nsLinkCodeResponse: nsResponseProtocol, Codable {
     public let status: nsStatus
@@ -105,3 +109,10 @@ public struct nsDeviceLinkedResponse: nsResponseProtocol, Codable {
     public let status: nsStatus
     public let message: String
 }
+
+public struct nsDevicePublicKeyResponse: nsResponseProtocol, Codable {
+    public let status: nsStatus
+    public let message: String
+    public let publicKey: String?
+}
+

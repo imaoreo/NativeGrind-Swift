@@ -57,5 +57,9 @@ public extension wsEvent {
     static var onDeviceLinked: wsEvent<nsDeviceLinkedResponse> {
         return wsEvent<nsDeviceLinkedResponse>(domain: .nativeServer, eventName: "device_linked")
     }
+    
+    static var onDevicePublicKey: wsEvent<nsDevicePublicKeyResponse> {
+        return wsEvent<nsDevicePublicKeyResponse>(domain: .nativeServer, eventName: "link_device_public_key")
+    }
 
 }

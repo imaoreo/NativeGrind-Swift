@@ -84,11 +84,22 @@ public extension wsRequest {
         )
     }
     
-    static func addDevice(code: String) -> wsRequest<nsConnectDevice> {
+    static func addDevice(code: String, key: String) -> wsRequest<nsConnectDevice> {
         return wsRequest<nsConnectDevice>(
             domain: .nativeServer,
             eventName: "link_device_via_code",
             payload: nsConnectDevice(
+                code: code,
+                key: key
+            )
+        )
+    }
+    
+    static func getPublicKey(code: String) -> wsRequest<nsDevicePublicKey> {
+        return wsRequest<nsDevicePublicKey>(
+            domain: .nativeServer,
+            eventName: "link_device_get_public_key",
+            payload: nsDevicePublicKey(
                 code: code
             )
         )
