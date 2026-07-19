@@ -86,20 +86,34 @@ struct myApp: App {
             contentView()
                 .withToastOverlay()
                 .environment(router)
-                #if os(iOS)
                 .onOpenURL { url in
-                    _ = ApplicationDelegate.shared.application(
-                        UIApplication.shared,
-                        open: url,
-                        options: [:]
-                    )
+                    if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
+                        let pathOrHost = url.host ?? url.path
+                        if pathOrHost == "login" || pathOrHost == "/login" {
+                            if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+                               let queryItems = components.queryItems,
+                               let code = queryItems.first(where: { $0.name == "code" })?.value {
+                               wsController.shared.send(request: .getPublicKey(code: code))
+                            }
+                        }
+                    } else {
+                        #if os(iOS)
+                        _ = ApplicationDelegate.shared.application(
+                            UIApplication.shared,
+                            open: url,
+                            options: [:]
+                        )
+                        #endif
+                    }
                 }
-                #endif
         }
         #if os(macOS)
         Settings {
             if #available(macOS 15.0, *) {
                 TabView {
+                    Tab("NS Account", systemImage: "person.crop.circle.badge.checkmark") {
+                        nsAccountSettingView()
+                    }
                     Tab("Debug", systemImage: "ladybug") {
                         debugSettingView()
                     }

@@ -47,7 +47,7 @@ struct loginWithQRView: View {
             .padding(.horizontal, 16)
 
             if let activeCode = code, !activeCode.isEmpty {
-                let qrImage = generateQRCode(from: activeCode)
+                let qrImage = generateQRCode(from: "nativegrind:/login?code=\(activeCode)")
                 
                 #if canImport(UIKit)
                     Image(uiImage: qrImage)
