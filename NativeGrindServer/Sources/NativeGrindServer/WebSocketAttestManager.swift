@@ -43,12 +43,43 @@ public final class webSocketAttestManager {
                             challenge: challenge
                         ))
                     } catch {
-                        print("Authorization failed: \(error.localizedDescription)")
+                        errorManager.shared.error("Authorization", "Failed: \(error.localizedDescription)")
                     }
                 }
             }
             .store(in: &cancellables)
-            
+
+        wsController.shared.publisher(for: .onDevicePublicKey)
+            .sink { payload in
+                Task {
+                    do {
+                        guard let accountKey = keychainManager.shared.getToken(type: .accountKey) else {
+                            errorManager.shared.error("nsConnect", "Account Key not found in Keychain")
+                            return
+                        }
+                        
+                        guard let devicePublicKey = payload.publicKey else {
+                            errorManager.shared.error("nsConnect", "Device Public Key not given")
+                            return
+                        }
+                        
+                        guard let code = payload.code else {
+                            errorManager.shared.error("nsConnect", "Device Code not given")
+                            return
+                        }
+                        
+                        let encryptedKey = try cryptoController.shared.encryptWithPublicKey(
+                            text: accountKey,
+                            recipientPublicKeyBase64: devicePublicKey
+                        )
+                        
+                        wsController.shared.send(request: .addDevice(code: code, key: encryptedKey))
+                    } catch {
+                        errorManager.shared.error("nsConnect", "Failed: \(error.localizedDescription)")
+                    }
+                }
+            }
+            .store(in: &cancellables)
         /* How to do things like on login with QR response
         wsController.shared.publisher(for: .onCompanionNotification)
             .sink { payload in
