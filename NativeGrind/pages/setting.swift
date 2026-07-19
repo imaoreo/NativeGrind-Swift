@@ -13,6 +13,12 @@ struct settingsView: View {
             Form {
                 Section {
                     NavigationLink {
+                        nsAccountSettingView()
+                    } label: {
+                        Label("NS Account", systemImage: "person.crop.circle.badge.checkmark")
+                    }
+                    
+                    NavigationLink {
                         debugSettingView()
                     } label: {
                         Label("Debug", systemImage: "ladybug")
