@@ -6,6 +6,7 @@ public enum CryptoError: Error {
     case keychainSaveFailed
     case keyNotFound
     case unsupportedDevice
+    case invalidPublicKey
 }
 
 public final class cryptoController: Sendable {
@@ -14,7 +15,7 @@ public final class cryptoController: Sendable {
     private init() {}
     
     /// Generate key and store in secure enclave with a pointer in keychain
-    func generateAndStoreKeyPair() throws -> String {
+    public func generateAndStoreKeyPair() throws -> String {
         guard SecureEnclave.isAvailable else {
             throw CryptoError.unsupportedDevice
         }
@@ -68,5 +69,36 @@ public final class cryptoController: Sendable {
         let publicKeyData = publicKey.rawRepresentation
         
         return publicKeyData.base64EncodedString()
+    }
+    
+    /// Generate a new 256-bit symmetric account key encoded as base64
+    public func generateAccountKey() -> String {
+        SymmetricKey(size: .bits256).withUnsafeBytes { Data($0).base64EncodedString() }
+    }
+    
+    /// Encrypt text using recipient's PEM public key (ECDH + HKDF + AES-GCM)
+    public func encryptWithPublicKey(text: String, recipientPublicKeyBase64: String) throws -> String {
+        let pemBody = recipientPublicKeyBase64
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
+            .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: "\r", with: "")
+        
+        guard let derData = Data(base64Encoded: pemBody),
+              let recipientPublicKey = try? P256.KeyAgreement.PublicKey(derRepresentation: derData),
+              let textData = text.data(using: .utf8) else {
+            throw CryptoError.invalidPublicKey
+        }
+        
+        let ephemeralPrivateKey = P256.KeyAgreement.PrivateKey()
+        let sharedSecret = try ephemeralPrivateKey.sharedSecretFromKeyAgreement(with: recipientPublicKey)
+        let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 32)
+        let sealedBox = try AES.GCM.seal(textData, using: symmetricKey)
+        
+        var payload = ephemeralPrivateKey.publicKey.rawRepresentation
+        payload.append(sealedBox.combined!)
+        return payload.base64EncodedString()
     }
 }
