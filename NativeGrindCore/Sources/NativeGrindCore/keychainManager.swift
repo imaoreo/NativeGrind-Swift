@@ -15,6 +15,7 @@ public enum keyType: String, Decodable, Sendable {
     case data = "data" // for email this is the email for third party this is the thirdparty user id
     case deviceId = "deviceId"
     case deviceKeyPointer = "deviceKeyPointer"
+    case accountKey = "accountKey"
 }
 
 public final class keychainManager: @unchecked Sendable {
