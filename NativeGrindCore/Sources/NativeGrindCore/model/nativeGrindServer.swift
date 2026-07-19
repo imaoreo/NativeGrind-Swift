@@ -16,7 +16,7 @@ public protocol nsResponseProtocol {
     var message: String { get } // "Account created", "Account creation failed cause x,y,z"
 }
 
-public struct nsResponse: nsResponseProtocol, Codable {
+public struct nsResponse: nsResponseProtocol, Codable, Sendable {
     public let status: nsStatus
     public let message: String
 }
@@ -29,43 +29,43 @@ public struct nsAuthentication: Codable {
     public let challenge: String
 }
 
-public struct nsAuthenticationResponse: nsResponseProtocol, Codable {
+public struct nsAuthenticationResponse: nsResponseProtocol, Codable,  Sendable {
     public let status: nsStatus
     public let message: String
     public let accountId: String?
 }
 
-public struct nsAccountInfomationResponse: nsResponseProtocol, Codable {
+public struct nsAccountInfomationResponse: nsResponseProtocol, Codable,  Sendable {
     public let status: nsStatus
     public let message: String
     public let accountId: String?
     public let deviceId: String?
 }
 
-public struct nsDeviceAuthResponse: nsResponseProtocol, Codable {
+public struct nsDeviceAuthResponse: nsResponseProtocol, Codable,  Sendable {
     public let status: nsStatus
     public let message: String
     public let accountId: String?
 }
 
-public struct nsAccountCreatedResponse: nsResponseProtocol, Codable {
+public struct nsAccountCreatedResponse: nsResponseProtocol, Codable,  Sendable {
     public let status: nsStatus
     public let message: String
     public let accountId: String?
 }
 
-public struct nsDeviceListResponse: nsResponseProtocol, Codable {
+public struct nsDeviceListResponse: nsResponseProtocol, Codable, Sendable {
     public let status: nsStatus
     public let message: String
     public let devices: [device]?
 }
 
-public struct device: Codable {
+public struct device: Codable, Identifiable, Sendable, Hashable {
     public let publicKey: String
     public let id: String
     public let name: String
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: String
+    public let updatedAt: String
     public let userId: String?
     public let addedById: String?
 }
@@ -114,5 +114,6 @@ public struct nsDevicePublicKeyResponse: nsResponseProtocol, Codable, Sendable {
     public let status: nsStatus
     public let message: String
     public let publicKey: String?
+    public let code: String?
 }
 

@@ -35,7 +35,7 @@ public extension wsEvent {
     }
     
     static var onDeviceList: wsEvent<nsDeviceListResponse> {
-        return wsEvent<nsDeviceListResponse>(domain: .nativeServer, eventName: "list_devices")
+        return wsEvent<nsDeviceListResponse>(domain: .nativeServer, eventName: "device_list")
     }
     
     static var onDeviceRemovedDevice: wsEvent<nsDeviceRemovedDeviceResponse> { // If this is call this is the device that was removed.
