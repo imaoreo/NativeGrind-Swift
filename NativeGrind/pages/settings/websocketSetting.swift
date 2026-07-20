@@ -106,9 +106,7 @@ struct websocketsSettingView: View {
                 if isConnected {
                     wsController.shared.disconnect(domain: domain)
                 } else {
-                    if let url = URL(string: domain.rawValue) {
-                        wsController.shared.connect(to: url, for: domain)
-                    }
+                    wsController.shared.connect(to: domain)
                 }
             }
             .buttonStyle(.bordered)
