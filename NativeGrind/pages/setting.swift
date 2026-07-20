@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import NativeGrindCore
 
 struct settingsView: View {
+    @State private var showLogoutConfirm = false
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -39,6 +42,16 @@ struct settingsView: View {
                     }
                 } header: {
                     Text("General")
+                }
+                    
+                Section {
+                    Button(role: .destructive) {
+                        sessionManager.shared.logout()
+                    } label: {
+                        Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                } header: {
+                    Text("Account")
                 }
             }
             .navigationTitle("Settings")

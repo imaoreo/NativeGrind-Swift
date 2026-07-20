@@ -17,19 +17,6 @@ struct browseView: View {
             
             Spacer()
             
-            Button(action: {
-                sessionManager.shared.logout()
-            }) {
-                Text("Log Out")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
-            }
-            .buttonStyle(.plain)
-            
             #if DEBUG
             Button(action: {
                 Task{

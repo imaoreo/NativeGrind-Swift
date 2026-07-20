@@ -132,6 +132,14 @@ struct myApp: App {
                 settingsView()
             }
         }
+        .commands {
+            CommandMenu("Account") {
+                Button("Log Out") {
+                    sessionManager.shared.logout()
+                }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
+            }
+        }
         #endif
     }
 }
