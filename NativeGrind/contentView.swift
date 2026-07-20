@@ -111,9 +111,11 @@ struct myApp: App {
         Settings {
             if #available(macOS 15.0, *) {
                 TabView {
-                    Tab("NS Account", systemImage: "person.crop.circle.badge.checkmark") {
-                        nsAccountSettingView()
-                    }
+                    #if INCLUDE_SERVER
+                        Tab("NS Account", systemImage: "person.crop.circle.badge.checkmark") {
+                            nsAccountSettingView()
+                        }
+                    #endif
                     Tab("Debug", systemImage: "ladybug") {
                         debugSettingView()
                     }

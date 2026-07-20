@@ -12,12 +12,14 @@ struct settingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    NavigationLink {
-                        nsAccountSettingView()
-                    } label: {
-                        Label("NS Account", systemImage: "person.crop.circle.badge.checkmark")
-                    }
-                    
+                    #if INCLUDE_SERVER
+                        NavigationLink {
+                            nsAccountSettingView()
+                        } label: {
+                            Label("NS Account", systemImage: "person.crop.circle.badge.checkmark")
+                        }
+                    #endif
+
                     NavigationLink {
                         debugSettingView()
                     } label: {
