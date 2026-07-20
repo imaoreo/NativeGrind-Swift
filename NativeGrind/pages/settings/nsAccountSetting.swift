@@ -45,10 +45,10 @@ public struct nsAccountSettingView: View {
                     }
 
                     LabeledContent {
-                        Text("Key Saved")
+                        Text(verbatim: key)
                             .foregroundColor(.secondary)
                     } label: {
-                        Label("Symmetric Key", systemImage: "key.fill")
+                        Label("Account Key", systemImage: "key.fill")
                     }
                     
                     Button(role: .destructive) {
