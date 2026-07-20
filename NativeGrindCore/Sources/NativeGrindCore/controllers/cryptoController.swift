@@ -101,4 +101,29 @@ public final class cryptoController: Sendable {
         payload.append(sealedBox.combined!)
         return payload.base64EncodedString()
     }
+    
+    public func decryptWithPrivateKey(encryptedBase64: String) async throws -> String {
+        await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Starting decryption (base64 length: \(encryptedBase64.count))")
+        
+        guard let keyPointerData = keychainManager.shared.getData(type: .deviceKeyPointer),
+              let payload = Data(base64Encoded: encryptedBase64), payload.count > 64,
+              let ephemeralKey = try? P256.KeyAgreement.PublicKey(rawRepresentation: payload.prefix(64)),
+              let privateKey = try? SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: keyPointerData) else {
+            await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Failed to parse 64-byte raw key or SecureEnclave key")
+            throw CryptoError.keyNotFound
+        }
+        
+        let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: ephemeralKey)
+        let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 32)
+        let sealedBox = try AES.GCM.SealedBox(combined: payload.dropFirst(64))
+        let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
+        
+        guard let text = String(data: decryptedData, encoding: .utf8) else {
+            await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Decrypted data is not valid UTF-8 text")
+            throw CryptoError.invalidPublicKey
+        }
+        
+        await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Decryption successful")
+        return text
+    }
 }

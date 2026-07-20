@@ -80,25 +80,24 @@ public final class webSocketAttestManager {
                 }
             }
             .store(in: &cancellables)
-        /* How to do things like on login with QR response
-        wsController.shared.publisher(for: .onCompanionNotification)
+        
+        wsController.shared.publisher(for: .onDeviceAdded)
             .sink { payload in
-                Task { @MainActor in
-                    if let apiKey = payload.apiKey {
-                        keychainManager.shared.saveToken(apiKey, type: .apiKey)
-                        errorManager.shared.log("wsController", "Companion authorized: Saved API key successfully!")
-                    }
-                    if let sessionId = payload.clientSessionId, let authToken = payload.clientAuthToken, let isEmail = payload.clientIsEmail, let data = payload.clientData {
-                        keychainManager.shared.saveToken(sessionId, type: .sessionId)
-                        keychainManager.shared.saveToken(authToken, type: .authToken)
-                        keychainManager.shared.saveToken(isEmail, type: .isEmail)
-                        keychainManager.shared.saveToken(data, type: .data)
-
-                        sessionManager.shared.setAuthenticated(true)
+                Task {
+                    do {
+                        guard let key = payload.key else {
+                            errorManager.shared.error("nsConnect", "Key not given")
+                            return
+                        }
+                        
+                        let decodedKey = try await cryptoController.shared.decryptWithPrivateKey(encryptedBase64: key)
+                        
+                        keychainManager.shared.saveToken(decodedKey, type: .accountKey)
+                    } catch {
+                        errorManager.shared.error("nsConnect", "Failed: \(error.localizedDescription)")
                     }
                 }
             }
             .store(in: &cancellables)
-         */
     }
 }

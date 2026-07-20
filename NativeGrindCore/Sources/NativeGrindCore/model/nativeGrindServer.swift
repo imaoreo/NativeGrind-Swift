@@ -103,6 +103,8 @@ public struct nsLinkCodeResponse: nsResponseProtocol, Codable, Sendable {
 public struct nsDeviceAddedResponse: nsResponseProtocol, Codable, Sendable {
     public let status: nsStatus
     public let message: String
+    public let accountId: String?
+    public let key: String? // The account key encrypted by the devices public key
 }
 
 public struct nsDeviceLinkedResponse: nsResponseProtocol, Codable, Sendable {
