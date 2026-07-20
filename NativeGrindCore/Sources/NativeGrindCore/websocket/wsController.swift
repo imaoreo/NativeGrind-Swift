@@ -222,9 +222,25 @@ public final class wsController: ObservableObject {
         let waiter = wsWaiter<Res>()
         let pub = publisher(for: expectedEvent)
         
-        return await waiter.wait(publisher: pub, timeout: timeout) {
+        let result = await waiter.wait(publisher: pub, timeout: timeout) {
             self.send(request: request)
         }
+        
+        if result == nil {
+            errorManager.shared.log("wsController", "WebSocket request timed out for \(request.domain). Reconnecting...")
+            self.disconnect(domain: request.domain)
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            self.connect(to: request.domain)
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            
+            let retryWaiter = wsWaiter<Res>()
+            let retryPub = publisher(for: expectedEvent)
+            return await retryWaiter.wait(publisher: retryPub, timeout: timeout) {
+                self.send(request: request)
+            }
+        }
+        
+        return result
     }
 }
 
