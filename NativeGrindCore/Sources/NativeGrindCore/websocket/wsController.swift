@@ -39,7 +39,7 @@ public final class wsController: ObservableObject {
         connect(to: url, for: domain)
     }
     
-    public func connect(to url: URL, for domain: wsDomain) {
+    private func connect(to url: URL, for domain: wsDomain) {
         desiredDomains.insert(domain)
         guard webSocketTasks[domain] == nil else { return }
         
@@ -96,12 +96,20 @@ public final class wsController: ObservableObject {
     }
     
     public func send<T: Codable>(request: wsRequest<T>) {
-        guard let task = webSocketTasks[request.domain] else {
-            errorManager.shared.log("wsController","WebSocket Error: Attempted to send to \(request.domain), but it is not connected.")
-            return
+        let domain = request.domain
+        let isNewConnection = (webSocketTasks[domain] == nil)
+        
+        if isNewConnection {
+            connect(to: domain)
         }
         
         Task {
+            if isNewConnection {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+            
+            guard let task = await MainActor.run(body: { self.webSocketTasks[domain] }) else { return }
+            
             do {
                 let data = try request.encode()
                 let message = URLSessionWebSocketTask.Message.data(data)
