@@ -22,9 +22,9 @@ public final class nsStorageController: Sendable {
     private init() {}
     
     // Get Private Data
-    public func getData<T: Decodable>(location: String, as type: T.Type) async throws -> T {
+    public func getData<T: Codable>(location: nsStorageLocation<T>) async throws -> T {
         guard let data = await wsController.shared.sendAndWait(
-            request: .getData(location: location),
+            request: .getData(location: location.path),
             expectedEvent: .onDataGet
         ) else {
             throw nsStorageError.invalidData
@@ -51,7 +51,7 @@ public final class nsStorageController: Sendable {
     }
 
     // Save Data
-    public func saveData(location: String, data: String) async throws -> String {
+    public func saveData<T: Codable>(location: nsStorageLocation<T>, data: T) async throws -> String {
         let encoder = JSONEncoder()
         guard let jsonData = try? encoder.encode(data),
               let jsonString = String(data: jsonData, encoding: .utf8) else {
@@ -61,7 +61,7 @@ public final class nsStorageController: Sendable {
         let encryptedData = try cryptoController.shared.encryptTextWithSharedKey(text: jsonString)
         
         guard let data = await wsController.shared.sendAndWait(
-            request: .saveData(location: location, encryptedData: encryptedData),
+            request: .saveData(location: location.path, encryptedData: encryptedData),
             expectedEvent: .onDataSaved
         ) else {
             throw nsStorageError.invalidData
