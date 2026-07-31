@@ -61,5 +61,13 @@ public extension wsEvent {
     static var onDevicePublicKey: wsEvent<nsDevicePublicKeyResponse> {
         return wsEvent<nsDevicePublicKeyResponse>(domain: .nativeServer, eventName: "link_device_public_key")
     }
+    
+    static var onDataSaved: wsEvent<nsSaveDataResponse> {
+        return wsEvent<nsSaveDataResponse>(domain: .nativeServer, eventName: "save_data")
+    }
+    
+    static var onDataGet: wsEvent<nsGetDataResponse> {
+        return wsEvent<nsGetDataResponse>(domain: .nativeServer, eventName: "get_data")
+    }
 
 }

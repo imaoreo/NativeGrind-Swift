@@ -119,3 +119,26 @@ public struct nsDevicePublicKeyResponse: nsResponseProtocol, Codable, Sendable {
     public let code: String?
 }
 
+public struct nsGetData: Codable, Sendable {
+    public let location: String
+}
+
+public struct nsGetDataResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let accountId: String?
+    public let location: String?
+    public let data: String?
+}
+
+public struct nsSaveData: Codable, Sendable {
+    public let location: String
+    public let encryptedPayload: String
+}
+
+public struct nsSaveDataResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let accountId: String?
+    public let location: String?
+}

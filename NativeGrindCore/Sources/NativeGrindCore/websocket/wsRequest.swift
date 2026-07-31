@@ -104,4 +104,26 @@ public extension wsRequest {
             )
         )
     }
+    
+    static func saveData(location: String, encryptedData: String) -> wsRequest<nsSaveData> {
+        return wsRequest<nsSaveData>(
+            domain: .nativeServer,
+            eventName: "save_data",
+            payload: nsSaveData(
+                location: location,
+                encryptedPayload: encryptedData
+            )
+        )
+    }
+    
+    static func getData(location: String) -> wsRequest<nsGetData> {
+        return wsRequest<nsGetData>(
+            domain: .nativeServer,
+            eventName: "get_data",
+            payload: nsGetData(
+                location: location
+            )
+        )
+    }
+
 }
