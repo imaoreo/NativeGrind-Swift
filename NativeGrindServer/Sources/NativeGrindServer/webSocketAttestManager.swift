@@ -1,5 +1,5 @@
 //
-//  WebSocketAttestManager.swift
+//  webSocketAttestManager.swift
 //  NativeGrindServer
 //
 //  Created by Jay Brammeld on 10/07/2026.
@@ -10,6 +10,11 @@ import DeviceCheck
 import CryptoKit
 import NativeGrindCore
 import Combine
+
+@MainActor
+public func registerWebSocketAppAttestHandler() {
+    webSocketAttestManager.shared.start()
+}
 
 @MainActor
 public final class webSocketAttestManager {
