@@ -2,11 +2,12 @@ import CryptoKit
 import Security
 import Foundation
 
-public enum CryptoError: Error {
+public enum cryptoError: Error {
     case keychainSaveFailed
     case keyNotFound
     case unsupportedDevice
     case invalidPublicKey
+    case invalidData
 }
 
 public final class cryptoController: Sendable {
@@ -17,7 +18,7 @@ public final class cryptoController: Sendable {
     /// Generate key and store in secure enclave with a pointer in keychain
     public func generateAndStoreKeyPair() throws -> String {
         guard SecureEnclave.isAvailable else {
-            throw CryptoError.unsupportedDevice
+            throw cryptoError.unsupportedDevice
         }
         
         let accessControl = SecAccessControlCreateWithFlags(
@@ -34,7 +35,7 @@ public final class cryptoController: Sendable {
         let success = keychainManager.shared.saveData(keyPointerData, type: .deviceKeyPointer)
         
         guard success else {
-            throw CryptoError.keychainSaveFailed
+            throw cryptoError.keychainSaveFailed
         }
         
         return privateKey.publicKey.rawRepresentation.base64EncodedString()
@@ -43,7 +44,7 @@ public final class cryptoController: Sendable {
     /// Load and sign using the poitner
     public func signChallenge(challenge: String) throws -> String {
         guard let keyPointerData = keychainManager.shared.getData(type: .deviceKeyPointer) else {
-            throw CryptoError.keyNotFound
+            throw cryptoError.keyNotFound
         }
         
         let privateKey = try SecureEnclave.P256.Signing.PrivateKey(dataRepresentation: keyPointerData)
@@ -59,7 +60,7 @@ public final class cryptoController: Sendable {
     /// Load and give publicKey
     public func getPublicKey() throws -> String {
         guard let keyPointerData = keychainManager.shared.getData(type: .deviceKeyPointer) else {
-            throw CryptoError.keyNotFound
+            throw cryptoError.keyNotFound
         }
             
         let privateKey = try SecureEnclave.P256.Signing.PrivateKey(dataRepresentation: keyPointerData)
@@ -89,7 +90,7 @@ public final class cryptoController: Sendable {
         guard let derData = Data(base64Encoded: pemBody),
               let recipientPublicKey = try? P256.KeyAgreement.PublicKey(derRepresentation: derData),
               let textData = text.data(using: .utf8) else {
-            throw CryptoError.invalidPublicKey
+            throw cryptoError.invalidPublicKey
         }
         
         let ephemeralPrivateKey = P256.KeyAgreement.PrivateKey()
@@ -110,7 +111,7 @@ public final class cryptoController: Sendable {
               let ephemeralKey = try? P256.KeyAgreement.PublicKey(rawRepresentation: payload.prefix(64)),
               let privateKey = try? SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: keyPointerData) else {
             await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Failed to parse 64-byte raw key or SecureEnclave key")
-            throw CryptoError.keyNotFound
+            throw cryptoError.keyNotFound
         }
         
         let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: ephemeralKey)
@@ -120,10 +121,56 @@ public final class cryptoController: Sendable {
         
         guard let text = String(data: decryptedData, encoding: .utf8) else {
             await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Decrypted data is not valid UTF-8 text")
-            throw CryptoError.invalidPublicKey
+            throw cryptoError.invalidPublicKey
         }
         
         await errorManager.shared.log("cryptoController", "decryptWithPrivateKey: Decryption successful")
+        return text
+    }
+    
+    /// Encrypt text using the shared account key
+    public func encryptTextWithSharedKey(text: String) throws -> String {
+        guard let accountKeyBase64 = keychainManager.shared.getToken(type: .accountKey),
+              let keyData = Data(base64Encoded: accountKeyBase64) else {
+            throw cryptoError.keyNotFound
+        }
+        
+        let symmetricKey = SymmetricKey(data: keyData)
+        
+        guard let textData = text.data(using: .utf8) else {
+            throw cryptoError.invalidData
+        }
+        
+        let sealedBox = try AES.GCM.seal(textData, using: symmetricKey)
+        
+        guard let combinedData = sealedBox.combined else {
+            throw cryptoError.keyNotFound
+        }
+        
+        return combinedData.base64EncodedString()
+    }
+    
+    /// Decrypt text using shared Account Key
+    public func decryptTextWithSharedKey(encryptedBase64: String) throws -> String {
+        guard let accountKeyBase64 = keychainManager.shared.getToken(type: .accountKey),
+              let keyData = Data(base64Encoded: accountKeyBase64) else {
+            throw cryptoError.keyNotFound
+        }
+        
+        let symmetricKey = SymmetricKey(data: keyData)
+        
+        guard let encryptedData = Data(base64Encoded: encryptedBase64) else {
+            throw cryptoError.invalidData
+        }
+        
+        let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
+        
+        let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
+        
+        guard let text = String(data: decryptedData, encoding: .utf8) else {
+            throw cryptoError.invalidData
+        }
+        
         return text
     }
 }
