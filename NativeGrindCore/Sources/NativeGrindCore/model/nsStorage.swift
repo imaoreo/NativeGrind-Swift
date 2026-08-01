@@ -1,6 +1,6 @@
 //
 //  nsStorage.swift
-//  NativeGrindServer
+//  NativeGrindCore
 //
 //  Created by Jay Brammeld on 31/07/2026.
 //
@@ -12,18 +12,14 @@ public struct nsStorageLocation<T: Codable> {
 }
 
 public extension nsStorageLocation {
-    static var accounts: nsStorageLocation<nsAccountsStorage> {
-        return nsStorageLocation<nsAccountsStorage>(path: "grindr_accounts")
+    static var accounts: nsStorageLocation<[nsAccount]> {
+        return nsStorageLocation<[nsAccount]>(path: "grindr_accounts")
     }
-}
-
-public struct nsAccountsStorage: Codable, Sendable {
-    public var accounts: [nsAccount]
 }
 
 public struct nsAccount: Codable, Sendable {
     public var authToken: String
     public var sessionId: String
     public var isEmail: String
-    public var data: Bool
+    public var data: String
 }

@@ -1,14 +1,13 @@
 //
-//  webSocketAttestManager.swift
-//  NativeGrindServer
+//  nsController.swift
+//  NativeGrindCore
 //
-//  Created by Jay Brammeld on 10/07/2026.
+//  Created by Jay Brammeld on 01/08/2026.
 //
 
 import Foundation
 import DeviceCheck
 import CryptoKit
-import NativeGrindCore
 import Combine
 
 @MainActor

@@ -1,11 +1,10 @@
 //
-//  nsStorage.swift
-//  NativeGrindServer
+//  nsStorageController.swift
+//  NativeGrindCore
 //
 //  Created by Jay Brammeld on 31/07/2026.
 //
 
-import NativeGrindCore
 import Foundation
 
 public enum nsStorageError: Error {
@@ -14,7 +13,6 @@ public enum nsStorageError: Error {
     case decodingFailed
     case encodingFailed
 }
-
 
 public final class nsStorageController: Sendable {
     public static let shared = nsStorageController()
