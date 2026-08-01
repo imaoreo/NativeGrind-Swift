@@ -39,7 +39,7 @@ public final class wsController: ObservableObject {
         connect(to: url, for: domain)
     }
     
-    private func connect(to url: URL, for domain: wsDomain) {
+    internal func connect(to url: URL, for domain: wsDomain) {
         desiredDomains.insert(domain)
         guard webSocketTasks[domain] == nil else { return }
         
