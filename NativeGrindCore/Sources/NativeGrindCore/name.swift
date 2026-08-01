@@ -1,6 +1,6 @@
 //
 //  name.swift
-//  NativeGrindServer
+//  NativeGrindCore
 //
 //  Created by Jay Brammeld on 15/07/2026.
 //
