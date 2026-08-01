@@ -16,5 +16,5 @@ public enum appEnvironment {
         return ProcessInfo.processInfo.arguments.contains("-isTesting")
     }
 
-    public static var isServerEnabled: Bool = false
+    public nonisolated(unsafe) static var isServerEnabled: Bool = false
 }
