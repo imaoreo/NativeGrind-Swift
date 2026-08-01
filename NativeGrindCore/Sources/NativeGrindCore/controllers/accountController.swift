@@ -47,13 +47,15 @@ public actor accountController {
         try await syncToCloud()
     }
     
-    private func syncToCloud() async throws {
+    public func syncToCloud() async throws {
         guard appEnvironment.isServerEnabled else { return }
+        guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
         _ = try await nsStorageController.shared.saveData(location: .accounts, data: accounts)
     }
     
     public func syncFromCloud() async throws {
         guard appEnvironment.isServerEnabled else { return }
+        guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
         self.accounts = try await nsStorageController.shared.getData(location: .accounts)
         saveLocalAccounts()
     }

@@ -97,8 +97,24 @@ public final class webSocketAttestManager {
                         let decodedKey = try await cryptoController.shared.decryptWithPrivateKey(encryptedBase64: key)
                         
                         keychainManager.shared.saveToken(decodedKey, type: .accountKey)
+                        
+                        try await accountController.shared.syncFromCloud()
                     } catch {
                         errorManager.shared.error("nsConnect", "Failed: \(error.localizedDescription)")
+                    }
+                }
+            }
+            .store(in: &cancellables)
+            
+        wsController.shared.publisher(for: .onAccountCreated)
+            .sink { payload in
+                Task {
+                    do {
+                        if payload.status == .success {
+                            try await accountController.shared.syncToCloud()
+                        }
+                    } catch {
+                        errorManager.shared.error("nsSetup", "Failed to sync after account creation: \(error.localizedDescription)")
                     }
                 }
             }
