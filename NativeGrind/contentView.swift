@@ -51,9 +51,9 @@ struct myApp: App {
     
     init() {
         #if INCLUDE_SERVER
+            appEnvironment.isServerEnabled = true
             registerWebSocketAppAttestHandler()
             Task {
-                await accountController.shared.isCloudSyncEnabled = true
                 try? await accountController.shared.syncFromCloud()
             }
         #endif

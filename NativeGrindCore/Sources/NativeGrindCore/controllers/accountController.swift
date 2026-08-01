@@ -10,8 +10,7 @@ import Foundation
 public actor accountController {
     public static let shared = accountController()
     
-    public var isCloudSyncEnabled = false
-    
+
     private var accounts: [nsAccount] = []
     private var currentAccount: nsAccount?
     
@@ -49,12 +48,12 @@ public actor accountController {
     }
     
     private func syncToCloud() async throws {
-        guard isCloudSyncEnabled else { return }
+        guard appEnvironment.isServerEnabled else { return }
         _ = try await nsStorageController.shared.saveData(location: .accounts, data: accounts)
     }
     
     public func syncFromCloud() async throws {
-        guard isCloudSyncEnabled else { return }
+        guard appEnvironment.isServerEnabled else { return }
         self.accounts = try await nsStorageController.shared.getData(location: .accounts)
         saveLocalAccounts()
     }
