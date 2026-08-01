@@ -58,6 +58,13 @@ public actor accountController {
         guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
         self.accounts = try await nsStorageController.shared.getData(location: .accounts)
         saveLocalAccounts()
+        if let current = currentAccount, !accounts.contains(where: { $0.sessionId == current.sessionId }) {
+            currentAccount = nil
+        }
+
+        if let firstAccount = accounts.first, currentAccount == nil {
+            await switchAccount(account: firstAccount)
+        }
     }
     
     public func switchAccount(account: nsAccount) async {
