@@ -2,10 +2,6 @@ import SwiftUI
 import Combine
 import NativeGrindCore
 
-#if INCLUDE_SERVER
-import NativeGrindServer
-#endif
-
 #if os(iOS)
 import FBSDKCoreKit
 import UIKit
@@ -56,6 +52,10 @@ struct myApp: App {
     init() {
         #if INCLUDE_SERVER
             registerWebSocketAppAttestHandler()
+            Task {
+                await accountController.shared.isCloudSyncEnabled = true
+                try? await accountController.shared.syncFromCloud()
+            }
         #endif
         
         Task {
