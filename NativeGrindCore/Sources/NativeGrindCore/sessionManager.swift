@@ -18,16 +18,36 @@ public final class sessionManager: ObservableObject {
     private let keychain = keychainManager.shared
     private var activeRefreshTask: Task<Void, Never>? = nil
     
-    private func handleAuth(provider: String, showErrors: Bool = true, function: () async throws -> Void) async {
+    private func registerCurrentAccount() async {
+        if let authToken = keychain.getToken(type: .authToken),
+           let sessionId = keychain.getToken(type: .sessionId),
+           let isEmail = keychain.getToken(type: .isEmail),
+           let data = keychain.getToken(type: .data) {
+            let account = nsAccount(authToken: authToken, sessionId: sessionId, isEmail: isEmail, data: data)
+            do {
+                try await accountController.shared.addAccount(account)
+            } catch {
+                errorManager.shared.error("SessionManager", "Failed to add account to accountController: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func handleAuth(provider: String, showErrors: Bool = true, isNewLogin: Bool = false, function: () async throws -> Void) async {
         do {
             try await function()
             
             self.isAuthenticated = true
+            if isNewLogin {
+                await registerCurrentAccount()
+            }
             
         } catch authenticationError.networkError {
             // make sure there is authToken and sessionId for allowing it to stay authed
             self.isAuthenticated = (self.keychain.getToken(type: .authToken) != nil &&
                                     self.keychain.getToken(type: .sessionId) != nil)
+            if self.isAuthenticated && isNewLogin {
+                await registerCurrentAccount()
+            }
             if showErrors {
                 errorManager.shared.warn("SessionManager", "Offline: \(provider) skipped due to no internet.")
             }
@@ -64,7 +84,7 @@ public final class sessionManager: ObservableObject {
     }
     
     public func authenticateWithGoogle(accessToken: String) async {
-        await handleAuth(provider: "Google Login") {
+        await handleAuth(provider: "Google Login", isNewLogin: true) {
             try await _authenticateWithGoogle(accessToken: accessToken)
         }
     }
@@ -88,7 +108,7 @@ public final class sessionManager: ObservableObject {
     }
     
     public func authenticateWithFacebook(accessToken: String) async {
-        await handleAuth(provider: "Facebook Login") {
+        await handleAuth(provider: "Facebook Login", isNewLogin: true) {
             try await _authenticateWithFacebook(accessToken: accessToken)
         }
     }
@@ -110,7 +130,7 @@ public final class sessionManager: ObservableObject {
     }
     
     public func authenticateWithEmail(email: String, password: String) async {
-        await handleAuth(provider: "Email Login") {
+        await handleAuth(provider: "Email Login", isNewLogin: true) {
             try await _authenticateWithEmail(email: email, password: password)
         }
     }
@@ -132,7 +152,7 @@ public final class sessionManager: ObservableObject {
     }
     
     public func authenticateWithAuthToken(token: String, email: String) async {
-        await handleAuth(provider: "AuthToken Login") {
+        await handleAuth(provider: "AuthToken Login", isNewLogin: true) {
             try await _authenticateWithAuthToken(token: token, email: email)
         }
     }
@@ -154,7 +174,7 @@ public final class sessionManager: ObservableObject {
     }
     
     public func authenticateWithThirdPartyToken(token: String, thirdPartyUserId: String) async {
-        await handleAuth(provider: "Third Party Token Login") {
+        await handleAuth(provider: "Third Party Token Login", isNewLogin: true) {
             try await _authenticateWithThirdPartyToken(token: token, thirdPartyUserId: thirdPartyUserId)
         }
     }
@@ -229,12 +249,20 @@ public final class sessionManager: ObservableObject {
     }
     
     /// Clears credentials and tears down the active state
-    public func logout() {
+    public func logout(isSwitching: Bool = false) {
+        let currentSessionId = keychain.getToken(type: .sessionId)
+        
         keychain.deleteToken(type: .authToken)
         keychain.deleteToken(type: .sessionId)
         keychain.deleteToken(type: .isEmail)
         keychain.deleteToken(type: .data)
 
         self.isAuthenticated = false
+        
+        if !isSwitching, let sessionId = currentSessionId {
+            Task {
+                try? await accountController.shared.removeAccount(sessionId: sessionId)
+            }
+        }
     }
 }
