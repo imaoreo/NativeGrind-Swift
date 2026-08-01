@@ -16,6 +16,7 @@ public enum keyType: String, Decodable, Sendable {
     case deviceId = "deviceId"
     case deviceKeyPointer = "deviceKeyPointer"
     case accountKey = "accountKey"
+    case accountsList = "accountsList"
 }
 
 public final class keychainManager: @unchecked Sendable {
