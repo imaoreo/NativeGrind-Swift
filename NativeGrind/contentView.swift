@@ -87,24 +87,29 @@ struct myApp: App {
                 .withToastOverlay()
                 .environment(router)
                 .onOpenURL { url in
+                    #if INCLUDE_SERVER
                     if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
                         let pathOrHost = url.host ?? url.path
                         if pathOrHost == "login" || pathOrHost == "/login" {
                             if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
                                let queryItems = components.queryItems,
                                let code = queryItems.first(where: { $0.name == "code" })?.value {
-                               wsController.shared.send(request: .getPublicKey(code: code))
+                                wsController.shared.send(request: .getPublicKey(code: code))
                             }
                         }
-                    } else {
-                        #if os(iOS)
+                        return
+                    }
+                    #endif
+                    
+                    #if os(iOS)
+                    if let scheme = url.scheme, scheme.lowercased() != "nativegrind" {
                         _ = ApplicationDelegate.shared.application(
                             UIApplication.shared,
                             open: url,
                             options: [:]
                         )
-                        #endif
                     }
+                    #endif
                 }
         }
         #if os(macOS)

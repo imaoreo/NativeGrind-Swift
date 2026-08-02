@@ -46,7 +46,7 @@ public final class toastManager: ObservableObject {
     
     private init() {}
     
-    /// Shows a Toast with the specified infomation
+    /// Shows a Toast with the specified information
     /// - Parameters:
     ///   - style: ToastStyle, .info, .warning etc
     ///   - header: Header at the top bold

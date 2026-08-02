@@ -22,8 +22,8 @@ public extension wsEvent {
         return wsEvent<nsAuthChallengeResponse>(domain: .nativeServer, eventName: "auth_challenge")
     }
     
-    static var onAccountInfomation: wsEvent<nsAccountInfomationResponse> {
-        return wsEvent<nsAccountInfomationResponse>(domain: .nativeServer, eventName: "get_account_info")
+    static var onAccountInformation: wsEvent<nsAccountInformationResponse> {
+        return wsEvent<nsAccountInformationResponse>(domain: .nativeServer, eventName: "get_account_info")
     }
     
     static var onDeviceAuth: wsEvent<nsDeviceAuthResponse> {

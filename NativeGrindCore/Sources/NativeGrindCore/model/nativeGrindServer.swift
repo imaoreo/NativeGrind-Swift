@@ -35,7 +35,7 @@ public struct nsAuthenticationResponse: nsResponseProtocol, Codable,  Sendable {
     public let accountId: String?
 }
 
-public struct nsAccountInfomationResponse: nsResponseProtocol, Codable,  Sendable {
+public struct nsAccountInformationResponse: nsResponseProtocol, Codable,  Sendable {
     public let status: nsStatus
     public let message: String
     public let accountId: String?

@@ -38,5 +38,19 @@ public enum appEnvironment {
         return false
     }
 
-    public nonisolated(unsafe) static var isServerEnabled: Bool = false
+    private static let lock = NSLock()
+    private nonisolated(unsafe) static var _isServerEnabled: Bool = false
+
+    public static var isServerEnabled: Bool {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _isServerEnabled
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _isServerEnabled = newValue
+        }
+    }
 }

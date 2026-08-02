@@ -28,6 +28,10 @@ public final class nsStorageController: Sendable {
             throw nsStorageError.invalidData
         }
         
+        guard data.status == .success else {
+            throw nsStorageError.invalidData
+        }
+        
         guard let encryptedData = data.data else {
             throw nsStorageError.invalidData
         }
@@ -62,6 +66,10 @@ public final class nsStorageController: Sendable {
             request: .saveData(location: location.path, encryptedData: encryptedData),
             expectedEvent: .onDataSaved
         ) else {
+            throw nsStorageError.invalidData
+        }
+        
+        guard data.status == .success else {
             throw nsStorageError.invalidData
         }
         

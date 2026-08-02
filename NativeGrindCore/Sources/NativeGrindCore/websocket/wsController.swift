@@ -242,5 +242,11 @@ public final class wsController: ObservableObject {
         
         return result
     }
+
+    #if DEBUG
+    internal func simulateIncomingMessage(domain: wsDomain, data: Data) {
+        incomingDataSubject.send((domain: domain, data: data))
+    }
+    #endif
 }
 
