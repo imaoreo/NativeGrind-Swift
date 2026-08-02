@@ -19,6 +19,7 @@ public struct nsAccountSettingView: View {
     @State private var isLoading = false
     @State private var statusMessage: String?
     @State private var showCreateConfirm = false
+    @State private var showDeleteConfirm = false
 
     public init() {}
 
@@ -55,6 +56,12 @@ public struct nsAccountSettingView: View {
                         showCreateConfirm = true
                     } label: {
                         Label("Re-create Account", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    
+                    Button(role: .destructive) {
+                        showDeleteConfirm = true
+                    } label: {
+                        Label("Delete Account", systemImage: "arrow.triangle.2.circlepath")
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
@@ -181,6 +188,16 @@ public struct nsAccountSettingView: View {
                 fetchDevices()
             }
         }
+        .onReceive(controller.publisher(for: .onAccountDeleted)) { response in
+            if (response.status == .success || response.message == "Device is not associated with any account") {
+                isLoading = false
+                keychainManager.shared.deleteToken(type: .accountKey)
+                accountKey = nil
+            } else {
+                isLoading = false
+                statusMessage = "Account deletion failed: \(response.message)"
+            }
+        }
         .alert("Re-create Account", isPresented: $showCreateConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Re-create", role: .destructive) {
@@ -188,6 +205,14 @@ public struct nsAccountSettingView: View {
             }
         } message: {
             Text("This will generate a new symmetric Account Key and register the account with the server.")
+        }
+        .alert("Delete Account", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                deleteAccountAction()
+            }
+        } message: {
+            Text("This will delete your NativeServer Account as well as all data associated with it.")
         }
         .onAppear {
             accountKey = keychainManager.shared.getToken(type: .accountKey)
@@ -207,6 +232,13 @@ public struct nsAccountSettingView: View {
         accountKey = newAccountKey
         
         wsController.shared.send(request: .createAccount())
+    }
+    
+    private func deleteAccountAction() {
+        isLoading = true
+        statusMessage = "Deleting account..."
+        
+        wsController.shared.send(request: .deleteAccount())
     }
 
     private func fetchDevices() {

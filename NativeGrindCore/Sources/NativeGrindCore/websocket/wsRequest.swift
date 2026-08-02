@@ -58,6 +58,14 @@ public extension wsRequest {
         )
     }
     
+    static func deleteAccount() -> wsRequest<String> {
+        return wsRequest<String>(
+            domain: .nativeServer,
+            eventName: "delete_account",
+            payload: ""
+        )
+    }
+    
     static func listDevices() -> wsRequest<String> {
         return wsRequest<String>(
             domain: .nativeServer,

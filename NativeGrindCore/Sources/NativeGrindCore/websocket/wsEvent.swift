@@ -34,6 +34,10 @@ public extension wsEvent {
         return wsEvent<nsAccountCreatedResponse>(domain: .nativeServer, eventName: "create_account")
     }
     
+    static var onAccountDeleted: wsEvent<nsResponse> {
+        return wsEvent<nsResponse>(domain: .nativeServer, eventName: "delete_account")
+    }
+    
     static var onDeviceList: wsEvent<nsDeviceListResponse> {
         return wsEvent<nsDeviceListResponse>(domain: .nativeServer, eventName: "device_list")
     }
