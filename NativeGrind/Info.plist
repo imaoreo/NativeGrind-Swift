@@ -21,6 +21,14 @@
 				<string>fb1273378622718674</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>nativegrind</string>
+			</array>
+		</dict>
 	</array>
 	<key>FacebookAppID</key>
 	<string>1273378622718674</string>

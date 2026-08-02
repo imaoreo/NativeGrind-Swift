@@ -15,9 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "NativeGrindServer"
-               BuildableName = "NativeGrindServer"
-               ReferencedContainer = "container:">
+               BlueprintIdentifier = "000000000000000100000000"
+               BuildableName = "NativeGrind.app"
+               BlueprintName = "NativeGrind"
+               ReferencedContainer = "container:NativeGrind.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -28,20 +29,9 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
-      <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "NativeGrindServerTests"
-               BuildableName = "NativeGrindServerTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Debug (NS)"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -51,6 +41,16 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       queueDebuggingEnabled = "No">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "000000000000000100000000"
+            BuildableName = "NativeGrind.app"
+            BlueprintName = "NativeGrind"
+            ReferencedContainer = "container:NativeGrind.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -58,20 +58,22 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "NativeGrindServer"
-            BuildableName = "NativeGrindServer"
-            ReferencedContainer = "container:">
+            BlueprintIdentifier = "000000000000000100000000"
+            BuildableName = "NativeGrind.app"
+            BlueprintName = "NativeGrind"
+            ReferencedContainer = "container:NativeGrind.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Release (NS)"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

@@ -230,3 +230,8 @@ public enum wsDomain: String, Codable, Sendable {
     case main = "wss://grindr.mobi/v1/ws"
     case nativeServer = "wss://nativeserver.imaoreo.dev/ws"
 }
+
+public enum nsStatus: String, Codable, Sendable {
+    case success = "success"
+    case failed = "failed"
+}

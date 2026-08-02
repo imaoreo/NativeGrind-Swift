@@ -2,10 +2,6 @@ import SwiftUI
 import Combine
 import NativeGrindCore
 
-#if canImport(NativeGrindServer)
-import NativeGrindServer
-#endif
-
 #if os(iOS)
 import FBSDKCoreKit
 import UIKit
@@ -54,9 +50,14 @@ struct myApp: App {
     #endif
     
     init() {
-        #if canImport(NativeGrindServer)
-        registerWebSocketAppAttestHandler()
+        #if INCLUDE_SERVER
+            appEnvironment.isServerEnabled = true
+            registerWebSocketAppAttestHandler()
+            Task {
+                try? await accountController.shared.syncFromCloud()
+            }
         #endif
+        
         Task {
             await APIClient.shared.setup(
                 timezone: "Europe/London",
@@ -66,7 +67,7 @@ struct myApp: App {
         }
         
         Task { @MainActor in
-            #if canImport(NativeGrindServer)
+            #if INCLUDE_SERVER
                 wsController.shared.connect(to: .nativeServer)
             #endif
             
@@ -85,20 +86,41 @@ struct myApp: App {
             contentView()
                 .withToastOverlay()
                 .environment(router)
-                #if os(iOS)
                 .onOpenURL { url in
-                    _ = ApplicationDelegate.shared.application(
-                        UIApplication.shared,
-                        open: url,
-                        options: [:]
-                    )
+                    #if INCLUDE_SERVER
+                    if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
+                        let pathOrHost = url.host ?? url.path
+                        if pathOrHost == "login" || pathOrHost == "/login" {
+                            if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+                               let queryItems = components.queryItems,
+                               let code = queryItems.first(where: { $0.name == "code" })?.value {
+                                wsController.shared.send(request: .getPublicKey(code: code))
+                            }
+                        }
+                        return
+                    }
+                    #endif
+                    
+                    #if os(iOS)
+                    if let scheme = url.scheme, scheme.lowercased() != "nativegrind" {
+                        _ = ApplicationDelegate.shared.application(
+                            UIApplication.shared,
+                            open: url,
+                            options: [:]
+                        )
+                    }
+                    #endif
                 }
-                #endif
         }
         #if os(macOS)
         Settings {
             if #available(macOS 15.0, *) {
                 TabView {
+                    #if INCLUDE_SERVER
+                        Tab("NS Account", systemImage: "person.crop.circle.badge.checkmark") {
+                            nsAccountSettingView()
+                        }
+                    #endif
                     Tab("Debug", systemImage: "ladybug") {
                         debugSettingView()
                     }
@@ -113,6 +135,14 @@ struct myApp: App {
                 .fixedSize()
             } else {
                 settingsView()
+            }
+        }
+        .commands {
+            CommandMenu("Account") {
+                Button("Log Out") {
+                    sessionManager.shared.logout()
+                }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
             }
         }
         #endif
@@ -198,27 +228,18 @@ struct contentView: View {
                     }
                     .tag(unprotectedRoute.advancedLogin)
                     
+                    #if INCLUDE_SERVER
                     NavigationStack(path: $router.unprotectedPath) {
-                        unprotectedRoute.resetPassword
+                        unprotectedRoute.loginWQR
                             .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
-                        Label("Reset Password", systemImage: "person.badge.key")
+                        Label("QR Login", systemImage: "key")
                     }
-                    .tag(unprotectedRoute.resetPassword)
-                    
-                    NavigationStack(path: $router.unprotectedPath) {
-                        unprotectedRoute.register
-                            .navigationDestination(for: unprotectedRoute.self) { route in
-                                route
-                            }
-                    }
-                    .tabItem {
-                        Label("Register", systemImage: "person.badge.plus")
-                    }
-                    .tag(unprotectedRoute.register)
+                    .tag(unprotectedRoute.loginWQR)
+                    #endif
                 }
             }
         }

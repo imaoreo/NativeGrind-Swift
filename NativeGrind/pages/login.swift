@@ -20,6 +20,7 @@ struct loginView: View {
     @State private var username = ""
     @State private var password = ""
     @Environment(navigationRouter.self) private var router
+    @Environment(\.colorScheme) private var colorScheme
 
     private var containerWidth: CGFloat {
         #if os(tvOS)
@@ -121,12 +122,12 @@ struct loginView: View {
             VStack(
                 spacing: 10
             ) {
-                Text("Please Login To NativeGrind")
+                Text("Welcome Back")
                     .font(.system(textSize, design: .rounded))
                     .bold()
                     .multilineTextAlignment(.center)
 
-                Text("Welcome Back! Please enter your credentials to access your account.")
+                Text("Enter your login details or connect with your other accounts")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -154,7 +155,7 @@ struct loginView: View {
             Button(action: {
                 handleEmailSignIn()
             }) {
-                Text("Login")
+                Text("Sign In")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -188,8 +189,14 @@ struct loginView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.black)
-                    .cornerRadius(10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.black)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(colorScheme == .dark ? Color(red: 218/255, green: 220/255, blue: 224/255) : Color.clear, lineWidth: 1)
+                    )
                 }
                 .buttonStyle(.plain)
 
@@ -208,8 +215,14 @@ struct loginView: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.white)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(colorScheme == .light ? Color(red: 218/255, green: 220/255, blue: 224/255) : Color.clear, lineWidth: 1)
+                    )
                 }
                 .buttonStyle(.plain)
                 #endif

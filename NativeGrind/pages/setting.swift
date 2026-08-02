@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import NativeGrindCore
 
 struct settingsView: View {
+    @State private var showLogoutConfirm = false
+    
     var body: some View {
         NavigationStack {
             Form {
                 Section {
+                    #if INCLUDE_SERVER
+                        NavigationLink {
+                            nsAccountSettingView()
+                        } label: {
+                            Label("NS Account", systemImage: "person.crop.circle.badge.checkmark")
+                        }
+                    #endif
+
                     NavigationLink {
                         debugSettingView()
                     } label: {
@@ -32,8 +43,26 @@ struct settingsView: View {
                 } header: {
                     Text("General")
                 }
+                    
+                Section {
+                    Button(role: .destructive) {
+                        showLogoutConfirm = true
+                    } label: {
+                        Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                } header: {
+                    Text("Account")
+                }
             }
             .navigationTitle("Settings")
+            .alert("Log Out", isPresented: $showLogoutConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Log Out", role: .destructive) {
+                    sessionManager.shared.logout()
+                }
+            } message: {
+                Text("Are you sure you want to log out?")
+            }
         }
     }
 }

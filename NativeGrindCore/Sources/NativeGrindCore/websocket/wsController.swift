@@ -39,7 +39,7 @@ public final class wsController: ObservableObject {
         connect(to: url, for: domain)
     }
     
-    public func connect(to url: URL, for domain: wsDomain) {
+    internal func connect(to url: URL, for domain: wsDomain) {
         desiredDomains.insert(domain)
         guard webSocketTasks[domain] == nil else { return }
         
@@ -51,8 +51,19 @@ public final class wsController: ObservableObject {
                 request.setValue("Grindr3 \(sessionId)", forHTTPHeaderField: "Authorization")
             }
         } else if domain == .nativeServer {
-            if let apiKey = keychainManager.shared.getToken(type: .apiKey) {
-                request.setValue(apiKey, forHTTPHeaderField: "x-companion-api-key")
+            var currentDeviceId = keychainManager.shared.getToken(type: .deviceId)
+            
+            if currentDeviceId == nil {
+                do {
+                    let _ = try cryptoController.shared.generateAndStoreKeyPair()
+                    
+                    let newDeviceId = UUID().uuidString
+                    keychainManager.shared.saveToken(newDeviceId, type: .deviceId)
+                    
+                    currentDeviceId = newDeviceId
+                } catch {
+                    errorManager.shared.error("wsController", "Failed to generate hardware keys - \(error)")
+                }
             }
         }
         
@@ -63,24 +74,9 @@ public final class wsController: ObservableObject {
         
         task.resume()
         
-        if domain == .main {
-            connectedDomains.insert(domain)
-        } else if domain == .nativeServer {
-            if keychainManager.shared.getToken(type: .apiKey) != nil {
-                connectedDomains.insert(domain)
-            } else {
-                if wsController.isAppAttestSupported {
-                    errorManager.shared.log("wsController", "No API key found. Initiating App Attest handshake...")
-                    send(request: wsRequest<String>.getChallenge())
-                } else {
-                    errorManager.shared.log("wsController", "No API key found and App Attest is not supported. Connecting as Unauthorized.")
-                    connectedDomains.insert(domain)
-                }
-            }
-        }
+        connectedDomains.insert(domain)
         
         listen(to: domain)
-        startPingTimer()
     }
     
     public func disconnect(domain: wsDomain? = nil) {
@@ -97,19 +93,23 @@ public final class wsController: ObservableObject {
             webSocketTasks.removeAll()
             connectedDomains.removeAll()
         }
-        
-        if webSocketTasks.isEmpty {
-            stopPingTimer()
-        }
     }
     
     public func send<T: Codable>(request: wsRequest<T>) {
-        guard let task = webSocketTasks[request.domain] else {
-            errorManager.shared.log("wsController","WebSocket Error: Attempted to send to \(request.domain), but it is not connected.")
-            return
+        let domain = request.domain
+        let isNewConnection = (webSocketTasks[domain] == nil)
+        
+        if isNewConnection {
+            connect(to: domain)
         }
         
         Task {
+            if isNewConnection {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+            
+            guard let task = await MainActor.run(body: { self.webSocketTasks[domain] }) else { return }
+            
             do {
                 let data = try request.encode()
                 let message = URLSessionWebSocketTask.Message.data(data)
@@ -190,35 +190,6 @@ public final class wsController: ObservableObject {
         }
     }
     
-    private func startPingTimer() {
-        guard pingTimer == nil else { return }
-        pingTimer = Task { @MainActor in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
-                guard !Task.isCancelled else { break }
-                
-                sendPings()
-            }
-        }
-    }
-    
-    private func stopPingTimer() {
-        pingTimer?.cancel()
-        pingTimer = nil
-    }
-    
-    private func sendPings() {
-        for (domain, task) in webSocketTasks {
-            task.sendPing { [weak self] error in
-                if let error = error {
-                    Task { @MainActor in
-                        errorManager.shared.log("wsController", "Ping failed for \(domain): \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
-    }
-    
     public func setConnected(domain: wsDomain, connected: Bool) {
         if connected {
             connectedDomains.insert(domain)
@@ -241,4 +212,41 @@ public final class wsController: ObservableObject {
             }
             .eraseToAnyPublisher()
     }
+
+    public func sendAndWait<Req: Codable & Sendable, Res: Decodable & Sendable>(
+        request: wsRequest<Req>,
+        expectedEvent: wsEvent<Res>,
+        timeout: TimeInterval = 10.0
+    ) async -> Res? {
+        
+        let waiter = wsWaiter<Res>()
+        let pub = publisher(for: expectedEvent)
+        
+        let result = await waiter.wait(publisher: pub, timeout: timeout) {
+            self.send(request: request)
+        }
+        
+        if result == nil {
+            errorManager.shared.log("wsController", "WebSocket request timed out for \(request.domain). Reconnecting...")
+            self.disconnect(domain: request.domain)
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            self.connect(to: request.domain)
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            
+            let retryWaiter = wsWaiter<Res>()
+            let retryPub = publisher(for: expectedEvent)
+            return await retryWaiter.wait(publisher: retryPub, timeout: timeout) {
+                self.send(request: request)
+            }
+        }
+        
+        return result
+    }
+
+    #if DEBUG
+    internal func simulateIncomingMessage(domain: wsDomain, data: Data) {
+        incomingDataSubject.send((domain: domain, data: data))
+    }
+    #endif
 }
+

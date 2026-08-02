@@ -17,19 +17,6 @@ struct browseView: View {
             
             Spacer()
             
-            Button(action: {
-                sessionManager.shared.logout()
-            }) {
-                Text("Log Out")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
-            }
-            .buttonStyle(.plain)
-            
             #if DEBUG
             Button(action: {
                 Task{
@@ -39,21 +26,6 @@ struct browseView: View {
                 
             }) {
                 Text("fetch profile")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
-            }
-            .buttonStyle(.plain)
-            
-            Button(action: {
-                Task {
-                    wsController.shared.send(request: wsRequest<String>.getChallenge())
-                }
-            }) {
-                Text("test attest")
                     .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)

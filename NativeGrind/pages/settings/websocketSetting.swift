@@ -27,61 +27,9 @@ struct websocketsSettingView: View {
         Form {
             Section(header: Text("Websocket Connections")) {
                 connectionRow(domain: .main, displayName: "Grindr Main WS")
+                #if INCLUDE_SERVER
                 connectionRow(domain: .nativeServer, displayName: "Native Server WS")
-            }
-            
-            Section(header: Text("Actions (Native Server)")) {
-                Button("Send Get Challenge") {
-                    wsController.shared.send(request: wsRequest<String>.getChallenge())
-                    logAction(domain: .nativeServer, "Sent: getChallenge")
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                Button("Send Get Auth Status") {
-                    wsController.shared.send(request: wsRequest<String>.getAuthStatus())
-                    logAction(domain: .nativeServer, "Sent: getAuthStatus")
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    Toggle("Want Login", isOn: $wantLogin)
-                    Button("Send Initiate Pairing") {
-                        wsController.shared.send(request: wsRequest<initiatePairingRequest>.initiatePairing(wantLogin: wantLogin))
-                        logAction(domain: .nativeServer, "Sent: initiatePairing(wantLogin: \(wantLogin))")
-                    }
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    TextField("Session ID", text: $customSessionId)
-                        .textFieldStyle(.roundedBorder)
-                        .autocorrectionDisabled(true)
-                        #if !os(macOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                    Button("Send Authorize Companion") {
-                        wsController.shared.send(request: wsRequest<authorizeCompanionRequest>.authorizeCompanion(sessionId: customSessionId))
-                        logAction(domain: .nativeServer, "Sent: authorizeCompanion(sessionId: \(customSessionId))")
-                    }
-                    .disabled(customSessionId.isEmpty)
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
-                
-                VStack(alignment: .leading) {
-                    SecureField("API Key", text: $customApiKey)
-                        .textFieldStyle(.roundedBorder)
-                        .privacySensitive()
-                        .autocorrectionDisabled(true)
-                        #if !os(macOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                    Button("Send Auth Request") {
-                        wsController.shared.send(request: wsRequest<[String: String]>.auth(apiKey: customApiKey))
-                        logAction(domain: .nativeServer, "Sent: auth(apiKey: \(customApiKey))")
-                    }
-                    .disabled(customApiKey.isEmpty)
-                }
-                .disabled(!controller.connectedDomains.contains(.nativeServer))
+                #endif
             }
             
             Section(header: HStack {
@@ -158,9 +106,7 @@ struct websocketsSettingView: View {
                 if isConnected {
                     wsController.shared.disconnect(domain: domain)
                 } else {
-                    if let url = URL(string: domain.rawValue) {
-                        wsController.shared.connect(to: url, for: domain)
-                    }
+                    wsController.shared.connect(to: domain)
                 }
             }
             .buttonStyle(.bordered)
