@@ -12,6 +12,7 @@ public enum nsStorageError: Error {
     case invalidData
     case decodingFailed
     case encodingFailed
+    case unauthorized
 }
 
 public final class nsStorageController: Sendable {
@@ -21,6 +22,10 @@ public final class nsStorageController: Sendable {
     
     // Get Private Data
     public func getData<T: Codable>(location: nsStorageLocation<T>) async throws -> T {
+        guard await wsController.shared.isServerAuthorized else {
+            throw nsStorageError.unauthorized
+        }
+        
         guard let data = await wsController.shared.sendAndWait(
             request: .getData(location: location.path),
             expectedEvent: .onDataGet
@@ -61,6 +66,10 @@ public final class nsStorageController: Sendable {
         }
         
         let encryptedData = try cryptoController.shared.encryptTextWithSharedKey(text: jsonString)
+        
+        guard await wsController.shared.isServerAuthorized else {
+            throw nsStorageError.unauthorized
+        }
         
         guard let data = await wsController.shared.sendAndWait(
             request: .saveData(location: location.path, encryptedData: encryptedData),

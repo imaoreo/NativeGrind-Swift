@@ -119,5 +119,26 @@ public final class webSocketAttestManager {
                 }
             }
             .store(in: &cancellables)
+            
+        wsController.shared.publisher(for: .onDeviceAuth)
+            .sink { payload in
+                Task {
+                    if payload.status == .success {
+                        await MainActor.run {
+                            wsController.shared.isServerAuthorized = true
+                        }
+                        do {
+                            try await accountController.shared.syncFromCloud()
+                        } catch {
+                            errorManager.shared.error("nsConnect", "Failed to sync after device auth: \(error.localizedDescription)")
+                        }
+                    } else {
+                        await MainActor.run {
+                            wsController.shared.isServerAuthorized = false
+                        }
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 }

@@ -27,6 +27,7 @@ public final class wsController: ObservableObject {
     }
     
     @Published public private(set) var connectedDomains: Set<wsDomain> = []
+    @Published public var isServerAuthorized: Bool = false
     
     public init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
@@ -85,6 +86,9 @@ public final class wsController: ObservableObject {
             webSocketTasks[domain]?.cancel(with: .normalClosure, reason: nil)
             webSocketTasks.removeValue(forKey: domain)
             connectedDomains.remove(domain)
+            if domain == .nativeServer {
+                isServerAuthorized = false
+            }
         } else {
             desiredDomains.removeAll()
             for task in webSocketTasks.values {
@@ -92,6 +96,7 @@ public final class wsController: ObservableObject {
             }
             webSocketTasks.removeAll()
             connectedDomains.removeAll()
+            isServerAuthorized = false
         }
     }
     
