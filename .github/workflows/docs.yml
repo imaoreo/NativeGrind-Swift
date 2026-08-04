@@ -54,17 +54,6 @@ jobs:
           fi
           xcrun docc process-archive transform-for-static-hosting "$APP_ARCHIVE" --output-path ./docs-out/app --hosting-base-path "${{ github.event.repository.name }}/app"
 
-      - name: Build Docs for NativeGrindServer
-        run: |
-          set -euo pipefail
-          xcodebuild docbuild -scheme "NativeGrindServer" -derivedDataPath ./build/NativeGrindServer CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-          SERVER_ARCHIVE=$(find ./build/NativeGrindServer -type d -name "NativeGrindServer.doccarchive" | head -1)
-          if [ -z "${SERVER_ARCHIVE:-}" ] || [ ! -d "$SERVER_ARCHIVE" ]; then
-            echo "NativeGrindServer.doccarchive not found"
-            exit 1
-          fi
-          xcrun docc process-archive transform-for-static-hosting "$SERVER_ARCHIVE" --output-path ./docs-out/server --hosting-base-path "${{ github.event.repository.name }}/server"
-
       - name: Build Docs for NativeGrindCore
         run: |
           set -euo pipefail
@@ -94,13 +83,11 @@ jobs:
         run: |
           APP_DOC_PATH=$(find ./docs-out/app/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/app||')
           CORE_DOC_PATH=$(find ./docs-out/core/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/core||')
-          SERVER_DOC_PATH=$(find ./docs-out/server/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/server||')
           WATCH_DOC_PATH=$(find ./docs-out/watch/documentation -mindepth 1 -maxdepth 1 -type d | head -1 | sed 's|^./docs-out/watch||')
 
           APP_HREF="${APP_DOC_PATH:-/documentation/nativegrind}"
           CORE_HREF="${CORE_DOC_PATH:-/documentation/nativegrindcore}"
           WATCH_HREF="${WATCH_DOC_PATH:-/documentation/watchnativegrind_watch_app}"
-          SERVER_HREF="${SERVER_DOC_PATH:-/documentation/nativegrindserver}"
 
           cat << EOF > ./docs-out/index.html
           <!DOCTYPE html>
@@ -122,7 +109,6 @@ jobs:
                   <h1>NativeGrind Documentation Portal</h1>
                 <a class="card" href="./app${APP_HREF}">NativeGrind iOS App Docs</a>
                 <a class="card" href="./core${CORE_HREF}">NativeGrindCore Framework Docs</a>
-                <a class="card" href="./server${SERVER_HREF}">NativeGrindServer Docs</a>
                 <a class="card" href="./watch${WATCH_HREF}">NativeGrind Watch Docs</a>
               </div>
           </body>
