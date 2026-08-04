@@ -20,6 +20,9 @@ public struct nsAccountSettingView: View {
     @State private var statusMessage: String?
     @State private var showCreateConfirm = false
     @State private var showDeleteConfirm = false
+    
+    @State private var linkCodeInput = ""
+    @State private var isLinking = false
 
     public init() {}
 
@@ -93,7 +96,29 @@ public struct nsAccountSettingView: View {
                 }
             }
 
-            if accountKey != nil {
+            if let key = accountKey, !key.isEmpty {
+                Section(header: Text("Link New Device")) {
+                    HStack {
+                        TextField("Enter 8-digit link code", text: $linkCodeInput)
+                            #if os(iOS)
+                            .keyboardType(.numberPad)
+                            #endif
+                            .disableAutocorrection(true)
+                        
+                        Button {
+                            linkDeviceAction()
+                        } label: {
+                            if isLinking {
+                                ProgressView()
+                            } else {
+                                Text("Link")
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        .disabled(linkCodeInput.count != 8 || isLinking)
+                    }
+                }
+
                 Section(header: HStack {
                     Text("Linked Devices (\(devices.count))")
                     Spacer()
@@ -188,6 +213,22 @@ public struct nsAccountSettingView: View {
                 fetchDevices()
             }
         }
+        .onReceive(controller.publisher(for: wsEvent<nsDevicePublicKeyResponse>.onDevicePublicKey)) { response in
+            if response.status == nsStatus.failed {
+                isLinking = false
+                statusMessage = "Link failed: \(response.message)"
+            }
+        }
+        .onReceive(controller.publisher(for: .onDeviceLinked)) { response in
+            isLinking = false
+            if response.status == nsStatus.success {
+                linkCodeInput = ""
+                statusMessage = "Device linked successfully!"
+                fetchDevices()
+            } else {
+                statusMessage = "Link failed: \(response.message)"
+            }
+        }
         .onReceive(controller.publisher(for: .onAccountDeleted)) { response in
             if (response.status == .success || response.message == "Device is not associated with any account") {
                 isLoading = false
@@ -217,7 +258,7 @@ public struct nsAccountSettingView: View {
         .onAppear {
             accountKey = keychainManager.shared.getToken(type: .accountKey)
             currentDeviceId = keychainManager.shared.getToken(type: .deviceId)
-            if accountKey != nil {
+            if accountKey.map({ !$0.isEmpty }) == true {
                 fetchDevices()
             }
         }
@@ -247,6 +288,13 @@ public struct nsAccountSettingView: View {
 
     private func removeDeviceAction(_ deviceId: String) {
         wsController.shared.send(request: .removeDevice(deviceId: deviceId))
+    }
+
+    private func linkDeviceAction() {
+        guard let key = accountKey, !key.isEmpty, linkCodeInput.count == 8 else { return }
+        isLinking = true
+        statusMessage = "Requesting device public key..."
+        wsController.shared.send(request: .getPublicKey(code: linkCodeInput))
     }
 }
 
