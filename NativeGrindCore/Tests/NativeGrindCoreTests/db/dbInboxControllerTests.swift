@@ -100,8 +100,8 @@ struct dbInboxControllerTests {
         #expect(history.last?.conversationId == chatId)
         
         // The first one is the newest, the last one is the oldest
-        #expect(history.first?.preview.text == "yas")
-        #expect(history.last?.preview.text == "Hello")
+        #expect(history.first?.preview?.text == "yas")
+        #expect(history.last?.preview?.text == "Hello")
     }
     
     @Test("Verifies fetchInboxDiffs returns an empty array if the inbox doesn't exist")

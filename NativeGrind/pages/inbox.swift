@@ -191,7 +191,7 @@ struct inboxRow: View {
                     }
                 }
                 
-                Text(conversation.preview.text ?? "")
+                Text(conversation.preview?.text ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)

@@ -27,7 +27,7 @@ public struct conversationData: Codable, Sendable {
     public let participants: [conversationParticipant]
     public let lastActivityTimestamp: Int
     public let unreadCount: Int
-    public let preview: conversationPreview
+    public let preview: conversationPreview?
     public let muted: Bool
     public let pinned: Bool
     public let favorite: Bool
