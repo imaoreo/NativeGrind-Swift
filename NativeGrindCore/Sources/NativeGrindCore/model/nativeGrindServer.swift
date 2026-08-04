@@ -142,3 +142,30 @@ public struct nsSaveDataResponse: nsResponseProtocol, Codable, Sendable {
     public let accountId: String?
     public let location: String?
 }
+
+public struct nsSyncProfileRequest: Codable, Sendable {
+    public let profile: profile
+    public let geohash: String?
+    
+    public init(profile: profile, geohash: String?) {
+        self.profile = profile
+        self.geohash = geohash
+    }
+}
+
+public struct nsSyncProfileResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let profileId: String?
+    public let missingMediaHashes: [String]?
+}
+
+public struct nsUploadMedia: Codable, Sendable {
+    public let mediaHash: String
+    public let base64Data: String
+    
+    public init(mediaHash: String, base64Data: String) {
+        self.mediaHash = mediaHash
+        self.base64Data = base64Data
+    }
+}

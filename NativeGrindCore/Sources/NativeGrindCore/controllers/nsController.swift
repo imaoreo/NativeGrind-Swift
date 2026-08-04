@@ -158,5 +158,15 @@ public final class webSocketAttestManager {
                 }
             }
             .store(in: &cancellables)
+
+        wsController.shared.publisher(for: .onProfileSynced)
+            .sink { payload in
+                Task {
+                    if let missing = payload.missingMediaHashes {
+                        await profileController.shared.proactiveSyncMissingMedias(missing)
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 }

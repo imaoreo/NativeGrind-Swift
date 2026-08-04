@@ -134,4 +134,19 @@ public extension wsRequest {
         )
     }
 
+    static func syncSeenProfile(profile: profile, geohash: String?) -> wsRequest<nsSyncProfileRequest> {
+        return wsRequest<nsSyncProfileRequest>(
+            domain: .nativeServer,
+            eventName: "sync_seen_profile",
+            payload: nsSyncProfileRequest(profile: profile, geohash: geohash)
+        )
+    }
+
+    static func uploadMedia(mediaHash: String, base64Data: String) -> wsRequest<nsUploadMedia> {
+        return wsRequest<nsUploadMedia>(
+            domain: .nativeServer,
+            eventName: "upload_media",
+            payload: nsUploadMedia(mediaHash: mediaHash, base64Data: base64Data)
+        )
+    }
 }

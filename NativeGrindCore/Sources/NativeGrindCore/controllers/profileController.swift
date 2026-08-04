@@ -9,6 +9,7 @@ public enum profileSource {
 public actor profileController {
     public static let shared = profileController()
     public let dbController: dbProfileController
+    private var missingMediaHashesOnServer = Set<String>()
     
     private init() {
         do {
@@ -17,6 +18,13 @@ public actor profileController {
             self.dbController = dbProfileController(modelContainer: container)
         } catch {
             fatalError("Container failed: \(error)")
+        }
+    }
+    
+    public func proactiveSyncMissingMedias(_ hashes: [String]) async {
+        for hash in hashes {
+            missingMediaHashesOnServer.insert(hash)
+            _ = await fetchProfileImage(size: .size1024, mediaHash: hash)
         }
     }
     
@@ -29,6 +37,11 @@ public actor profileController {
             }
             
             try await dbController.updateProfile(profileId: profileId, profile: profile)
+            
+            if await wsController.shared.isServerAuthorized {
+                let geohash = await locationController.shared.currentGeohash
+                await wsController.shared.send(request: .syncSeenProfile(profile: profile, geohash: geohash))
+            }
         } catch {
             let isNetworkError = (error as? requestError) == .networkError
                 
@@ -87,6 +100,15 @@ public actor profileController {
     public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
         do {
             let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+            
+            if let data, self.missingMediaHashesOnServer.contains(mediaHash) {
+                let base64String = data.base64EncodedString()
+                if await wsController.shared.isServerAuthorized {
+                    await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
+                }
+                self.missingMediaHashesOnServer.remove(mediaHash)
+            }
+            
             return data
         } catch {
             let isNetworkError = (error as? requestError) == .networkError
