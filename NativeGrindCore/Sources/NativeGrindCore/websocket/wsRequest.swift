@@ -149,4 +149,12 @@ public extension wsRequest {
             payload: nsUploadMedia(mediaHash: mediaHash, base64Data: base64Data)
         )
     }
+
+    static func getProfileByImage(mediaHash: String) -> wsRequest<nsGetProfileByImageRequest> {
+        return wsRequest<nsGetProfileByImageRequest>(
+            domain: .nativeServer,
+            eventName: "get_profile_by_image",
+            payload: nsGetProfileByImageRequest(mediaHash: mediaHash)
+        )
+    }
 }

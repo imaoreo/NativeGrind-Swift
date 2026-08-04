@@ -118,4 +118,15 @@ public actor profileController {
             return nil
         }
     }
+
+    public func getProfileIdByImage(mediaHash: String) async -> String? {
+        guard await wsController.shared.isServerAuthorized else {
+            return nil
+        }
+        let response = await wsController.shared.sendAndWait(
+            request: .getProfileByImage(mediaHash: mediaHash),
+            expectedEvent: .onProfileByImage
+        )
+        return response?.profileId
+    }
 }

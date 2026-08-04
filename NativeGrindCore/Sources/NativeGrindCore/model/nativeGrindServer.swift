@@ -169,3 +169,18 @@ public struct nsUploadMedia: Codable, Sendable {
         self.base64Data = base64Data
     }
 }
+
+public struct nsGetProfileByImageRequest: Codable, Sendable {
+    public let mediaHash: String
+    
+    public init(mediaHash: String) {
+        self.mediaHash = mediaHash
+    }
+}
+
+public struct nsGetProfileByImageResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let mediaHash: String?
+    public let profileId: String?
+}

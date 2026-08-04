@@ -81,4 +81,8 @@ public extension wsEvent {
     static var onMediaUploaded: wsEvent<nsResponse> {
         return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_media")
     }
+
+    static var onProfileByImage: wsEvent<nsGetProfileByImageResponse> {
+        return wsEvent<nsGetProfileByImageResponse>(domain: .nativeServer, eventName: "get_profile_by_image")
+    }
 }
