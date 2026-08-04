@@ -154,7 +154,7 @@ struct inboxAvatarView: View {
             guard let mediaHash = conversation.participants.first?.primaryMediaHash, !mediaHash.isEmpty else { return }
             if hasLoaded { return }
             
-            if let data = await profileController.shared.fetchProfileImage(size: .size1024, mediaHash: mediaHash) {
+            if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: mediaHash) {
                 if let platformImage = PlatformImage(data: data) {
                     #if canImport(UIKit)
                         self.avatarImage = Image(uiImage: platformImage)
