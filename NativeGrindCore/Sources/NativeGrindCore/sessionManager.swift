@@ -37,13 +37,15 @@ public final class sessionManager: ObservableObject {
             try await function()
             
             self.isAuthenticated = true
-            await registerCurrentAccount()
+            if isNewLogin {
+                await registerCurrentAccount()
+            }
             
         } catch authenticationError.networkError {
             // make sure there is authToken and sessionId for allowing it to stay authed
             self.isAuthenticated = (self.keychain.getToken(type: .authToken) != nil &&
                                     self.keychain.getToken(type: .sessionId) != nil)
-            if self.isAuthenticated {
+            if self.isAuthenticated && isNewLogin {
                 await registerCurrentAccount()
             }
             if showErrors {

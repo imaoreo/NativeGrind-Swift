@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NativeGrind AES-GCM Decryptor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+            top: -100px;
+            left: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, rgba(0,0,0,0) 70%);
+            bottom: -100px;
+            right: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-align: center;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s ease, filter 0.2s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            display: none;
+        }
+
+        .result-box.error {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .result-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            color: #10b981;
+        }
+
+        .result-box.error .result-title {
+            color: #ef4444;
+        }
+
+        .result-content {
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AES-GCM Decryptor</h1>
+        <div class="subtitle">Decrypt Apple CryptoKit / NativeServer combined sealed boxes</div>
+        
+        <div class="form-group">
+            <label for="accountKey">Account Key (Base64)</label>
+            <input type="text" id="accountKey" placeholder="Enter your Base64 Account Key">
+        </div>
+
+        <div class="form-group">
+            <label for="encryptedData">Encrypted Data (Base64 combined representation)</label>
+            <textarea id="encryptedData" placeholder="Enter the encrypted Base64 string"></textarea>
+        </div>
+
+        <button onclick="performDecryption()">Decrypt Content</button>
+
+        <div id="resultBox" class="result-box">
+            <div id="resultTitle" class="result-title">Decrypted Data</div>
+            <div id="resultContent" class="result-content"></div>
+        </div>
+    </div>
+
+    <script>
+        async function decryptAESGCM(base64Ciphertext, base64Key) {
+            // Convert Base64 key to ArrayBuffer
+            const keyBytes = Uint8Array.from(atob(base64Key.trim()), c => c.charCodeAt(0));
+            // Convert Base64 ciphertext to Uint8Array
+            const combinedBytes = Uint8Array.from(atob(base64Ciphertext.trim()), c => c.charCodeAt(0));
+            
+            if (combinedBytes.length < 28) {
+                throw new Error("Encrypted data is too short to be a valid AES-GCM combined box (must be at least 28 bytes).");
+            }
+            
+            // Extract Nonce (first 12 bytes), Tag (last 16 bytes), and Ciphertext (middle)
+            const nonce = combinedBytes.slice(0, 12);
+            const tag = combinedBytes.slice(combinedBytes.length - 16);
+            const ciphertext = combinedBytes.slice(12, combinedBytes.length - 16);
+            
+            // Combine ciphertext and tag for Web Crypto API
+            const ciphertextWithTag = new Uint8Array(ciphertext.length + tag.length);
+            ciphertextWithTag.set(ciphertext, 0);
+            ciphertextWithTag.set(tag, ciphertext.length);
+            
+            // Import Key
+            const cryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyBytes,
+                { name: "AES-GCM" },
+                false,
+                ["decrypt"]
+            );
+            
+            // Decrypt
+            const decryptedBuffer = await window.crypto.subtle.decrypt(
+                {
+                    name: "AES-GCM",
+                    iv: nonce,
+                    tagLength: 128
+                },
+                cryptoKey,
+                ciphertextWithTag
+            );
+            
+            // Decode to string
+            return new TextDecoder().decode(decryptedBuffer);
+        }
+
+        async function performDecryption() {
+            const key = document.getElementById('accountKey').value;
+            const encrypted = document.getElementById('encryptedData').value;
+            const resultBox = document.getElementById('resultBox');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            if (!key || !encrypted) {
+                showError("Please enter both the Account Key and the Encrypted Data.");
+                return;
+            }
+
+            try {
+                const decryptedText = await decryptAESGCM(encrypted, key);
+                resultBox.className = "result-box";
+                resultTitle.innerText = "Decrypted JSON/Text";
+                resultContent.innerText = decryptedText;
+                resultBox.style.display = "block";
+            } catch (err) {
+                showError("Decryption Failed: " + err.message);
+            }
+        }
+
+        function showError(message) {
+            const resultBox = document.getElementById('resultBox');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            resultBox.className = "result-box error";
+            resultTitle.innerText = "Error";
+            resultContent.innerText = message;
+            resultBox.style.display = "block";
+        }
+    </script>
+</body>
+</html>

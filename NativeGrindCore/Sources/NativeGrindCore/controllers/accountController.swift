@@ -53,28 +53,35 @@ public actor accountController {
     public func syncToCloud() async throws {
         guard appEnvironment.isServerEnabled else { return }
         guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
-        _ = try await nsStorageController.shared.saveData(location: .accounts, data: accounts)
+        let cloudAccounts = accounts.map { nsCloudAccount(from: $0) }
+        _ = try await nsStorageController.shared.saveData(location: .accounts, data: cloudAccounts)
     }
     
     public func syncFromCloud() async throws {
         guard appEnvironment.isServerEnabled else { return }
         guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
-        self.accounts = try await nsStorageController.shared.getData(location: .accounts)
+        let cloudAccounts = try await nsStorageController.shared.getData(location: .accounts)
+        
+        self.accounts = cloudAccounts.map { cloudAcc in
+            let activeSessionId = (currentAccount?.data == cloudAcc.data && currentAccount?.isEmail == cloudAcc.isEmail)
+                ? (currentAccount?.sessionId ?? "")
+                : ""
+            return cloudAcc.toAccount(sessionId: activeSessionId)
+        }
         saveLocalAccounts()
         
         if let current = currentAccount {
             if let matchingAccount = accounts.first(where: { $0.data == current.data && $0.isEmail == current.isEmail }) {
-                if matchingAccount.sessionId != current.sessionId || matchingAccount.authToken != current.authToken {
-                    currentAccount = matchingAccount
-                    keychainManager.shared.saveToken(matchingAccount.sessionId, type: .sessionId)
+                if matchingAccount.authToken != current.authToken {
+                    let updatedAccount = nsAccount(
+                        authToken: matchingAccount.authToken,
+                        sessionId: current.sessionId,
+                        isEmail: matchingAccount.isEmail,
+                        data: matchingAccount.data
+                    )
+                    currentAccount = updatedAccount
                     keychainManager.shared.saveToken(matchingAccount.authToken, type: .authToken)
-                    
-                    if await sessionManager.shared.isAuthenticated {
-                        await MainActor.run {
-                            wsController.shared.disconnect(domain: .main)
-                            wsController.shared.connect(to: .main)
-                        }
-                    }
+                    await sessionManager.shared.refreshToken()
                 }
             } else {
                 currentAccount = nil

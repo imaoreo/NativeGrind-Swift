@@ -11,9 +11,25 @@ public struct nsStorageLocation<T: Codable> {
     public let path: String
 }
 
+public struct nsCloudAccount: Codable, Sendable {
+    public var authToken: String
+    public var isEmail: String
+    public var data: String
+    
+    public init(from account: nsAccount) {
+        self.authToken = account.authToken
+        self.isEmail = account.isEmail
+        self.data = account.data
+    }
+    
+    public func toAccount(sessionId: String = "") -> nsAccount {
+        return nsAccount(authToken: authToken, sessionId: sessionId, isEmail: isEmail, data: data)
+    }
+}
+
 public extension nsStorageLocation {
-    static var accounts: nsStorageLocation<[nsAccount]> {
-        return nsStorageLocation<[nsAccount]>(path: "grindr_accounts")
+    static var accounts: nsStorageLocation<[nsCloudAccount]> {
+        return nsStorageLocation<[nsCloudAccount]>(path: "grindr_accounts")
     }
 }
 
