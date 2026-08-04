@@ -42,8 +42,8 @@ public actor accountController {
     }
     
     public func removeAccount(sessionId: String) async throws {
-        accounts.removeAll { $0.sessionId == sessionId }
-        if currentAccount?.sessionId == sessionId {
+        accounts.removeAll { $0.sessionId == sessionId || $0.data == sessionId }
+        if currentAccount?.sessionId == sessionId || currentAccount?.data == sessionId {
             currentAccount = nil
         }
         saveLocalAccounts()

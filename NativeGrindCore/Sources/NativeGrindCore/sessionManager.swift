@@ -248,12 +248,11 @@ public final class sessionManager: ObservableObject {
         activeRefreshTask = nil
     }
     
-    /// Clears credentials and tears down the active state
     public func logout(isSwitching: Bool = false) async {
-        let currentSessionId = keychain.getToken(type: .sessionId)
+        let currentData = keychain.getToken(type: .data)
         
-        if !isSwitching, let sessionId = currentSessionId {
-            try? await accountController.shared.removeAccount(sessionId: sessionId)
+        if !isSwitching, let data = currentData {
+            try? await accountController.shared.removeAccount(sessionId: data)
         }
         
         keychain.deleteToken(type: .authToken)
