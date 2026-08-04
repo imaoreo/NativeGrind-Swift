@@ -96,7 +96,7 @@ public struct nsAccountSettingView: View {
                 }
             }
 
-            if accountKey != nil {
+            if let key = accountKey, !key.isEmpty {
                 Section(header: Text("Link New Device")) {
                     HStack {
                         TextField("Enter 8-digit link code", text: $linkCodeInput)
@@ -258,7 +258,7 @@ public struct nsAccountSettingView: View {
         .onAppear {
             accountKey = keychainManager.shared.getToken(type: .accountKey)
             currentDeviceId = keychainManager.shared.getToken(type: .deviceId)
-            if accountKey != nil {
+            if accountKey.map({ !$0.isEmpty }) == true {
                 fetchDevices()
             }
         }
@@ -291,7 +291,7 @@ public struct nsAccountSettingView: View {
     }
 
     private func linkDeviceAction() {
-        guard linkCodeInput.count == 8 else { return }
+        guard let key = accountKey, !key.isEmpty, linkCodeInput.count == 8 else { return }
         isLinking = true
         statusMessage = "Requesting device public key..."
         wsController.shared.send(request: .getPublicKey(code: linkCodeInput))
