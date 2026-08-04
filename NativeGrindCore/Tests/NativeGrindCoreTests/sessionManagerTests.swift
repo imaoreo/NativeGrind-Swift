@@ -20,8 +20,8 @@ struct sessionManagerTests {
         keychainManager.shared.deleteToken(type: .sessionId)
     }
     
-    private func setupTestState() {
-        sessionManager.shared.logout()
+    private func setupTestState() async {
+        await sessionManager.shared.logout()
         errorManager.shared.clearLogs()
         clearKeychain()
         MockURLProtocol.shared.handler = nil
@@ -32,7 +32,7 @@ struct sessionManagerTests {
     @Test("Verifies logout clears all keychain data and resets authentication state")
     func testLogoutClearsState() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             
             let manager = sessionManager.shared
             let keychain = keychainManager.shared
@@ -44,7 +44,7 @@ struct sessionManagerTests {
             keychain.saveToken("test@example.com", type: .data)
             
             // logout
-            manager.logout()
+            await manager.logout()
             
             // Make sure every field is wiped
             #expect(manager.isAuthenticated == false)
@@ -58,7 +58,7 @@ struct sessionManagerTests {
     @Test("Verifies refreshToken fails and logs out if keychain credentials are missing")
     func testRefreshFailsWithEmptyKeychain() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             
             let manager = sessionManager.shared
             
@@ -76,7 +76,7 @@ struct sessionManagerTests {
     @Test("Verifies offline fallback keeps user authenticated if network fails but tokens exist")
     func testOfflineFallbackRetainsAuthentication() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             
             let manager = sessionManager.shared
             let keychain = keychainManager.shared
@@ -109,7 +109,7 @@ struct sessionManagerTests {
     @Test("Verifies network error does NOT keep user authenticated if tokens are missing")
     func testOfflineFallbackFailsIfTokensMissing() async throws {
         try await TestSerializer.shared.run {
-            setupTestState()
+            await setupTestState()
             
             let manager = sessionManager.shared
             let keychain = keychainManager.shared

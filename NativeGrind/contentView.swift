@@ -137,7 +137,9 @@ struct myApp: App {
         .commands {
             CommandMenu("Account") {
                 Button("Log Out") {
-                    sessionManager.shared.logout()
+                    Task {
+                        await sessionManager.shared.logout()
+                    }
                 }
                 .keyboardShortcut("l", modifiers: [.command, .shift])
             }

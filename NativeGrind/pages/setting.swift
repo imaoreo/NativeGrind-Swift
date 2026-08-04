@@ -58,7 +58,9 @@ struct settingsView: View {
             .alert("Log Out", isPresented: $showLogoutConfirm) {
                 Button("Cancel", role: .cancel) {}
                 Button("Log Out", role: .destructive) {
-                    sessionManager.shared.logout()
+                    Task {
+                        await sessionManager.shared.logout()
+                    }
                 }
             } message: {
                 Text("Are you sure you want to log out?")

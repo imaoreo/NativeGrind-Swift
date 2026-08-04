@@ -43,6 +43,9 @@ public actor accountController {
     
     public func removeAccount(sessionId: String) async throws {
         accounts.removeAll { $0.sessionId == sessionId }
+        if currentAccount?.sessionId == sessionId {
+            currentAccount = nil
+        }
         saveLocalAccounts()
         try await syncToCloud()
     }
@@ -58,12 +61,28 @@ public actor accountController {
         guard keychainManager.shared.getToken(type: .accountKey) != nil else { return }
         self.accounts = try await nsStorageController.shared.getData(location: .accounts)
         saveLocalAccounts()
-        if let current = currentAccount, !accounts.contains(where: { $0.sessionId == current.sessionId }) {
-            currentAccount = nil
-            if let firstAccount = accounts.first {
-                await switchAccount(account: firstAccount)
+        
+        if let current = currentAccount {
+            if let matchingAccount = accounts.first(where: { $0.data == current.data && $0.isEmail == current.isEmail }) {
+                if matchingAccount.sessionId != current.sessionId || matchingAccount.authToken != current.authToken {
+                    currentAccount = matchingAccount
+                    keychainManager.shared.saveToken(matchingAccount.sessionId, type: .sessionId)
+                    keychainManager.shared.saveToken(matchingAccount.authToken, type: .authToken)
+                    
+                    if await sessionManager.shared.isAuthenticated {
+                        await MainActor.run {
+                            wsController.shared.disconnect(domain: .main)
+                            wsController.shared.connect(to: .main)
+                        }
+                    }
+                }
             } else {
-                await sessionManager.shared.logout(isSwitching: true)
+                currentAccount = nil
+                if let firstAccount = accounts.first {
+                    await switchAccount(account: firstAccount)
+                } else {
+                    await sessionManager.shared.logout(isSwitching: true)
+                }
             }
         } else if let firstAccount = accounts.first, currentAccount == nil {
             await switchAccount(account: firstAccount)

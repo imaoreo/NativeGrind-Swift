@@ -37,15 +37,13 @@ public final class sessionManager: ObservableObject {
             try await function()
             
             self.isAuthenticated = true
-            if isNewLogin {
-                await registerCurrentAccount()
-            }
+            await registerCurrentAccount()
             
         } catch authenticationError.networkError {
             // make sure there is authToken and sessionId for allowing it to stay authed
             self.isAuthenticated = (self.keychain.getToken(type: .authToken) != nil &&
                                     self.keychain.getToken(type: .sessionId) != nil)
-            if self.isAuthenticated && isNewLogin {
+            if self.isAuthenticated {
                 await registerCurrentAccount()
             }
             if showErrors {
@@ -249,8 +247,12 @@ public final class sessionManager: ObservableObject {
     }
     
     /// Clears credentials and tears down the active state
-    public func logout(isSwitching: Bool = false) {
+    public func logout(isSwitching: Bool = false) async {
         let currentSessionId = keychain.getToken(type: .sessionId)
+        
+        if !isSwitching, let sessionId = currentSessionId {
+            try? await accountController.shared.removeAccount(sessionId: sessionId)
+        }
         
         keychain.deleteToken(type: .authToken)
         keychain.deleteToken(type: .sessionId)
@@ -258,11 +260,5 @@ public final class sessionManager: ObservableObject {
         keychain.deleteToken(type: .data)
 
         self.isAuthenticated = false
-        
-        if !isSwitching, let sessionId = currentSessionId {
-            Task {
-                try? await accountController.shared.removeAccount(sessionId: sessionId)
-            }
-        }
     }
 }
