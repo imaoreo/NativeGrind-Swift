@@ -96,17 +96,47 @@ public actor profileController {
         }
     }
     
-    // This is here for hyper caching and storing later on
+    private func getLocalImageURL(mediaHash: String) -> URL {
+        let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+        let cachesDirectory = paths[0]
+        return cachesDirectory.appendingPathComponent("\(mediaHash).jpg")
+    }
+
+    private func getLocalImageData(mediaHash: String) -> Data? {
+        let url = getLocalImageURL(mediaHash: mediaHash)
+        return try? Data(contentsOf: url)
+    }
+
+    private func saveImageDataLocally(mediaHash: String, data: Data) {
+        let url = getLocalImageURL(mediaHash: mediaHash)
+        try? data.write(to: url)
+    }
+    
     public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
-        do {
-            let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
-            
-            if let data, self.missingMediaHashesOnServer.contains(mediaHash) {
-                let base64String = data.base64EncodedString()
+        if let cachedData = getLocalImageData(mediaHash: mediaHash) {
+            if self.missingMediaHashesOnServer.contains(mediaHash) {
+                let base64String = cachedData.base64EncodedString()
                 if await wsController.shared.isServerAuthorized {
                     await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
                 }
                 self.missingMediaHashesOnServer.remove(mediaHash)
+            }
+            return cachedData
+        }
+
+        do {
+            let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+            
+            if let data {
+                saveImageDataLocally(mediaHash: mediaHash, data: data)
+                
+                if self.missingMediaHashesOnServer.contains(mediaHash) {
+                    let base64String = data.base64EncodedString()
+                    if await wsController.shared.isServerAuthorized {
+                        await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
+                    }
+                    self.missingMediaHashesOnServer.remove(mediaHash)
+                }
             }
             
             return data
