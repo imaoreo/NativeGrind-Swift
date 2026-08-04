@@ -140,5 +140,23 @@ public final class webSocketAttestManager {
                 }
             }
             .store(in: &cancellables)
+
+        wsController.shared.publisher(for: .onDataSaved)
+            .sink { payload in
+                Task {
+                    if payload.message != "Data updated by another device" {
+                        return;
+                    }
+                    
+                    if payload.location == "grindr_accounts" {
+                        do {
+                            try await accountController.shared.syncFromCloud()
+                        } catch {
+                            errorManager.shared.error("nsConnect", "Failed to sync after external account data update: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 }

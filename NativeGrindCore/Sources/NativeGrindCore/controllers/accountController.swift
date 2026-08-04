@@ -60,9 +60,12 @@ public actor accountController {
         saveLocalAccounts()
         if let current = currentAccount, !accounts.contains(where: { $0.sessionId == current.sessionId }) {
             currentAccount = nil
-        }
-
-        if let firstAccount = accounts.first, currentAccount == nil {
+            if let firstAccount = accounts.first {
+                await switchAccount(account: firstAccount)
+            } else {
+                await sessionManager.shared.logout(isSwitching: true)
+            }
+        } else if let firstAccount = accounts.first, currentAccount == nil {
             await switchAccount(account: firstAccount)
         }
     }
