@@ -24,7 +24,7 @@ public actor profileController {
     public func proactiveSyncMissingMedias(_ hashes: [String]) async {
         for hash in hashes {
             missingMediaHashesOnServer.insert(hash)
-            _ = await fetchProfileImage(size: .size1024, mediaHash: hash)
+            _ = await fetchProfileImage(size: .size2048, mediaHash: hash)
         }
     }
     
@@ -96,46 +96,76 @@ public actor profileController {
         }
     }
     
-    private func getLocalImageURL(mediaHash: String) -> URL {
-        let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
-        let cachesDirectory = paths[0]
+    private func getLocalImageURL(mediaHash: String) -> URL? {
+        guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return nil
+        }
         return cachesDirectory.appendingPathComponent("\(mediaHash).jpg")
     }
 
     private func getLocalImageData(mediaHash: String) -> Data? {
-        let url = getLocalImageURL(mediaHash: mediaHash)
+        guard let url = getLocalImageURL(mediaHash: mediaHash) else {
+            return nil
+        }
         return try? Data(contentsOf: url)
     }
 
     private func saveImageDataLocally(mediaHash: String, data: Data) {
-        let url = getLocalImageURL(mediaHash: mediaHash)
+        guard let url = getLocalImageURL(mediaHash: mediaHash) else {
+            return
+        }
         try? data.write(to: url)
     }
-    
-    public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
-        if let cachedData = getLocalImageData(mediaHash: mediaHash) {
-            if self.missingMediaHashesOnServer.contains(mediaHash) {
-                let base64String = cachedData.base64EncodedString()
-                if await wsController.shared.isServerAuthorized {
-                    await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
-                }
-                self.missingMediaHashesOnServer.remove(mediaHash)
-            }
-            return cachedData
-        }
 
-        do {
-            let data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
-            
-            if let data {
-                saveImageDataLocally(mediaHash: mediaHash, data: data)
-                
+    private func isHighQuality(size: imageSizes) -> Bool {
+        return size == .size1024 || size == .size2048
+    }
+    
+    // This is here for hyper caching and storing later on
+    public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
+        // Only use local disk cache and check missing uploads if the request is high-quality
+        if isHighQuality(size: size) {
+            if !appEnvironment.isTesting, let cachedData = getLocalImageData(mediaHash: mediaHash) {
                 if self.missingMediaHashesOnServer.contains(mediaHash) {
-                    let base64String = data.base64EncodedString()
+                    let base64String = cachedData.base64EncodedString()
                     if await wsController.shared.isServerAuthorized {
                         await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
                     }
                     self.missingMediaHashesOnServer.remove(mediaHash)
+                }
+                return cachedData
+            }
+        }
+
+        do {
+            var data: Data? = nil
+            
+            if size == .size2048 {
+                do {
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash))
+                } catch {
+                    // Ignore error and fall back to 1024
+                }
+                if data == nil {
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash))
+                }
+            } else {
+                data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+            }
+            
+            if let data {
+                if isHighQuality(size: size) {
+                    if !appEnvironment.isTesting {
+                        saveImageDataLocally(mediaHash: mediaHash, data: data)
+                    }
+                    
+                    if self.missingMediaHashesOnServer.contains(mediaHash) {
+                        let base64String = data.base64EncodedString()
+                        if await wsController.shared.isServerAuthorized {
+                            await wsController.shared.send(request: .uploadMedia(mediaHash: mediaHash, base64Data: base64String))
+                        }
+                        self.missingMediaHashesOnServer.remove(mediaHash)
+                    }
                 }
             }
             
