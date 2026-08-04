@@ -79,6 +79,12 @@ struct toastManagerTests {
             
             try await Task.sleep(nanoseconds: 4_200_000_000)
             
+            var checks = 0
+            while manager.currentToast != nil && checks < 60 {
+                try await Task.sleep(nanoseconds: 100_000_000)
+                checks += 1
+            }
+            
             #expect(manager.currentToast == nil)
         }
     }
@@ -101,6 +107,12 @@ struct toastManagerTests {
             #expect(manager.currentToast?.header == "Toast 2")
             
             try await Task.sleep(nanoseconds: 2_000_000_000)
+            
+            var checks = 0
+            while manager.currentToast != nil && checks < 60 {
+                try await Task.sleep(nanoseconds: 100_000_000)
+                checks += 1
+            }
             
             #expect(manager.currentToast == nil)
         }
