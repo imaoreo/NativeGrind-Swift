@@ -13,7 +13,7 @@ public struct profileResponse: Codable, Sendable {
 
 public struct profile: Codable, Sendable {
     public let distance: Double?
-    public let profileImageMediaHash: String
+    public let profileImageMediaHash: String?
     public let isFavorite: Bool
     public let lastViewed: Int?
     public let seen: Int?

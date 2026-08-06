@@ -193,7 +193,7 @@ public extension endpoint {
             }
         }
         return endpoint<CascadeResponse>(
-            path: "/v4/cascade",
+            path: "/v3/cascade",
             method: .get,
             queryItems: queryItems,
             body: nil,

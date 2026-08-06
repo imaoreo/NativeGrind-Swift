@@ -18,6 +18,32 @@ public struct CascadeResponseProfile: Codable, Sendable, Identifiable {
     public let isVisiting: Bool?
     public let isPopular: Bool?
 
+    // v3 cascade only
+    public let atType: String?
+    public let lastOnline: Int?
+    public let photoMediaHashes: [String]?
+    public let lookingFor: [Int]?
+    public let tribes: [Int]?
+    public let meetAt: [Int]?
+    public let vaccines: [Int]?
+    public let genders: [Int]?
+    public let pronouns: [Int]?
+    public let sexualPosition: Int?
+    public let approximateDistance: Bool?
+    public let tags: [String]?
+    public let isFavorite: Bool?
+    public let socialNetworks: [String]?
+    public let isBoosting: Bool?
+    public let hasChattedInLast24Hrs: Bool?
+    public let hasUnviewedSpark: Bool?
+    public let isTeleporting: Bool?
+    public let isRoaming: Bool?
+    public let isRightNow: Bool?
+    public let hasUnreadThrob: Bool?
+    public let isBlockable: Bool?
+    public let isBoostingSomewhereElse: Bool?
+    public let hasPhoto: Bool?
+
     // full_profile_v1
     public let primaryImageUrl: String?
     public let favorite: Bool?
@@ -31,6 +57,17 @@ public struct CascadeResponseProfile: Codable, Sendable, Identifiable {
 
     // partial_profile_v1 
     public let upsellItemType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case profileId, onlineUntil, displayName, distanceMeters, rightNow, unreadCount, isVisiting, isPopular
+        case atType = "@type"
+        case lastOnline, photoMediaHashes, lookingFor, tribes, meetAt, vaccines, genders, pronouns
+        case sexualPosition, approximateDistance, tags, isFavorite, socialNetworks, isBoosting
+        case hasChattedInLast24Hrs, hasUnviewedSpark, isTeleporting, isRoaming, isRightNow
+        case hasUnreadThrob, isBlockable, isBoostingSomewhereElse, hasPhoto
+        case primaryImageUrl, favorite, viewed, chatted, roaming, age, heightCm, weightGrams, bodyType
+        case upsellItemType
+    }
 }
 
 public struct CascadeItem: Codable, Sendable {
