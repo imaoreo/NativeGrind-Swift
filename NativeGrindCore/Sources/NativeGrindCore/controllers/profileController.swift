@@ -200,9 +200,13 @@ public actor profileController {
 
             let serverAuthorized = await wsController.shared.isServerAuthorized
             if serverAuthorized {
-                await wsController.shared.send(
-                    request: .syncGrid(profiles: profiles, geohash: geohash)
+                let response = await wsController.shared.sendAndWait(
+                    request: .syncGrid(profiles: profiles, geohash: geohash),
+                    expectedEvent: .onGridSynced
                 )
+                if let missing = response?.missingMediaHashes, !missing.isEmpty {
+                    await proactiveSyncMissingMedias(missing)
+                }
             }
 
             return profiles

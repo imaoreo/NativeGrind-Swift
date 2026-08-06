@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct CascadeResponseProfile: Codable, Sendable {
+public struct CascadeResponseProfile: Codable, Sendable, Identifiable {
+    public var id: Int { profileId }
     public let profileId: Int
     public let onlineUntil: Int?
     public let displayName: String?
