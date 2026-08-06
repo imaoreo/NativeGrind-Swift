@@ -142,6 +142,14 @@ public extension wsRequest {
         )
     }
 
+    static func syncGrid(profiles: [CascadeResponseProfile], geohash: String?) -> wsRequest<nsSyncGridRequest> {
+        return wsRequest<nsSyncGridRequest>(
+            domain: .nativeServer,
+            eventName: "sync_grid",
+            payload: nsSyncGridRequest(profiles: profiles, geohash: geohash)
+        )
+    }
+
     static func uploadMedia(mediaHash: String, base64Data: String) -> wsRequest<nsUploadMedia> {
         return wsRequest<nsUploadMedia>(
             domain: .nativeServer,

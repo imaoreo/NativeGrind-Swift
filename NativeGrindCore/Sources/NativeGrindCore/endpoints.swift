@@ -181,7 +181,27 @@ public extension endpoint {
     }
     
     // Profiles
-    
+
+    static func getGrid(
+        geohash: String,
+        filters: GridFilters = GridFilters()
+    ) -> endpoint<CascadeResponse> {
+        var queryItems: [String: String] = ["nearbyGeoHash": geohash]
+        for item in filters.toQueryItems() {
+            if let value = item.value {
+                queryItems[item.name] = value
+            }
+        }
+        return endpoint<CascadeResponse>(
+            path: "/v4/cascade",
+            method: .get,
+            queryItems: queryItems,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
     static func getProfile(profileId: String) -> endpoint<profileResponse> {
         return endpoint<profileResponse>(
             path: "/v7/profiles/\(profileId)",

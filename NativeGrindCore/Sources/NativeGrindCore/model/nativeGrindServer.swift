@@ -160,6 +160,24 @@ public struct nsSyncProfileResponse: nsResponseProtocol, Codable, Sendable {
     public let missingMediaHashes: [String]?
 }
 
+public struct nsSyncGridRequest: Codable, Sendable {
+    public let profiles: [CascadeResponseProfile]
+    public let geohash: String?
+
+    public init(profiles: [CascadeResponseProfile], geohash: String?) {
+        self.profiles = profiles
+        self.geohash = geohash
+    }
+}
+
+public struct nsSyncGridResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let savedCount: Int?
+    public let totalCount: Int?
+    public let missingMediaHashes: [String]?
+}
+
 public struct nsUploadMedia: Codable, Sendable {
     public let mediaHash: String
     public let base64Data: String

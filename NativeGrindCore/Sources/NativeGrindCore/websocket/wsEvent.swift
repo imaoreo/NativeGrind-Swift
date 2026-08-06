@@ -78,6 +78,10 @@ public extension wsEvent {
         return wsEvent<nsSyncProfileResponse>(domain: .nativeServer, eventName: "sync_seen_profile")
     }
 
+    static var onGridSynced: wsEvent<nsSyncGridResponse> {
+        return wsEvent<nsSyncGridResponse>(domain: .nativeServer, eventName: "sync_grid")
+    }
+
     static var onMediaUploaded: wsEvent<nsResponse> {
         return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_media")
     }

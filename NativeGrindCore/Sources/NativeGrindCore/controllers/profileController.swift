@@ -121,9 +121,7 @@ public actor profileController {
         return size == .size1024 || size == .size2048
     }
     
-    // This is here for hyper caching and storing later on
     public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
-        // Only use local disk cache and check missing uploads if the request is high-quality
         if isHighQuality(size: size) {
             if !appEnvironment.isTesting, let cachedData = getLocalImageData(mediaHash: mediaHash) {
                 if self.missingMediaHashesOnServer.contains(mediaHash) {
@@ -144,7 +142,7 @@ public actor profileController {
                 do {
                     data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash))
                 } catch {
-                    // Ignore error and fall back to 1024
+
                 }
                 if data == nil {
                     data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash))
@@ -174,6 +172,37 @@ public actor profileController {
             let isNetworkError = (error as? requestError) == .networkError
             if !isNetworkError {
                 await errorManager.shared.warn("profileController", "Failed to fetch profile image: \(error)")
+            }
+            return nil
+        }
+    }
+
+    public func fetchGrid(
+        geohash: String,
+        filters: GridFilters = GridFilters()
+    ) async -> [CascadeResponseProfile]? {
+        do {
+            let response = try await APIClient.shared.request(
+                .getGrid(geohash: geohash, filters: filters)
+            )
+
+            let profiles: [CascadeResponseProfile] = response?.items.compactMap { item in
+                guard item.isProfile, let data = item.data else { return nil }
+                return data
+            } ?? []
+
+            if !profiles.isEmpty, await wsController.shared.isServerAuthorized {
+                let currentGeohash = await locationController.shared.currentGeohash
+                await wsController.shared.send(
+                    request: .syncGrid(profiles: profiles, geohash: currentGeohash ?? geohash)
+                )
+            }
+
+            return profiles
+        } catch {
+            let isNetworkError = (error as? requestError) == .networkError
+            if !isNetworkError {
+                await errorManager.shared.warn("profileController", "Failed to fetch grid: \(error)")
             }
             return nil
         }
