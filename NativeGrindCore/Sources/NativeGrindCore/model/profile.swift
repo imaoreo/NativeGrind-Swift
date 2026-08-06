@@ -46,8 +46,8 @@ public struct profile: Codable, Sendable {
     public let showTribes: Bool
     public let showPosition: Bool
     public let aboutMe: String?
-    public let ethnicity: ethnicity
-    public let relationshipStatus: relationshipStatus
+    public let ethnicity: ethnicity?
+    public let relationshipStatus: relationshipStatus?
     public let grindrTribes: [tribes]
     public let lookingFor: [lookingFor]
     public let bodyType: bodyType?
