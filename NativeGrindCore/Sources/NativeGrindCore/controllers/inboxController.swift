@@ -114,8 +114,8 @@ public actor inboxController {
                         guard distance <= distanceMeters else { continue }
                     }
                     
-                    if let positions {
-                        guard positions.contains(matchedProfile.sexualPosition) else { continue }
+                    if let positions, let userPositions = matchedProfile.sexualPosition {
+                        guard positions.contains(userPositions) else { continue }
                     }
                     
                     if let minAge, let profileAge = matchedProfile.age {
