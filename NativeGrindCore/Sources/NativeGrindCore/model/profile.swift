@@ -53,7 +53,7 @@ public struct profile: Codable, Sendable {
     public let bodyType: bodyType?
     public let hivStatus: HIVStatus?
     public let lastTestedDate: Int?
-    public let height: Double // Currently in cm
+    public let height: Double? // Currently in cm
     public let weight: Double? // Currently in grams
     public let socialNetworks: socialNetworks
     public let identity: String?
