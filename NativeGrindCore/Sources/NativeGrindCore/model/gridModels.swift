@@ -12,7 +12,7 @@ public struct CascadeResponseProfile: Codable, Sendable {
     public let onlineUntil: Int?
     public let displayName: String?
     public let distanceMeters: Int?
-    public let rightNow: Int?
+    public let rightNow: String?
     public let unreadCount: Int?
     public let isVisiting: Bool?
     public let isPopular: Bool?

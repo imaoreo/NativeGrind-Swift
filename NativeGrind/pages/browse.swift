@@ -52,6 +52,22 @@ struct browseView: View {
             }
             .buttonStyle(.plain)
 
+            Button(action: {
+                Task {
+                    await profileController.shared.fetchGrid(geohash: "ezjmgyern222")
+                }
+                
+            }) {
+                Text("Refresh")
+                    .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.black)
+                .cornerRadius(10)
+            }
+            .buttonStyle(.plain)
+
             
             Spacer()
         }

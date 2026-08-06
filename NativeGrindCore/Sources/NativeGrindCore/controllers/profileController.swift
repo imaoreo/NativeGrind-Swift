@@ -185,16 +185,23 @@ public actor profileController {
             let response = try await APIClient.shared.request(
                 .getGrid(geohash: geohash, filters: filters)
             )
+            
+            guard let response = response else {
+                await errorManager.shared.error("profileController", "Failed to fetch grid: Empty or invalid response from server")
+                return nil
+            }
 
-            let profiles: [CascadeResponseProfile] = response?.items.compactMap { item in
-                guard item.isProfile, let data = item.data else { return nil }
-                return data
-            } ?? []
+            var profiles: [CascadeResponseProfile] = []
+            for item in response.items {
+                if item.isProfile, let data = item.data {
+                    profiles.append(data)
+                }
+            }
 
-            if !profiles.isEmpty, await wsController.shared.isServerAuthorized {
-                let currentGeohash = await locationController.shared.currentGeohash
+            let serverAuthorized = await wsController.shared.isServerAuthorized
+            if serverAuthorized {
                 await wsController.shared.send(
-                    request: .syncGrid(profiles: profiles, geohash: currentGeohash ?? geohash)
+                    request: .syncGrid(profiles: profiles, geohash: geohash)
                 )
             }
 
@@ -204,6 +211,7 @@ public actor profileController {
             if !isNetworkError {
                 await errorManager.shared.warn("profileController", "Failed to fetch grid: \(error)")
             }
+            await errorManager.shared.error("profileController", "Failed to fetch grid: \(error)")
             return nil
         }
     }

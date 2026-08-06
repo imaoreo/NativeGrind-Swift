@@ -145,4 +145,77 @@ struct profileControllerTests {
             _ = await controller.getHistoryFromProfile(source: .id(testId))
         }
     }
+    
+    @Test("Verifies fetchGrid parses successful response and returns profiles")
+    func testFetchGridSuccess() async throws {
+        await TestSerializer.shared.run {
+            await setupTestState()
+            let controller = profileController.shared
+            keychainManager.shared.saveToken("mock-session", type: .sessionId)
+            
+            let config = URLSessionConfiguration.ephemeral
+            config.protocolClasses = [MockURLProtocol.self]
+            await APIClient.shared.setMockSession(URLSession(configuration: config))
+            
+            MockURLProtocol.shared.handler = { request in
+                #expect(request.url?.absoluteString.contains("nearbyGeoHash=test-geohash") == true)
+                let mockJSON = """
+                {
+                    "items": [
+                        {
+                            "type": "full_profile_v1",
+                            "data": {
+                                "profileId": 98765,
+                                "displayName": "Grid User"
+                            }
+                        }
+                    ]
+                }
+                """.data(using: .utf8)!
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, mockJSON)
+            }
+            
+            defer {
+                MockURLProtocol.shared.handler = nil
+                keychainManager.shared.deleteToken(type: .sessionId)
+            }
+            
+            let profiles = await controller.fetchGrid(geohash: "test-geohash")
+            #expect(profiles != nil)
+            #expect(profiles?.count == 1)
+            #expect(profiles?.first?.profileId == 98765)
+            #expect(profiles?.first?.displayName == "Grid User")
+        }
+    }
+    
+    @Test("Verifies fetchGrid logs error and returns nil when API fails")
+    func testFetchGridErrorHandling() async throws {
+        await TestSerializer.shared.run {
+            await setupTestState()
+            let controller = profileController.shared
+            keychainManager.shared.saveToken("mock-session", type: .sessionId)
+            
+            let config = URLSessionConfiguration.ephemeral
+            config.protocolClasses = [MockURLProtocol.self]
+            await APIClient.shared.setMockSession(URLSession(configuration: config))
+            
+            MockURLProtocol.shared.handler = { request in
+                let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
+                return (response, "Internal Server Error".data(using: .utf8)!)
+            }
+            
+            defer {
+                MockURLProtocol.shared.handler = nil
+                keychainManager.shared.deleteToken(type: .sessionId)
+            }
+            
+            let profiles = await controller.fetchGrid(geohash: "test-geohash")
+            #expect(profiles == nil)
+            
+            let logs = errorManager.shared.logs
+            let hasGridError = logs.contains { $0.prefix == "profileController" && $0.message.contains("Failed to fetch grid") }
+            #expect(hasGridError == true)
+        }
+    }
 }
