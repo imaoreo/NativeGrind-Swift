@@ -9,74 +9,167 @@ import SwiftUI
 import NativeGrindCore
 
 struct browseView: View {
+    @State private var profiles: [CascadeResponseProfile]? = nil
+    @State private var isLoading = false
+    
+    @State private var showFilters = false
+    @State private var selectedProfile: CascadeResponseProfile? = nil
+    @State private var filters = GridFilters()
+    
+    @State private var showProfileIdPrompt = false
+    @State private var inputProfileId = ""
+    @State private var directProfileId: IdentifiableProfileId? = nil
+    
+    #if os(macOS)
+    private let columns = [
+        GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 12)
+    ]
+    #else
+    private let columns = [
+        GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 8)
+    ]
+    #endif
     
     var body: some View {
-        VStack(
-            spacing: 24
-        ) {
-            
-            Spacer()
-            
-            #if DEBUG
-            Button(action: {
-                Task{
-                    let profile = await profileController.shared.fetchProfile(profileId: "<profile_id>")
-                    errorManager.shared.error("Test", profile?.profileId ?? "Test")
+        NavigationStack {
+            Group {
+                if isLoading && profiles == nil {
+                    ProgressView("Loading Grid...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let profiles = profiles {
+                    if profiles.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "person.3.sequence")
+                                .font(.system(size: 48))
+                                .foregroundColor(.gray)
+                            Text("No profiles found nearby.")
+                                .font(.headline)
+                            Text("Try changing your filter settings.")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            Button("Reset Filters") {
+                                filters = GridFilters()
+                                applyFilters()
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 8) {
+                                ForEach(profiles, id: \.profileId) { profile in
+                                    GridCell(profile: profile)
+                                        .aspectRatio(1, contentMode: .fit)
+                                        .onTapGesture {
+                                            selectedProfile = profile
+                                        }
+                                }
+                            }
+                            .padding(8)
+                        }
+                        .refreshable {
+                            await loadGrid(contentLoaded: true)
+                        }
+                    }
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 48))
+                            .foregroundColor(.orange)
+                        Text("Failed to load profiles")
+                            .font(.headline)
+                        Button("Retry") {
+                            Task {
+                                await loadGrid()
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                
-            }) {
-                Text("fetch profile")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
             }
-            .buttonStyle(.plain)
-            #endif
-            
-            Button(action: {
-                Task {
-                    await sessionManager.shared.refreshToken()
+            .navigationTitle("Browse")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    HStack(spacing: 8) {
+                        Button {
+                            showFilters.toggle()
+                        } label: {
+                            Image(systemName: showFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                        }
+                        
+                        Button {
+                            showProfileIdPrompt = true
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                        }
+                        
+                        Button {
+                            Task {
+                                await loadGrid()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
                 }
-                
-            }) {
-                Text("Refresh")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
             }
-            .buttonStyle(.plain)
-
-            Button(action: {
-                Task {
-                    await profileController.shared.fetchGrid(geohash: "ezjmgyern222")
+            .sheet(isPresented: $showFilters) {
+                FilterView(
+                    filters: $filters,
+                    onDismiss: {
+                        showFilters = false
+                        applyFilters()
+                    }
+                )
+                #if os(macOS)
+                .frame(width: 300, height: 250)
+                #endif
+            }
+            .sheet(item: $selectedProfile) { item in
+                ProfileDetailView(profileId: String(item.profileId), fallbackName: item.displayName)
+            }
+            .sheet(item: $directProfileId) { item in
+                ProfileDetailView(profileId: item.id, fallbackName: "Profile \(item.id)")
+            }
+            .alert("Enter Profile ID", isPresented: $showProfileIdPrompt) {
+                TextField("Profile ID", text: $inputProfileId)
+                #if os(iOS)
+                .keyboardType(.numberPad)
+                #endif
+                Button("Open") {
+                    let trimmed = inputProfileId.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmed.isEmpty {
+                        directProfileId = IdentifiableProfileId(id: trimmed)
+                    }
+                    inputProfileId = ""
                 }
-                
-            }) {
-                Text("Refresh")
-                    .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.black)
-                .cornerRadius(10)
+                Button("Cancel", role: .cancel) {
+                    inputProfileId = ""
+                }
+            } message: {
+                Text("Please enter the profile ID you want to view.")
             }
-            .buttonStyle(.plain)
-
-            
-            Spacer()
+            .task {
+                if profiles == nil {
+                    await loadGrid()
+                }
+            }
         }
-        .padding(24)
-        .frame(maxWidth: 700, maxHeight: .infinity)
-        
     }
-}
-
-#Preview {
-    browseView()
+    
+    private func applyFilters() {
+        Task {
+            await loadGrid()
+        }
+    }
+    
+    private func loadGrid(contentLoaded: Bool = false) async {
+        if (!contentLoaded) {
+            isLoading = true
+        }
+        let geohash = await locationController.shared.currentGeohash ?? "gcvxpuyy2222"
+        profiles = await profileController.shared.fetchGrid(geohash: geohash, filters: filters)
+        isLoading = false
+    }
 }
