@@ -18,7 +18,7 @@ struct browseView: View {
     
     @State private var showProfileIdPrompt = false
     @State private var inputProfileId = ""
-    @State private var directProfileId: IdentifiableProfileId? = nil
+    @State private var directProfileId: identifiableId? = nil
     
     #if os(macOS)
     private let columns = [
@@ -58,7 +58,7 @@ struct browseView: View {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 8) {
                                 ForEach(profiles, id: \.profileId) { profile in
-                                    GridCell(profile: profile)
+                                    gridCell(profile: profile)
                                         .aspectRatio(1, contentMode: .fit)
                                         .onTapGesture {
                                             selectedProfile = profile
@@ -115,7 +115,7 @@ struct browseView: View {
                 }
             }
             .sheet(isPresented: $showFilters) {
-                FilterView(
+                filterView(
                     filters: $filters,
                     onDismiss: {
                         showFilters = false
@@ -127,10 +127,10 @@ struct browseView: View {
                 #endif
             }
             .sheet(item: $selectedProfile) { item in
-                ProfileDetailView(profileId: String(item.profileId), fallbackName: item.displayName)
+                profileDetailView(profileId: String(item.profileId))
             }
             .sheet(item: $directProfileId) { item in
-                ProfileDetailView(profileId: item.id, fallbackName: "Profile \(item.id)")
+                profileDetailView(profileId: item.id)
             }
             .alert("Enter Profile ID", isPresented: $showProfileIdPrompt) {
                 TextField("Profile ID", text: $inputProfileId)
@@ -140,7 +140,7 @@ struct browseView: View {
                 Button("Open") {
                     let trimmed = inputProfileId.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !trimmed.isEmpty {
-                        directProfileId = IdentifiableProfileId(id: trimmed)
+                        directProfileId = identifiableId(id: trimmed)
                     }
                     inputProfileId = ""
                 }

@@ -1,7 +1,7 @@
 import SwiftUI
 import NativeGrindCore
 
-struct GridCell: View {
+struct gridCell: View {
     let profile: CascadeResponseProfile
     
     @State private var image: Image? = nil

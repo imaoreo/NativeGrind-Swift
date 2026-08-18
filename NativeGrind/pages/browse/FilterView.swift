@@ -1,7 +1,7 @@
 import SwiftUI
 import NativeGrindCore
 
-struct FilterView: View {
+struct filterView: View {
     @Binding var filters: GridFilters
     
     var onDismiss: () -> Void
