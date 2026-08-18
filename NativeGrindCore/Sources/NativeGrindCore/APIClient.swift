@@ -158,7 +158,7 @@ public actor APIClient {
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false) async throws -> T? {
+    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false, shouldErrorMesssage: Bool = true) async throws -> T? {
         do {
             let (data, response) = try await sendRequest(
                 method: endpoint.method,
@@ -184,7 +184,10 @@ public actor APIClient {
                 return try await request(endpoint, isRetry: true)
             }
             
-            await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
+            if shouldErrorMesssage {
+                await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
+            }
+
             return nil
         } catch let error as URLError where error.code == .notConnectedToInternet {
             throw requestError.networkError
