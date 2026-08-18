@@ -190,6 +190,19 @@ struct profileDetailView: View {
                     statCell(icon: "exclamationmark.shield", title: "HIV Status", value: String(describing: hiv).capitalized)
                 }
                 
+                var formattedHivDate: String? {
+                    guard let hivDate = profile.lastTestedDate else { return nil }
+                    let date = Date(timeIntervalSince1970: TimeInterval(hivDate/1000))
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formatter.timeStyle = .none
+                    return formatter.string(from: date)
+                }
+
+                if let dateString = formattedHivDate {
+                    statCell(icon: "calendar", title: "Last Tested Date", value: dateString)
+                }
+                
                 if let meetAt = profile.meetAt, !meetAt.isEmpty {
                     let items = meetAt.map { String(describing: $0).capitalized }
                     let formattedString: String = {
