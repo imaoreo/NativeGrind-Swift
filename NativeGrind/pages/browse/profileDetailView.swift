@@ -102,8 +102,8 @@ struct profileDetailView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .bold))
-                            .padding(10)
+                            .font(.system(size: 24, weight: .bold))
+                            .padding(8)
                             .background(.black.opacity(0.4))
                             .foregroundColor(.white)
                             .clipShape(Circle())
@@ -127,8 +127,8 @@ struct profileDetailView: View {
                             }
                         } label: {
                             Image(systemName: fullProfile?.isFavorite ?? false ? "heart.fill" :"heart")
-                                .font(.system(size: 16, weight: .bold))
-                                .padding(10)
+                                .font(.system(size: 24, weight: .bold))
+                                .padding(8)
                                 .background(.black.opacity(0.4))
                                 .foregroundColor(fullProfile?.isFavorite ?? false ? .red : .primary)
                                 .clipShape(Circle())
@@ -139,8 +139,8 @@ struct profileDetailView: View {
                             // Options Action
                         } label: {
                             Image(systemName: "ellipsis")
-                                .font(.system(size: 16, weight: .bold))
-                                .padding(10)
+                                .font(.system(size: 32, weight: .bold))
+                                .padding(16)
                                 .background(.black.opacity(0.4))
                                 .foregroundColor(.white)
                                 .clipShape(Circle())
@@ -149,7 +149,7 @@ struct profileDetailView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 32)
+                .padding(.top, 16)
             }
         }
     
