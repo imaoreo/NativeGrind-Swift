@@ -41,61 +41,117 @@ struct profileDetailView: View {
     }
     
     private var heroSection: some View {
-        ZStack(alignment: .bottomLeading) {
-            // Background Image
-            if let heroImage {
-                heroImage
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxHeight: 400)
-                    .clipped()
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.15))
-                    .frame(height: 400)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 64))
-                            .foregroundColor(.gray.opacity(0.5))
-                    )
-            }
-            
-            // Gradient Overlay
-            LinearGradient(
-                gradient: Gradient(colors: [.clear, .black.opacity(0.8)]),
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .frame(height: 400)
-            
-            // Text Info
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(fullProfile?.displayName ?? (isLoading ? "Loading..." : "Unknown"))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    if let age = fullProfile?.age, fullProfile?.showAge == true {
-                        Text("\(age)")
-                            .font(.title2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white.opacity(0.9))
+            ZStack(alignment: .bottomLeading) {
+                // Background Image
+                if let heroImage {
+                    heroImage
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxHeight: 400)
+                        .clipped()
+                } else {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.15))
+                        .frame(height: 400)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 64))
+                                .foregroundColor(.gray.opacity(0.5))
+                        )
+                }
+                 
+                // Gradient Overlay
+                LinearGradient(
+                    gradient: Gradient(colors: [.clear, .black.opacity(0.8)]),
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+                .frame(height: 400)
+                 
+                // Text Info
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(fullProfile?.displayName ?? (isLoading ? "Loading..." : "Unknown"))
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                         
+                        if let age = fullProfile?.age, fullProfile?.showAge == true {
+                            Text("\(age)")
+                                .font(.title2)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white.opacity(0.9))
+                        }
+                    }
+                    .foregroundColor(.white)
+                     
+                    if let profile = fullProfile, let distance = profile.distance {
+                        HStack(spacing: 4) {
+                            Image(systemName: "location.fill")
+                            Text(formatDistance(distance, approximate: profile.approximateDistance))
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
                     }
                 }
-                .foregroundColor(.white)
-                
-                if let profile = fullProfile, let distance = profile.distance {
-                    HStack(spacing: 4) {
-                        Image(systemName: "location.fill")
-                        Text(formatDistance(distance, approximate: profile.approximateDistance))
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                }
+                .padding()
             }
-            .padding()
+            .overlay(alignment: .top) {
+                HStack {
+                    #if os(iOS)
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .bold))
+                            .padding(10)
+                            .background(.black.opacity(0.4))
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                    }
+                    #endif
+                     
+                    Spacer()
+                     
+                    HStack(spacing: 12) {
+                        Button {
+                            if !(fullProfile?.isFavorite ?? false) {
+                                Task {
+                                    try? await APIClient.shared.request(.addFavorite(profileId: profileId))
+                                    await fetchFullProfile()
+                                }
+                            } else {
+                                Task {
+                                    try? await APIClient.shared.request(.removeFavorite(profileId: profileId))
+                                    await fetchFullProfile()
+                                }
+                            }
+                        } label: {
+                            Image(systemName: fullProfile?.isFavorite ?? false ? "heart.fill" :"heart")
+                                .font(.system(size: 16, weight: .bold))
+                                .padding(10)
+                                .background(.black.opacity(0.4))
+                                .foregroundColor(fullProfile?.isFavorite ?? false ? .red : .primary)
+                                .clipShape(Circle())
+                        }
+                         
+                        /*
+                        Button {
+                            // Options Action
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 16, weight: .bold))
+                                .padding(10)
+                                .background(.black.opacity(0.4))
+                                .foregroundColor(.white)
+                                .clipShape(Circle())
+                        }
+                         */
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 32)
+            }
         }
-    }
     
     @ViewBuilder
     private func aboutMeSection(profile: profile) -> some View {

@@ -213,6 +213,28 @@ public extension endpoint {
         )
     }
     
+    static func addFavorite(profileId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v3/me/favorites/\(profileId)",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func removeFavorite(profileId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v3/me/favorites/\(profileId)",
+            method: .delete,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
     // Age Verification
     
     static func getAgeVerificationOptions()  -> endpoint<ageVerificationOptionsResponse> {

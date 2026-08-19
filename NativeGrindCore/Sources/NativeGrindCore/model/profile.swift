@@ -7,6 +7,8 @@
 
 import Foundation
 
+public struct emptyResponse: Codable, Sendable {}
+
 public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
