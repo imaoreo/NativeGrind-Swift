@@ -13,6 +13,7 @@ struct browseView: View {
     @State private var isLoading = false
     
     @State private var showFilters = false
+    @State private var showLocation = false
     @State private var selectedProfile: CascadeResponseProfile? = nil
     @State private var filters = GridFilters()
     
@@ -99,6 +100,12 @@ struct browseView: View {
                         }
                         
                         Button {
+                            showLocation.toggle()
+                        } label: {
+                            Image(systemName: showLocation ? "location.fill" : "location")
+                        }
+                        
+                        Button {
                             showProfileIdPrompt = true
                         } label: {
                             Image(systemName: "magnifyingglass")
@@ -124,6 +131,17 @@ struct browseView: View {
                 )
                 #if os(macOS)
                 .frame(width: 300, height: 250)
+                #endif
+            }
+            .sheet(isPresented: $showLocation) {
+                LocationView(
+                    onDismiss: {
+                        showLocation = false
+                        applyFilters()
+                    }
+                )
+                #if os(macOS)
+                .frame(width: 450, height: 350)
                 #endif
             }
             .sheet(item: $selectedProfile) { item in
@@ -168,7 +186,7 @@ struct browseView: View {
         if (!contentLoaded) {
             isLoading = true
         }
-        let geohash = await locationController.shared.currentGeohash ?? "gcvxpuyy2222"
+        let geohash = await locationController.shared.currentGeohash
         profiles = await profileController.shared.fetchGrid(geohash: geohash, filters: filters)
         isLoading = false
     }
