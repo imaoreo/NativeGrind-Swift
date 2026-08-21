@@ -16,10 +16,10 @@ public actor locationController {
     }
 }
 
-struct geohashEncoder {
+public struct geohashEncoder {
     private static let base32Chars = Array("0123456789bcdefghjkmnpqrstuvwxyz")
     
-    static func encode(latitude: Double, longitude: Double, precision: Int = 12) -> String {
+    public static func encode(latitude: Double, longitude: Double, precision: Int = 12) -> String {
         var latRange = (-90.0, 90.0)
         var lonRange = (-180.0, 180.0)
         var geohash = ""

@@ -123,10 +123,14 @@ struct browseView: View {
             }
             .sheet(isPresented: $showFilters) {
                 filterView(
-                    filters: $filters,
-                    onDismiss: {
+                    filters: filters,
+                    onApply: { newFilters in
+                        filters = newFilters
                         showFilters = false
                         applyFilters()
+                    },
+                    onCancel: {
+                        showFilters = false
                     }
                 )
                 #if os(macOS)
@@ -135,9 +139,12 @@ struct browseView: View {
             }
             .sheet(isPresented: $showLocation) {
                 LocationView(
-                    onDismiss: {
+                    onApply: {
                         showLocation = false
                         applyFilters()
+                    },
+                    onCancel: {
+                        showLocation = false
                     }
                 )
                 #if os(macOS)

@@ -3,7 +3,8 @@ import MapKit
 import NativeGrindCore
 
 struct LocationView: View {
-    var onDismiss: () -> Void
+    var onApply: () -> Void
+    var onCancel: () -> Void
     
     @State private var currentGeohash: String = ""
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -24,9 +25,7 @@ struct LocationView: View {
                         .onTapGesture { position in
                             if let coordinate = proxy.convert(position, from: .local) {
                                 selectedCoordinate = coordinate
-                                Task {
-                                    await updateGeohash(for: coordinate)
-                                }
+                                currentGeohash = geohashEncoder.encode(latitude: coordinate.latitude, longitude: coordinate.longitude)
                             }
                         }
                     }
@@ -47,7 +46,10 @@ struct LocationView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Apply") {
-                        onDismiss()
+                        Task {
+                            await locationController.shared.updateGeohash(currentGeohash)
+                            onApply()
+                        }
                     }
                     .keyboardShortcut(.defaultAction)
                 }
@@ -55,20 +57,17 @@ struct LocationView: View {
                 #if os(macOS)
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        onDismiss()
+                        onCancel()
                     }
                     .keyboardShortcut(.cancelAction)
                 }
                 #endif
             }
-        }
-    }
-    
-    private func updateGeohash(for coordinate: CLLocationCoordinate2D) async {
-        await locationController.shared.updateGeohash(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        
-        guard let currentGeohash = await locationController.shared.currentGeohash else {
-            return
+            .task {
+                if let geohash = await locationController.shared.currentGeohash {
+                    currentGeohash = geohash
+                }
+            }
         }
     }
 }
