@@ -199,7 +199,7 @@ public actor APIClient {
             if response.statusCode == 401, !isRetry, endpoint.shouldRetryOn401 {
                 await sessionManager.shared.refreshToken()
 
-                return try await request(endpoint, isRetry: true)
+                return try await request(endpoint, isRetry: true, shouldErrorMesssage: shouldErrorMesssage)
             }
             
             if shouldErrorMesssage {
