@@ -8,7 +8,7 @@ public actor locationController {
     private init() {}
     
     public func updateGeohash(_ geohash: String?) {
-        self.currentGeohash = geohash ?? ""
+        self.currentGeohash = geohash
     }
     
     public func updateGeohash(latitude: Double, longitude: Double) {
