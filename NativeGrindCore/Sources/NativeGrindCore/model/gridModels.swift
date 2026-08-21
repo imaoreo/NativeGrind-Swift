@@ -32,7 +32,7 @@ public struct CascadeResponseProfile: Codable, Sendable, Identifiable {
     public let approximateDistance: Bool?
     public let tags: [String]?
     public let isFavorite: Bool?
-    public let socialNetworks: [String]?
+    public let socialNetworks: [socialNetwork]?
     public let isBoosting: Bool?
     public let hasChattedInLast24Hrs: Bool?
     public let hasUnviewedSpark: Bool?
