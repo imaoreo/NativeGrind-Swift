@@ -187,7 +187,10 @@ struct browseView: View {
             isLoading = true
         }
         let geohash = await locationController.shared.currentGeohash
-        profiles = await profileController.shared.fetchGrid(geohash: geohash, filters: filters)
+        
+        if let geohash = geohash {
+            profiles = await profileController.shared.fetchGrid(geohash: geohash, filters: filters)
+        }
         isLoading = false
     }
 }
