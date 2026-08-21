@@ -14,7 +14,7 @@ struct filterView: View {
                     Toggle("Photo Only", isOn: $filters.photoOnly.toNonOptional)
                     Toggle("Face Only", isOn: $filters.faceOnly.toNonOptional)
                     Toggle("Has Album", isOn: $filters.hasAlbum.toNonOptional)
-                    Toggle("Not Recently Chated", isOn: $filters.notRecentlyChatted.toNonOptional)
+                    Toggle("Not Recently Chatted", isOn: $filters.notRecentlyChatted.toNonOptional)
                     Toggle("Right Now", isOn: $filters.rightNow.toNonOptional)
                 }
                 
