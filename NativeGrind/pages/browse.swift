@@ -183,6 +183,10 @@ struct browseView: View {
     }
     
     private func loadGrid(contentLoaded: Bool = false) async {
+        if (isLoading) {
+            return
+        }
+        
         if (!contentLoaded) {
             isLoading = true
         }
