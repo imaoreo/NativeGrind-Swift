@@ -52,6 +52,7 @@ struct LocationView: View {
                         }
                     }
                     .keyboardShortcut(.defaultAction)
+                    .disabled(currentGeohash.isEmpty)
                 }
                  
                 #if os(macOS)
