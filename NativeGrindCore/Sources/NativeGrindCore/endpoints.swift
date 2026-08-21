@@ -235,6 +235,30 @@ public extension endpoint {
         )
     }
     
+    static func tap(profileId: String, tapType: tapType) -> endpoint<tapResponse> {
+        return endpoint<tapResponse>(
+            path: "/v2/taps/add",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "recipientId": profileId,
+                "tapType": tapType
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(
+                    code: 400,
+                    jsonLocation: nil,
+                    jsonLocationValue: nil,
+                    message: "User may already be tapped",
+                    header: "Tap Error",
+                    level: .warn,
+                    match: .matchEither
+                )
+            ],
+        )
+    }
+    
     // Age Verification
     
     static func getAgeVerificationOptions()  -> endpoint<ageVerificationOptionsResponse> {

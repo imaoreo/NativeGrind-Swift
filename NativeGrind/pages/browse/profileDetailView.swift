@@ -133,19 +133,21 @@ struct profileDetailView: View {
                                 .foregroundColor(fullProfile?.isFavorite ?? false ? .red : .primary)
                                 .clipShape(Circle())
                         }
-                         
-                        /*
+                        
                         Button {
-                            // Options Action
+                            Task {
+                                try await APIClient.shared.request(.tap(profileId: profileId, tapType: .hot))
+                                await fetchFullProfile()
+                            }
                         } label: {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 32, weight: .bold))
-                                .padding(16)
+                            Image(systemName: fullProfile?.tapped ?? false ? "flame.fill" :"flame")
+                                .font(.system(size: 24, weight: .bold))
+                                .padding(8)
                                 .background(.black.opacity(0.4))
-                                .foregroundColor(.white)
+                                .foregroundColor(fullProfile?.tapped ?? false ? .red : .primary)
                                 .clipShape(Circle())
                         }
-                         */
+                        .disabled(fullProfile?.tapped ?? false)
                     }
                 }
                 .padding(.horizontal, 16)

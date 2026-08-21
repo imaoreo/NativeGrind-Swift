@@ -15,6 +15,23 @@ public enum HTTPMethod: String, Sendable, Codable {
     case patch = "PATCH"
 }
 
+func changeENUMSToRawValues(_ value: Any) -> Any {
+    if let rawRepresentable = value as? any RawRepresentable {
+        return changeENUMSToRawValues(rawRepresentable.rawValue)
+    }
+    
+    switch value {
+    case let array as [Any]:
+        return array.map(changeENUMSToRawValues)
+         
+    case let dictionary as [String: Any]:
+        return dictionary.mapValues(changeENUMSToRawValues)
+         
+    default:
+        return value
+    }
+}
+
 public actor APIClient {
     public static let shared = APIClient()
     
@@ -139,7 +156,8 @@ public actor APIClient {
             
         // Serialize the body into JSON if there is a body
         if let body = body {
-            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+            let sanitizedBody = changeENUMSToRawValues(body)
+            request.httpBody = try JSONSerialization.data(withJSONObject: sanitizedBody, options: [])
         }
         
         // Check there is a active session

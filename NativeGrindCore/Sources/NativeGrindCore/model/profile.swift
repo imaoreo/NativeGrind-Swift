@@ -9,6 +9,10 @@ import Foundation
 
 public struct emptyResponse: Codable, Sendable {}
 
+public struct tapResponse: Codable, Sendable {
+    public let isMutual: Bool
+}
+
 public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
