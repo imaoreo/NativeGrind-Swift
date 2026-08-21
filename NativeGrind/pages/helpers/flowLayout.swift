@@ -4,6 +4,7 @@
 //
 //  Created by Jay Brammeld on 18/08/2026.
 //
+//  This file was made using gemeni ai, Ideally needs refactored
 
 import SwiftUI
 
