@@ -194,9 +194,7 @@ struct browseView: View {
             return
         }
         
-        if (!contentLoaded) {
-            isLoading = true
-        }
+        isLoading = true
         let geohash = await locationController.shared.currentGeohash
         
         if let geohash = geohash {
