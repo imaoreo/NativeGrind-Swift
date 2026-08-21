@@ -86,7 +86,7 @@ public struct CascadeItem: Codable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         type = try container.decode(String.self, forKey: .type)
         if type == "full_profile_v1" || type == "partial_profile_v1" {
-            data = try? container.decodeIfPresent(CascadeResponseProfile.self, forKey: .data)
+            data = try container.decodeIfPresent(CascadeResponseProfile.self, forKey: .data)
         } else {
             data = nil
         }
