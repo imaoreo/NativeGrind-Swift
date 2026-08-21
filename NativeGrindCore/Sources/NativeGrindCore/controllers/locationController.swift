@@ -3,7 +3,7 @@ import Foundation
 public actor locationController {
     public static let shared = locationController()
     
-    public var currentGeohash: String = "gcvxpuyy2222"
+    public var currentGeohash: String? = nil
     
     private init() {}
     

@@ -67,6 +67,8 @@ struct LocationView: View {
     private func updateGeohash(for coordinate: CLLocationCoordinate2D) async {
         await locationController.shared.updateGeohash(latitude: coordinate.latitude, longitude: coordinate.longitude)
         
-        currentGeohash = await locationController.shared.currentGeohash
+        guard let currentGeohash = await locationController.shared.currentGeohash else {
+            return
+        }
     }
 }
