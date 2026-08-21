@@ -85,8 +85,9 @@ struct gridCell: View {
                     .stroke(Color.gray.opacity(0.1), lineWidth: 1)
             )
             .task(id: mediaHash) {
+                self.image = nil
+                hasLoaded = false
                 guard let mediaHash, !mediaHash.isEmpty else { return }
-                if hasLoaded { return }
                 
                 if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: mediaHash) {
                     if let platformImage = PlatformImage(data: data) {
