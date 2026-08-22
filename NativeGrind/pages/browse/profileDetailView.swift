@@ -130,7 +130,7 @@ struct profileDetailView: View {
                                 .font(.system(size: 24, weight: .bold))
                                 .padding(8)
                                 .background(.black.opacity(0.4))
-                                .foregroundColor(fullProfile?.isFavorite ?? false ? .red : .primary)
+                                .foregroundColor(fullProfile?.isFavorite ?? false ? .red : .white)
                                 .clipShape(Circle())
                         }
                         
@@ -144,7 +144,7 @@ struct profileDetailView: View {
                                 .font(.system(size: 24, weight: .bold))
                                 .padding(8)
                                 .background(.black.opacity(0.4))
-                                .foregroundColor(fullProfile?.tapped ?? false ? .red : .primary)
+                                .foregroundColor(fullProfile?.tapped ?? false ? .red : .white)
                                 .clipShape(Circle())
                         }
                         .disabled(fullProfile?.tapped ?? false)
