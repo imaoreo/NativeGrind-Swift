@@ -19,6 +19,41 @@ public actor locationController {
 public struct geohashEncoder {
     private static let base32Chars = Array("0123456789bcdefghjkmnpqrstuvwxyz")
     
+    public static func decode(_ geohash: String) -> (latitude: Double, longitude: Double)? {
+        let cleanHash = geohash.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !cleanHash.isEmpty else { return nil }
+        var latRange = (-90.0, 90.0)
+        var lonRange = (-180.0, 180.0)
+        var isEven = true
+        
+        for char in cleanHash {
+            guard let idx = base32Chars.firstIndex(of: char) else { return nil }
+            for bit in 0..<5 {
+                let mask = 1 << (4 - bit)
+                let bitVal = (idx & mask) != 0
+                if isEven {
+                    let mid = (lonRange.0 + lonRange.1) / 2
+                    if bitVal {
+                        lonRange.0 = mid
+                    } else {
+                        lonRange.1 = mid
+                    }
+                } else {
+                    let mid = (latRange.0 + latRange.1) / 2
+                    if bitVal {
+                        latRange.0 = mid
+                    } else {
+                        latRange.1 = mid
+                    }
+                }
+                isEven.toggle()
+            }
+        }
+        let lat = (latRange.0 + latRange.1) / 2
+        let lon = (lonRange.0 + lonRange.1) / 2
+        return (lat, lon)
+    }
+    
     public static func encode(latitude: Double, longitude: Double, precision: Int = 12) -> String {
         var latRange = (-90.0, 90.0)
         var lonRange = (-180.0, 180.0)
