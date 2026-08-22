@@ -192,7 +192,7 @@ public actor profileController {
             )
             
             guard let response = response else {
-                await errorManager.shared.error("profileController", "Failed to fetch grid: Empty or invalid response from server")
+                await errorManager.shared.log("profileController", "Failed to fetch grid: Empty or invalid response from server")
                 return nil
             }
 
