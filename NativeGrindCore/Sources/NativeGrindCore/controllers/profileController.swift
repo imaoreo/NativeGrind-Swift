@@ -6,6 +6,11 @@ public enum profileSource {
     case id(String)
 }
 
+public struct GridResponse: Codable, Sendable {
+    public let profiles: [CascadeResponseProfile]
+    public let nextPage: Int?
+}
+
 public actor profileController {
     public static let shared = profileController()
     public let dbController: dbProfileController
@@ -121,9 +126,7 @@ public actor profileController {
         return size == .size1024 || size == .size2048
     }
     
-    // This is here for hyper caching and storing later on
     public func fetchProfileImage(size: imageSizes, mediaHash: String) async -> Data? {
-        // Only use local disk cache and check missing uploads if the request is high-quality
         if isHighQuality(size: size) {
             if !appEnvironment.isTesting, let cachedData = getLocalImageData(mediaHash: mediaHash) {
                 if self.missingMediaHashesOnServer.contains(mediaHash) {
@@ -142,9 +145,9 @@ public actor profileController {
             
             if size == .size2048 {
                 do {
-                    data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash))
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash), shouldErrorMessage: false)
                 } catch {
-                    // Ignore error and fall back to 1024
+
                 }
                 if data == nil {
                     data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash))
@@ -175,6 +178,51 @@ public actor profileController {
             if !isNetworkError {
                 await errorManager.shared.warn("profileController", "Failed to fetch profile image: \(error)")
             }
+            return nil
+        }
+    }
+
+    public func fetchGrid(
+        geohash: String,
+        filters: GridFilters = GridFilters()
+    ) async -> GridResponse? {
+        do {
+            let response = try await APIClient.shared.request(
+                .getGrid(geohash: geohash, filters: filters)
+            )
+            
+            guard let response = response else {
+                await errorManager.shared.log("profileController", "Failed to fetch grid: Empty or invalid response from server")
+                return nil
+            }
+
+            var profiles: [CascadeResponseProfile] = []
+            for item in response.items {
+                if item.isProfile, let data = item.data {
+                    profiles.append(data)
+                }
+            }
+
+            let serverAuthorized = await wsController.shared.isServerAuthorized
+            if serverAuthorized {
+                Task {
+                    let response = await wsController.shared.sendAndWait(
+                        request: .syncGrid(profiles: profiles, geohash: geohash),
+                        expectedEvent: .onGridSynced
+                    )
+                    if let missing = response?.missingMediaHashes, !missing.isEmpty {
+                        await proactiveSyncMissingMedias(missing)
+                    }
+                }
+            }
+
+            return GridResponse(profiles: profiles, nextPage: response.nextPage)
+        } catch {
+            let isNetworkError = (error as? requestError) == .networkError
+            if !isNetworkError {
+                await errorManager.shared.warn("profileController", "Failed to fetch grid: \(error)")
+            }
+            await errorManager.shared.error("profileController", "Failed to fetch grid: \(error)")
             return nil
         }
     }

@@ -181,7 +181,27 @@ public extension endpoint {
     }
     
     // Profiles
-    
+
+    static func getGrid(
+        geohash: String,
+        filters: GridFilters = GridFilters()
+    ) -> endpoint<CascadeResponse> {
+        var queryItems: [String: String] = ["nearbyGeoHash": geohash]
+        for item in filters.toQueryItems() {
+            if let value = item.value {
+                queryItems[item.name] = value
+            }
+        }
+        return endpoint<CascadeResponse>(
+            path: "/v3/cascade",
+            method: .get,
+            queryItems: queryItems,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
     static func getProfile(profileId: String) -> endpoint<profileResponse> {
         return endpoint<profileResponse>(
             path: "/v7/profiles/\(profileId)",
@@ -190,6 +210,52 @@ public extension endpoint {
             body: nil,
             isAuthedRoute: true,
             networkHandlers: []
+        )
+    }
+    
+    static func addFavorite(profileId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v3/me/favorites/\(profileId)",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func removeFavorite(profileId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v3/me/favorites/\(profileId)",
+            method: .delete,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+    
+    static func tap(profileId: String, tapType: tapType) -> endpoint<tapResponse> {
+        return endpoint<tapResponse>(
+            path: "/v2/taps/add",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "recipientId": profileId,
+                "tapType": tapType
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(
+                    code: 400,
+                    jsonLocation: nil,
+                    jsonLocationValue: nil,
+                    message: "User may already be tapped",
+                    header: "Tap Error",
+                    level: .warn,
+                    match: .matchEither
+                )
+            ],
         )
     }
     

@@ -7,18 +7,24 @@
 
 import Foundation
 
+public struct emptyResponse: Codable, Sendable {}
+
+public struct tapResponse: Codable, Sendable {
+    public let isMutual: Bool
+}
+
 public struct profileResponse: Codable, Sendable {
     public let profiles: [profile]
 }
 
 public struct profile: Codable, Sendable {
     public let distance: Double?
-    public let profileImageMediaHash: String
+    public let profileImageMediaHash: String?
     public let isFavorite: Bool
     public let lastViewed: Int?
     public let seen: Int?
     public let rightNow: rightNowType
-    public let sexualPosition: sexualPosition
+    public let sexualPosition: sexualPosition?
     public let foundVia: viewSource?
     public let profileId: String
     public let displayName: String?
@@ -45,16 +51,16 @@ public struct profile: Codable, Sendable {
     public let isBlockable: Bool?
     public let showTribes: Bool
     public let showPosition: Bool
-    public let aboutMe: String
-    public let ethnicity: ethnicity
-    public let relationshipStatus: relationshipStatus
+    public let aboutMe: String?
+    public let ethnicity: ethnicity?
+    public let relationshipStatus: relationshipStatus?
     public let grindrTribes: [tribes]
     public let lookingFor: [lookingFor]
     public let bodyType: bodyType?
     public let hivStatus: HIVStatus?
     public let lastTestedDate: Int?
-    public let height: Int // Currently in cm
-    public let weight: Int? // Currently in grams
+    public let height: Double? // Currently in cm
+    public let weight: Double? // Currently in grams
     public let socialNetworks: socialNetworks
     public let identity: String?
     public let hashtags: [String]
@@ -71,7 +77,7 @@ public struct profile: Codable, Sendable {
     public let isVisiting: Bool
     public let travelPlans: [travelPlan] // Type
     public let isInAList: Bool
-    public let tribesImInto: [tribes]
+    public let tribesImInto: [tribes]?
     public let showVipBadge: Bool
     public let rightNowShareLocation: String? // Rather "NONE" or null
     public let rightNowMedias: [rightNowMedia]?

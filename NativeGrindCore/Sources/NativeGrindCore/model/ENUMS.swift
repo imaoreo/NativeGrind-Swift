@@ -9,7 +9,7 @@ public func removeENUM<T: RawRepresentable>(from items: [T]?) -> [T.RawValue]? {
     return items?.map { $0.rawValue }
 }
 
-public enum sexualPosition: Int, Codable, Sendable {
+public enum sexualPosition: Int, Codable, Sendable, CaseIterable {
     case top = 1
     case bottom = 2
     case versatile = 3
@@ -110,7 +110,7 @@ public enum viewSource: String, Codable, Sendable {
     }
 }
 
-public enum meetAt: Int, Codable, Sendable {
+public enum meetAt: Int, Codable, Sendable, CaseIterable {
     case myPlace = 1
     case yourPlace = 2
     case bar = 3
@@ -124,7 +124,7 @@ public enum vaccines: Int, Codable, Sendable {
     case meningitis = 3
 }
 
-public enum NSFWPics: Int, Codable, Sendable {
+public enum NSFWPics: Int, Codable, Sendable, CaseIterable {
     case never = 1
     case notAtFirst = 2
     case yesPlease = 3
@@ -142,7 +142,7 @@ public enum ethnicity: Int, Codable, Sendable {
     case southAsian = 9
 }
 
-public enum relationshipStatus: Int, Codable, Sendable {
+public enum relationshipStatus: Int, Codable, Sendable, CaseIterable {
     case single = 1
     case dating = 2
     case exclusive = 3
@@ -153,7 +153,7 @@ public enum relationshipStatus: Int, Codable, Sendable {
     case openRelationship = 8
 }
 
-public enum tribes: Int, Codable, Sendable {
+public enum tribes: Int, Codable, Sendable, CaseIterable {
     case bear = 1
     case cleanCut = 2
     case daddy = 3
@@ -169,7 +169,7 @@ public enum tribes: Int, Codable, Sendable {
     case sober = 13
 }
 
-public enum lookingFor: Int, Codable, Sendable {
+public enum lookingFor: Int, Codable, Sendable, CaseIterable {
     case chat = 2
     case dates = 3
     case friends = 4
@@ -178,7 +178,7 @@ public enum lookingFor: Int, Codable, Sendable {
     case hookups = 7
 }
 
-public enum bodyType: Int, Codable, Sendable {
+public enum bodyType: Int, Codable, Sendable, CaseIterable {
     case toned = 1
     case average = 2
     case large = 3
@@ -200,7 +200,7 @@ public enum tapType: Int, Codable, Sendable {
     case looking = 2
 }
 
-public enum sexualHealth: Int, Codable, Sendable {
+public enum sexualHealth: Int, Codable, Sendable, CaseIterable {
     case condoms = 1
     case doxyPEP = 2
     case PrEP = 3
