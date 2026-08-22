@@ -7,13 +7,19 @@ import SwiftUI
 import NativeGrindCore
 
 struct profileDetailView: View {
-    let profileId: String
+    let profiles: [CascadeResponseProfile]?
+    @State private var profileId: String
     
     @State private var fullProfile: profile? = nil
     @State private var isLoading = true
     @State private var heroImage: Image? = nil
     
     @Environment(\.dismiss) private var dismiss
+    
+    init(profileId: String, profiles: [CascadeResponseProfile]? = nil) {
+        self.profiles = profiles
+        self._profileId = State(initialValue: profileId)
+    }
     
     var body: some View {
         ScrollView {
@@ -35,8 +41,39 @@ struct profileDetailView: View {
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(.container, edges: .top)
-        .task {
+        .gesture(
+            DragGesture(minimumDistance: 25, coordinateSpace: .local)
+                .onEnded { value in
+                    let horizontalTranslation = value.translation.width
+                    let verticalTranslation = value.translation.height
+                    
+                    guard abs(horizontalTranslation) > abs(verticalTranslation) else { return }
+                    
+                    if horizontalTranslation < -45 {
+                        navigateProfile(forward: true)
+                    } else if horizontalTranslation > 45 {
+                        navigateProfile(forward: false)
+                    }
+                }
+        )
+        .task(id: profileId) {
             await fetchFullProfile()
+        }
+    }
+    
+    private func navigateProfile(forward: Bool) {
+        guard let profiles = profiles,
+              let currentIndex = profiles.firstIndex(where: { String($0.profileId) == profileId }) else {
+            return
+        }
+        
+        let nextIndex = forward ? currentIndex + 1 : currentIndex - 1
+        guard nextIndex >= 0 && nextIndex < profiles.count else { return }
+        
+        let nextProfile = profiles[nextIndex]
+        
+        withAnimation(.snappy(duration: 0.3)) {
+            self.profileId = String(nextProfile.profileId)
         }
     }
     
@@ -340,6 +377,8 @@ struct profileDetailView: View {
     
     private func fetchFullProfile() async {
         isLoading = true
+        self.fullProfile = nil
+        self.heroImage = nil
         
         if let profile = await profileController.shared.fetchProfile(profileId: profileId) {
             self.fullProfile = profile

@@ -179,7 +179,7 @@ struct browseView: View {
                 #endif
             }
             .sheetWithToast(item: $selectedProfile) { item in
-                profileDetailView(profileId: String(item.profileId))
+                profileDetailView(profileId: String(item.profileId), profiles: profiles)
             }
             .sheetWithToast(item: $directProfileId) { item in
                 profileDetailView(profileId: item.id)
