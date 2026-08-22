@@ -6,7 +6,7 @@ Please take a moment to review this document to understand our development workf
 
 ## Developer Authorization Policy
 
-Before you start writing code that connects to any NativServer services
+Before you start writing code that connects to any NativeServer services
 please review [AUTHORIZATION.md](./AUTHORIZATION.md). 
 
 Here is the polished and formatted version of your new "How to Contribute" section. I fixed a few typos (like "realitivly," "funcions," and "idealy"), tightened up the phrasing, and structured your branch and commit rules so they are incredibly easy for developers to read and follow.
@@ -37,7 +37,7 @@ Keep your commits relatively small, aiming for one logical change per commit. We
 * `fix()` — for bug fixes.
 * `feat()` — for new features.
 
-Inside the parentheses, include the scope of the module you are touching: `core`, `watch`, `app`, `server`, or `tests`. Follow this with the issue reference number and a short, clear description.
+Inside the parentheses, include the scope of the module you are touching: `core`, `watch`, `app` or `tests`. Follow this with the issue reference number and a short, clear description.
 
 **Example:**
 

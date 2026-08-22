@@ -13,8 +13,7 @@ This project is split into separate modules to split up the UI, resuable logic a
 | -------------------------------------------- | ------------- | ---------------------------------- | ----------------------------------------------------------- |
 | **[NativeGrind](./NativeGrind)**             | Frontend      | The main SwiftUI application       | UI/UX for iOS, macOS, tvOS, visionOS and iPadOS.            |
 | **[WatchNativeGrind](./WatchNativeGrind)**   | Frontend      | The main watch SwiftUI application | UI/UX for watchOS.                                          |
-| **[NativeGrindCore](./NativeGrindCore)**     | Swift Package | Reusable application logic         | REST API client, Keychain secure storage, and strong types. |
-| **[NativeGrindServer](./NativeGrindServer)** | Swift Package | NativeServer connector             | Interfaces with NativeServer to allow for extra features    |
+| **[NativeGrindCore](./NativeGrindCore)**     | Swift Package | Reusable application logic         | REST API client, Keychain secure storage, and types. |
 
 ## Getting Started
 
@@ -35,18 +34,13 @@ git clone https://github.com/imaoreo/NativeGrind-Swift.git
 cd NativeGrind-Swift
 ```
 
-### Step 2: Obtain a Developer Key
-
-Due to how Apple App Attest and DeviceCheck is set up, unless you have been added to the [Authorized Client Registry](./AUTHORIZATION.md#3-registry-of-authorized-clients) you will have to apply for a developer key [How to Apply](./AUTHORIZATION.md#type-b-developers-testing-an-app) or you will not be able to access the NativeServer application.
-
-### Step 3: Build and Run
+### Step 2: Build and Run
 
 Select your desired target (**NativeGrind** for iOS/macOS, or **WatchNativeGrind Watch App** for watchOS) and target device, then press **Cmd + R**.
 
 ## Security
 
 To minimize potential security risks, we implement the following practices:
-- **App Attest Enforcement:** NativeServer blocks unauthorized access by requiring proof of device integrity via Apple's App Attest API (or a registered developer key).
 - **Dependency Minimization:** We rely on native Swift and Apple frameworks wherever possible to limit third-party vulnerabilities and bloat.
 - **Transparent Reporting:** We maintain an open channel for anyone to report security issues, ensuring bugs can be patched quickly.
 
