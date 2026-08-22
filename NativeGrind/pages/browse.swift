@@ -23,6 +23,7 @@ struct browseView: View {
     
     @State private var nextPageNumber: Int? = nil
     @State private var activeTaskID = UUID()
+    @State private var isLocationRequired = false
     
     #if os(macOS)
     private let columns = [
@@ -37,7 +38,23 @@ struct browseView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if isLoading && profiles == nil {
+                if isLocationRequired {
+                    VStack(spacing: 16) {
+                        Image(systemName: "location.slash")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
+                        Text("Location Required")
+                            .font(.headline)
+                        Text("Please select a location to browse nearby profiles.")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        Button("Select Location") {
+                            showLocation = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if isLoading && profiles == nil {
                     ProgressView("Loading Grid...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let profiles = profiles {
@@ -215,11 +232,13 @@ struct browseView: View {
         
         guard let geohash = geohash else {
             if activeTaskID == taskID {
+                isLocationRequired = true
                 isLoading = false
             }
             return
         }
         
+        isLocationRequired = false
         var queryFilters = filters
         if isPagination {
             queryFilters.pageNumber = nextPageNumber
