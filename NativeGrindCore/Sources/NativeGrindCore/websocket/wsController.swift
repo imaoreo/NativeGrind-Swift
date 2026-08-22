@@ -80,9 +80,11 @@ public final class wsController: ObservableObject {
         listen(to: domain)
     }
     
-    public func disconnect(domain: wsDomain? = nil) {
+    public func disconnect(domain: wsDomain? = nil, userInitiated: Bool = true) {
         if let domain = domain {
-            desiredDomains.remove(domain)
+            if userInitiated {
+                desiredDomains.remove(domain)
+            }
             webSocketTasks[domain]?.cancel(with: .normalClosure, reason: nil)
             webSocketTasks.removeValue(forKey: domain)
             connectedDomains.remove(domain)
@@ -90,7 +92,9 @@ public final class wsController: ObservableObject {
                 isServerAuthorized = false
             }
         } else {
-            desiredDomains.removeAll()
+            if userInitiated {
+                desiredDomains.removeAll()
+            }
             for task in webSocketTasks.values {
                 task.cancel(with: .normalClosure, reason: nil)
             }
@@ -150,7 +154,7 @@ public final class wsController: ObservableObject {
                         await sessionManager.shared.refreshToken(showError: false)
                     }
                     
-                    self.disconnect(domain: domain)
+                    self.disconnect(domain: domain, userInitiated: false)
                     self.scheduleReconnect(for: domain)
                 }
             }
@@ -233,7 +237,7 @@ public final class wsController: ObservableObject {
         
         if result == nil {
             errorManager.shared.log("wsController", "WebSocket request timed out for \(request.domain). Reconnecting...")
-            self.disconnect(domain: request.domain)
+            self.disconnect(domain: request.domain, userInitiated: false)
             try? await Task.sleep(nanoseconds: 500_000_000)
             self.connect(to: request.domain)
             try? await Task.sleep(nanoseconds: 1_000_000_000)
