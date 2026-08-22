@@ -21,6 +21,9 @@ struct browseView: View {
     @State private var inputProfileId = ""
     @State private var directProfileId: identifiableId? = nil
     
+    @State private var nextPageNumber: Int? = nil
+    @State private var activeTaskID = UUID()
+    
     #if os(macOS)
     private let columns = [
         GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 12)
@@ -66,12 +69,17 @@ struct browseView: View {
                                             .aspectRatio(1, contentMode: .fit)
                                     }
                                     .buttonStyle(.plain)
+                                    .onAppear {
+                                        if profile.profileId == profiles.last?.profileId {
+                                            loadNextPage()
+                                        }
+                                    }
                                 }
                             }
                             .padding(8)
                         }
                         .refreshable {
-                            await loadGrid(contentLoaded: true)
+                            await loadGrid()
                         }
                     }
                 } else {
@@ -191,16 +199,53 @@ struct browseView: View {
         }
     }
     
-    private func loadGrid(contentLoaded: Bool = false) async {
-        if (isLoading) {
-            return
+    private func loadNextPage() {
+        guard nextPageNumber != nil, !isLoading else { return }
+        Task {
+            await loadGrid(isPagination: true)
         }
+    }
+    
+    private func loadGrid(isPagination: Bool = false) async {
+        let taskID = UUID()
+        activeTaskID = taskID
         
         isLoading = true
         let geohash = await locationController.shared.currentGeohash
         
-        if let geohash = geohash {
-            profiles = await profileController.shared.fetchGrid(geohash: geohash, filters: filters)
+        guard let geohash = geohash else {
+            if activeTaskID == taskID {
+                isLoading = false
+            }
+            return
+        }
+        
+        var queryFilters = filters
+        if isPagination {
+            queryFilters.pageNumber = nextPageNumber
+        } else {
+            queryFilters.pageNumber = nil
+        }
+        
+        let response = await profileController.shared.fetchGrid(geohash: geohash, filters: queryFilters)
+        
+        guard activeTaskID == taskID else {
+            return
+        }
+        
+        if let response = response {
+            if isPagination {
+                if self.profiles == nil {
+                    self.profiles = response.profiles
+                } else {
+                    let existingIds = Set(self.profiles?.map { $0.profileId } ?? [])
+                    let newProfiles = response.profiles.filter { !existingIds.contains($0.profileId) }
+                    self.profiles?.append(contentsOf: newProfiles)
+                }
+            } else {
+                self.profiles = response.profiles
+            }
+            self.nextPageNumber = response.nextPage
         }
         isLoading = false
     }
