@@ -38,17 +38,17 @@ struct LocationView: View {
                 Section("Coordinate Input") {
                     TextField("Latitude", text: $latitudeString)
                         #if os(iOS)
-                        .keyboardType(.decimalPad)
+                        .keyboardType(.numbersAndPunctuation)
                         #endif
-                        .onChange(of: latitudeString) { newValue in
+                        .onChange(of: latitudeString) {
                             updateFromCoordinates()
                         }
                     
                     TextField("Longitude", text: $longitudeString)
                         #if os(iOS)
-                        .keyboardType(.decimalPad)
+                        .keyboardType(.numbersAndPunctuation)
                         #endif
-                        .onChange(of: longitudeString) { newValue in
+                        .onChange(of: longitudeString) {
                             updateFromCoordinates()
                         }
                 }
