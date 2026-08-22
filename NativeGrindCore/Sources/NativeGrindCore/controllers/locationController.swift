@@ -3,16 +3,62 @@ import Foundation
 public actor locationController {
     public static let shared = locationController()
     
-    public var currentGeohash: String? = nil
+    private var _currentGeohash: String? = nil
     
-    private init() {}
+    public var currentGeohash: String? {
+        if let inMemory = _currentGeohash {
+            return inMemory
+        }
+        if let local = UserDefaults.standard.string(forKey: "saved_geohash") {
+            return local
+        }
+        return nil
+    }
+    
+    private init() {
+        if let local = UserDefaults.standard.string(forKey: "saved_geohash") {
+            self._currentGeohash = local
+        }
+    }
     
     public func updateGeohash(_ geohash: String?) {
-        self.currentGeohash = geohash
+        self._currentGeohash = geohash
+        if let geohash = geohash {
+            UserDefaults.standard.set(geohash, forKey: "saved_geohash")
+            
+            Task {
+                if await wsController.shared.isServerAuthorized {
+                    try? await nsStorageController.shared.saveData(location: .location, data: geohash)
+                }
+            }
+        } else {
+            UserDefaults.standard.removeObject(forKey: "saved_geohash")
+            Task {
+                if await wsController.shared.isServerAuthorized {
+                    try? await nsStorageController.shared.saveData(location: .location, data: "")
+                }
+            }
+        }
     }
     
     public func updateGeohash(latitude: Double, longitude: Double) {
-        self.currentGeohash = geohashEncoder.encode(latitude: latitude, longitude: longitude)
+        let geohash = geohashEncoder.encode(latitude: latitude, longitude: longitude)
+        self.updateGeohash(geohash)
+    }
+    
+    public func syncWithServer() async {
+        guard await wsController.shared.isServerAuthorized else { return }
+        do {
+            let serverGeohash = try await nsStorageController.shared.getData(location: .location)
+            if !serverGeohash.isEmpty {
+                self._currentGeohash = serverGeohash
+                UserDefaults.standard.set(serverGeohash, forKey: "saved_geohash")
+            }
+        } catch {
+            if let local = _currentGeohash {
+                try? await nsStorageController.shared.saveData(location: .location, data: local)
+            }
+        }
     }
 }
 

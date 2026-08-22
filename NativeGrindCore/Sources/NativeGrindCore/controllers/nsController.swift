@@ -132,6 +132,8 @@ public final class webSocketAttestManager {
                         } catch {
                             errorManager.shared.error("nsConnect", "Failed to sync after device auth: \(error.localizedDescription)")
                         }
+                        
+                        await locationController.shared.syncWithServer()
                     } else {
                         await MainActor.run {
                             wsController.shared.isServerAuthorized = false
@@ -154,6 +156,8 @@ public final class webSocketAttestManager {
                         } catch {
                             errorManager.shared.error("nsConnect", "Failed to sync after external account data update: \(error.localizedDescription)")
                         }
+                    } else if payload.location == "device_location" {
+                        await locationController.shared.syncWithServer()
                     }
                 }
             }
