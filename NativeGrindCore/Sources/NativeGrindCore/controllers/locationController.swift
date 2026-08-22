@@ -65,7 +65,7 @@ public struct geohashEncoder {
         while geohash.count < precision {
             if isEven {
                 let mid = (lonRange.0 + lonRange.1) / 2
-                if longitude > mid {
+                if longitude >= mid {
                     ch |= (1 << (4 - bit))
                     lonRange.0 = mid
                 } else {
@@ -73,7 +73,7 @@ public struct geohashEncoder {
                 }
             } else {
                 let mid = (latRange.0 + latRange.1) / 2
-                if latitude > mid {
+                if latitude >= mid {
                     ch |= (1 << (4 - bit))
                     latRange.0 = mid
                 } else {
