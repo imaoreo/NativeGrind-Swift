@@ -140,7 +140,7 @@ public actor profileController {
             
             if size == .size2048 {
                 do {
-                    data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash), shouldErrorMesssage: false)
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size2048, mediaHash: mediaHash), shouldErrorMessage: false)
                 } catch {
 
                 }

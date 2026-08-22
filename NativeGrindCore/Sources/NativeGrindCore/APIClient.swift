@@ -176,7 +176,7 @@ public actor APIClient {
         return (data, httpResponse)
     }
     
-    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false, shouldErrorMesssage: Bool = true) async throws -> T? {
+    public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false, shouldErrorMessage: Bool = true) async throws -> T? {
         do {
             let (data, response) = try await sendRequest(
                 method: endpoint.method,
@@ -199,10 +199,10 @@ public actor APIClient {
             if response.statusCode == 401, !isRetry, endpoint.shouldRetryOn401 {
                 await sessionManager.shared.refreshToken()
 
-                return try await request(endpoint, isRetry: true, shouldErrorMesssage: shouldErrorMesssage)
+                return try await request(endpoint, isRetry: true, shouldErrorMessage: shouldErrorMessage)
             }
             
-            if shouldErrorMesssage {
+            if shouldErrorMessage {
                 await handleNetworkError(data: data, statusCode: response.statusCode, endpoint: endpoint)
             }
 
