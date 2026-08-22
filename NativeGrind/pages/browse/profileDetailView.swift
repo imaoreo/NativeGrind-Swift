@@ -285,7 +285,7 @@ struct profileDetailView: View {
                 }
 
                 
-                statCell(icon: "number.sign", title: "Profile Id", value: String(describing: profile.profileId).capitalized)
+                statCell(icon: "number.sign", title: "Profile Id", value: String(describing: profile.profileId).capitalized, allowCopying: true)
             }
             .padding()
             .background(Color.gray.opacity(0.1))
@@ -293,7 +293,7 @@ struct profileDetailView: View {
         }
     }
     
-    private func statCell(icon: String, title: String, value: String) -> some View {
+    private func statCell(icon: String, title: String, value: String, allowCopying: Bool = false) -> some View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .foregroundColor(.primary)
@@ -307,6 +307,19 @@ struct profileDetailView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                 }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard allowCopying else { return }
+                
+                #if os(iOS)
+                UIPasteboard.general.string = value
+                #elseif os(macOS)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(value, forType: .string)
+                #endif
+                
+                toastManager.shared.show(style: .info, header: "Copied", message: "Copied \(title.lowercased()) to clipboard")
             }
         }
     
