@@ -101,4 +101,34 @@ struct endpointTests {
         #expect(loginEndpoint.isAuthedRoute == false)
         #expect(refreshEndpoint.isAuthedRoute == false)
     }
+    
+    @Test("Verifies getGrid endpoint serialization with complete query filters")
+    func testGetGridFiltersSerialization() {
+        var filters = GridFilters()
+        filters.onlineOnly = false
+        filters.photoOnly = true
+        filters.ageMin = 18
+        filters.ageMax = 35
+        filters.heightCmMin = 160.0
+        filters.heightCmMax = 200.0
+        filters.tribes = [.bear, .cleanCut]
+        filters.pageNumber = 3
+        
+        let testEndpoint: endpoint<CascadeResponse> = .getGrid(geohash: "test-hash", filters: filters)
+        let query = testEndpoint.queryItems ?? [:]
+        
+        #expect(query["nearbyGeoHash"] == "test-hash")
+        #expect(query["onlineOnly"] == "false")
+        #expect(query["photoOnly"] == "true")
+        #expect(query["ageMin"] == "18")
+        #expect(query["ageMax"] == "35")
+        #expect(query["heightCmMin"] == "160.0")
+        #expect(query["heightCmMax"] == "200.0")
+        #expect(query["tribes"] == "1,2")
+        #expect(query["pageNumber"] == "3")
+        
+        // Ensure nil properties are omitted
+        #expect(query["faceOnly"] == nil)
+        #expect(query["weightGramsMin"] == nil)
+    }
 }
