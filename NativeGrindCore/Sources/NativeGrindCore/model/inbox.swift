@@ -56,13 +56,13 @@ public struct conversationPreview: Codable, Sendable {
     public let chat1MessageId: String // UUIDv4
     public let senderId: Int
     public let type: messageType
-    public let chat1Type: chat1MessageType
+    public let chat1Type: chat1MessageType?
     public let text: String?
     public let url: String?
     public let lat: String?
     public let lon: String?
     public let albumId: Int?
-    public let albumContentId: String?
+    public let albumContentId: Int?
     public let albumContentReply: String?
     public let duration: String?
     public let imageHash: String?
