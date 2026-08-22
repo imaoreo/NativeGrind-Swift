@@ -116,7 +116,13 @@ struct LocationView: View {
     
     private func updateFromCoordinates() {
         guard let lat = Double(latitudeString.trimmingCharacters(in: .whitespacesAndNewlines)),
-              let lon = Double(longitudeString.trimmingCharacters(in: .whitespacesAndNewlines)) else { return }
+              let lon = Double(longitudeString.trimmingCharacters(in: .whitespacesAndNewlines)),
+              (-90.0...90.0).contains(lat),
+              (-180.0...180.0).contains(lon) else {
+            currentGeohash = ""
+            selectedCoordinate = nil
+            return
+        }
         let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         selectedCoordinate = coord
         currentGeohash = geohashEncoder.encode(latitude: lat, longitude: lon)
