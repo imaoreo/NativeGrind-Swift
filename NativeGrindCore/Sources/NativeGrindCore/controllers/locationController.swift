@@ -25,17 +25,16 @@ public actor locationController {
         self._currentGeohash = geohash
         if let geohash = geohash {
             UserDefaults.standard.set(geohash, forKey: "saved_geohash")
-            
             Task {
                 if await wsController.shared.isServerAuthorized {
-                    try? await nsStorageController.shared.saveData(location: .location, data: geohash)
+                    _ = try? await nsStorageController.shared.saveData(location: .location, data: geohash)
                 }
             }
         } else {
             UserDefaults.standard.removeObject(forKey: "saved_geohash")
             Task {
                 if await wsController.shared.isServerAuthorized {
-                    try? await nsStorageController.shared.saveData(location: .location, data: "")
+                    _ = try? await nsStorageController.shared.saveData(location: .location, data: "")
                 }
             }
         }
@@ -56,7 +55,7 @@ public actor locationController {
             }
         } catch {
             if let local = _currentGeohash {
-                try? await nsStorageController.shared.saveData(location: .location, data: local)
+                _ = try? await nsStorageController.shared.saveData(location: .location, data: local)
             }
         }
     }
