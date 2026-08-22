@@ -148,7 +148,7 @@ struct browseView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showFilters) {
+            .sheetWithToast(isPresented: $showFilters) {
                 filterView(
                     filters: filters,
                     onApply: { newFilters in
@@ -164,7 +164,7 @@ struct browseView: View {
                 .frame(width: 300, height: 250)
                 #endif
             }
-            .sheet(isPresented: $showLocation) {
+            .sheetWithToast(isPresented: $showLocation) {
                 LocationView(
                     onApply: {
                         showLocation = false
@@ -178,10 +178,10 @@ struct browseView: View {
                 .frame(width: 450, height: 350)
                 #endif
             }
-            .sheet(item: $selectedProfile) { item in
+            .sheetWithToast(item: $selectedProfile) { item in
                 profileDetailView(profileId: String(item.profileId))
             }
-            .sheet(item: $directProfileId) { item in
+            .sheetWithToast(item: $directProfileId) { item in
                 profileDetailView(profileId: item.id)
             }
             .alert("Enter Profile ID", isPresented: $showProfileIdPrompt) {

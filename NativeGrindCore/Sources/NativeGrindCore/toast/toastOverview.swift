@@ -83,4 +83,24 @@ extension View {
     public func withToastOverlay() -> some View {
         self.modifier(toastOverlay())
     }
+    
+    public func sheetWithToast<Content: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content().withToastOverlay()
+        }
+    }
+    
+    public func sheetWithToast<Item: Identifiable, Content: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View {
+        self.sheet(item: item, onDismiss: onDismiss) { val in
+            content(val).withToastOverlay()
+        }
+    }
 }
