@@ -75,7 +75,7 @@ struct profileDetailView: View {
                             .font(.largeTitle)
                             .fontWeight(.bold)
                          
-                        if let age = fullProfile?.age, fullProfile?.showAge == true {
+                        if let age = fullProfile?.age {
                             Text("\(age)")
                                 .font(.title2)
                                 .fontWeight(.medium)
