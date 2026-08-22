@@ -6,6 +6,7 @@ struct LocationView: View {
     var onApply: () -> Void
     var onCancel: () -> Void
     
+    let locationManager = deviceLocationManager()
     @State private var currentGeohash: String = ""
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var selectedCoordinate: CLLocationCoordinate2D?
@@ -64,6 +65,17 @@ struct LocationView: View {
                         longitudeString = "-0.1278"
                         updateFromCoordinates()
                     }
+                }
+                
+                Button("Use Current Location") {
+                    Task {
+                        if let location = try? await locationManager.getCurrentLocation() {
+                            latitudeString = String(location.coordinate.latitude)
+                            longitudeString = String(location.coordinate.longitude)
+                            updateFromCoordinates()
+                        }
+                    }
+
                 }
                 
                 Section("Current Location Geohash") {
