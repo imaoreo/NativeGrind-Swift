@@ -59,11 +59,13 @@ struct browseView: View {
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 8) {
                                 ForEach(profiles, id: \.profileId) { profile in
-                                    gridCell(profile: profile)
-                                        .aspectRatio(1, contentMode: .fit)
-                                        .onTapGesture {
-                                            selectedProfile = profile
-                                        }
+                                    Button {
+                                        selectedProfile = profile
+                                    } label: {
+                                        gridCell(profile: profile)
+                                            .aspectRatio(1, contentMode: .fit)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                             .padding(8)
