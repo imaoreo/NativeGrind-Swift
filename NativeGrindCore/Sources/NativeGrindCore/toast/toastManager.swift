@@ -42,9 +42,24 @@ public final class toastManager: ObservableObject {
     public static let shared = toastManager()
     
     @Published public var currentToast: toastItem? = nil
+    @Published public private(set) var activeOverlayIds: [UUID] = []
     private var dismissTask: Task<Void, Never>? = nil
     
     private init() {}
+    
+    public func registerOverlay(id: UUID) {
+        if !activeOverlayIds.contains(id) {
+            activeOverlayIds.append(id)
+        }
+    }
+    
+    public func unregisterOverlay(id: UUID) {
+        activeOverlayIds.removeAll { $0 == id }
+    }
+    
+    public func shouldShowToast(for id: UUID) -> Bool {
+        activeOverlayIds.last == id
+    }
     
     /// Shows a Toast with the specified information
     /// - Parameters:

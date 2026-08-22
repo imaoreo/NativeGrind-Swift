@@ -9,13 +9,14 @@ import SwiftUI
 
 struct toastOverlay: ViewModifier {
     @ObservedObject private var _toastManager = toastManager.shared
+    @State private var id = UUID()
 
     func body(content: Content) -> some View {
         ZStack(alignment: .top) {
             content
                 .zIndex(0)
             
-            if let toast = _toastManager.currentToast {
+            if let toast = _toastManager.currentToast, _toastManager.shouldShowToast(for: id) {
                 HStack(spacing: 12) {
                     Image(systemName: toast.style.iconName)
                         .font(.title3)
@@ -65,6 +66,12 @@ struct toastOverlay: ViewModifier {
             }
         }
         .animation(.bouncy(duration: 0.35), value: _toastManager.currentToast)
+        .onAppear {
+            _toastManager.registerOverlay(id: id)
+        }
+        .onDisappear {
+            _toastManager.unregisterOverlay(id: id)
+        }
     }
     
     private var safeAreaTopPadding: CGFloat {
