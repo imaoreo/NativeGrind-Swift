@@ -6,6 +6,11 @@ public enum profileSource {
     case id(String)
 }
 
+public struct GridResponse: Codable, Sendable {
+    public let profiles: [CascadeResponseProfile]
+    public let nextPage: Int?
+}
+
 public actor profileController {
     public static let shared = profileController()
     public let dbController: dbProfileController
@@ -180,7 +185,7 @@ public actor profileController {
     public func fetchGrid(
         geohash: String,
         filters: GridFilters = GridFilters()
-    ) async -> [CascadeResponseProfile]? {
+    ) async -> GridResponse? {
         do {
             let response = try await APIClient.shared.request(
                 .getGrid(geohash: geohash, filters: filters)
@@ -211,7 +216,7 @@ public actor profileController {
                 }
             }
 
-            return profiles
+            return GridResponse(profiles: profiles, nextPage: response.nextPage)
         } catch {
             let isNetworkError = (error as? requestError) == .networkError
             if !isNetworkError {

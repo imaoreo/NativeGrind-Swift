@@ -181,11 +181,11 @@ struct profileControllerTests {
                 keychainManager.shared.deleteToken(type: .sessionId)
             }
             
-            let profiles = await controller.fetchGrid(geohash: "test-geohash")
-            #expect(profiles != nil)
-            #expect(profiles?.count == 1)
-            #expect(profiles?.first?.profileId == 98765)
-            #expect(profiles?.first?.displayName == "Grid User")
+            let gridResponse = await controller.fetchGrid(geohash: "test-geohash")
+            #expect(gridResponse != nil)
+            #expect(gridResponse?.profiles.count == 1)
+            #expect(gridResponse?.profiles.first?.profileId == 98765)
+            #expect(gridResponse?.profiles.first?.displayName == "Grid User")
         }
     }
     
@@ -210,8 +210,8 @@ struct profileControllerTests {
                 keychainManager.shared.deleteToken(type: .sessionId)
             }
             
-            let profiles = await controller.fetchGrid(geohash: "test-geohash")
-            #expect(profiles == nil)
+            let gridResponse = await controller.fetchGrid(geohash: "test-geohash")
+            #expect(gridResponse == nil)
             
             let logs = errorManager.shared.logs
             let hasGridError = logs.contains { $0.prefix == "profileController" && $0.message.contains("Failed to fetch grid") }
