@@ -36,22 +36,15 @@ struct LocationView: View {
                     }
                 }
                 
-                Section("Coordinate Input") {
-                    TextField("Latitude", text: $latitudeString)
-                        #if os(iOS)
-                        .keyboardType(.numbersAndPunctuation)
-                        #endif
-                        .onChange(of: latitudeString) {
+                Button("Use Current Location") {
+                    Task {
+                        if let location = try? await locationManager.getCurrentLocation() {
+                            latitudeString = String(location.coordinate.latitude)
+                            longitudeString = String(location.coordinate.longitude)
                             updateFromCoordinates()
                         }
-                    
-                    TextField("Longitude", text: $longitudeString)
-                        #if os(iOS)
-                        .keyboardType(.numbersAndPunctuation)
-                        #endif
-                        .onChange(of: longitudeString) {
-                            updateFromCoordinates()
-                        }
+                    }
+
                 }
                 
                 Section("Preset Locations") {
@@ -67,20 +60,28 @@ struct LocationView: View {
                     }
                 }
                 
-                Button("Use Current Location") {
-                    Task {
-                        if let location = try? await locationManager.getCurrentLocation() {
-                            latitudeString = String(location.coordinate.latitude)
-                            longitudeString = String(location.coordinate.longitude)
+                Section("Manual Input") {
+                    TextField("Latitude", text: $latitudeString)
+                        #if os(iOS)
+                        .keyboardType(.numbersAndPunctuation)
+                        #endif
+                        .onChange(of: latitudeString) {
                             updateFromCoordinates()
                         }
-                    }
-
-                }
-                
-                Section("Current Location Geohash") {
-                    Text(currentGeohash.isEmpty ? "No location selected" : currentGeohash)
-                        .font(.system(.body, design: .monospaced))
+                    
+                    TextField("Longitude", text: $longitudeString)
+                        #if os(iOS)
+                        .keyboardType(.numbersAndPunctuation)
+                        #endif
+                        .onChange(of: longitudeString) {
+                            updateFromCoordinates()
+                        }
+                    
+                    TextField("Geohash", text: $currentGeohash, onEditingChanged: { isEditing in
+                        if !isEditing {
+                            updateFromGeohash()
+                        }
+                    })
                 }
             }
             .navigationTitle("Location")
@@ -138,6 +139,20 @@ struct LocationView: View {
         let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         selectedCoordinate = coord
         currentGeohash = geohashEncoder.encode(latitude: lat, longitude: lon)
+        cameraPosition = .region(MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
+    }
+    
+    private func updateFromGeohash() {
+        if currentGeohash.isEmpty {
+            return
+        }
+        
+        let (lat, lon) = geohashEncoder.decode(currentGeohash)!
+        
+        let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        selectedCoordinate = coord
+        latitudeString = String(coord.latitude)
+        longitudeString = String(coord.longitude)
         cameraPosition = .region(MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
     }
 }
