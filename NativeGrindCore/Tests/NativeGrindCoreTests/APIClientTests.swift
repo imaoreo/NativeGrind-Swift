@@ -245,6 +245,42 @@ struct APIClientFormattingTests {
             )
         }
     }
+    
+    @Test("Verifies changeENUMSToRawValues converts enums correctly")
+    func testChangeENUMSToRawValues() {
+        enum ScalarEnum: String {
+            case first = "first_value"
+            case second = "second_value"
+        }
+        
+        // Scalar
+        let scalarResult = changeENUMSToRawValues(ScalarEnum.first)
+        #expect(scalarResult as? String == "first_value")
+        
+        // Array of Enums
+        let arrayInput: [Any] = [ScalarEnum.first, ScalarEnum.second]
+        let arrayResult = changeENUMSToRawValues(arrayInput)
+        guard let arrayOutput = arrayResult as? [String] else {
+            Issue.record("Array conversion failed")
+            return
+        }
+        #expect(arrayOutput == ["first_value", "second_value"])
+        
+        // Dictionary of Enums
+        let dictInput: [String: Any] = [
+            "key1": ScalarEnum.first,
+            "nestedArray": [ScalarEnum.second],
+            "nestedDict": ["subKey": ScalarEnum.first]
+        ]
+        let dictResult = changeENUMSToRawValues(dictInput)
+        guard let dictOutput = dictResult as? [String: Any] else {
+            Issue.record("Dictionary conversion failed")
+            return
+        }
+        #expect(dictOutput["key1"] as? String == "first_value")
+        #expect((dictOutput["nestedArray"] as? [String]) == ["second_value"])
+        #expect((dictOutput["nestedDict"] as? [String: String]) == ["subKey": "first_value"])
+    }
 }
 
 // used for getting around session restrictions
