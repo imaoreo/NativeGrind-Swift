@@ -172,6 +172,42 @@ struct inboxRow: View {
     let conversation: conversationData
     let profile: profile?
     
+    func getPreview() -> String {
+        guard let preview = conversation.preview else {
+            return ""
+        }
+
+        if let text = preview.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return text
+        }
+
+        if preview.type == .albumContentReaction || preview.albumContentReply != nil {
+            return "Album Reaction"
+        }
+        
+        if preview.photoContentReply != nil {
+            return "Photo Reaction"
+        }
+
+        if let imageHash = preview.imageHash, !imageHash.isEmpty {
+            return "📷 Photo"
+        }
+
+        if preview.duration != nil {
+            return "🎤 Audio Message"
+        }
+
+        if preview.lat != nil && preview.lon != nil {
+            return "📍 Location"
+        }
+
+        if preview.albumId != nil {
+            return "Shared Album"
+        }
+
+        return ""
+    }
+    
     var body: some View {
         HStack(spacing: 16) {
             inboxAvatarView(conversation: conversation)
@@ -191,7 +227,7 @@ struct inboxRow: View {
                     }
                 }
                 
-                Text(conversation.preview?.text ?? "")
+                Text(getPreview())
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
