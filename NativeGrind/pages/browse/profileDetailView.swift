@@ -420,8 +420,13 @@ struct profileDetailView: View {
     }
     
     private func formatDistance(_ distance: Double, approximate: Bool) -> String {
-        let km = distance / 1000.0
         let prefix = approximate ? "~" : ""
-        return String(format: "%@%.1f km away", prefix, km)
+        
+        if distance < 1000.0 {
+            return String(format: "%@%.0fm away", prefix, distance)
+        } else {
+            let km = distance / 1000.0
+            return String(format: "%@%.1f km away", prefix, km)
+        }
     }
 }
