@@ -153,12 +153,12 @@ struct profileDetailView: View {
                         Button {
                             if !(fullProfile?.isFavorite ?? false) {
                                 Task {
-                                    try? await APIClient.shared.request(.addFavorite(profileId: profileId))
+                                    _ = try? await APIClient.shared.request(.addFavorite(profileId: profileId))
                                     await fetchFullProfile()
                                 }
                             } else {
                                 Task {
-                                    try? await APIClient.shared.request(.removeFavorite(profileId: profileId))
+                                    _ = try? await APIClient.shared.request(.removeFavorite(profileId: profileId))
                                     await fetchFullProfile()
                                 }
                             }
@@ -173,7 +173,7 @@ struct profileDetailView: View {
                         
                         Button {
                             Task {
-                                try await APIClient.shared.request(.tap(profileId: profileId, tapType: .hot))
+                                _ = try await APIClient.shared.request(.tap(profileId: profileId, tapType: .hot))
                                 await fetchFullProfile()
                             }
                         } label: {
