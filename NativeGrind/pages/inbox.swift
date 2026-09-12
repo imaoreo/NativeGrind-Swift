@@ -116,12 +116,24 @@ struct inboxView: View {
 
     private func loadInboxData() async {
         isLoading = true
+        defer { isLoading = false }
+        
         if let fetched = await inboxController.shared.fetchInboxes(depth: 3) {
-            self.items = fetched.map { item in
-                inboxItem(conversation: item.conversation, profile: item.profile)
+            var currentItems = self.items
+            
+            for raw in fetched {
+                let newItem = inboxItem(conversation: raw.conversation, profile: raw.profile)
+                guard !newItem.id.isEmpty else { continue }
+                
+                if let index = currentItems.firstIndex(where: { $0.id == newItem.id }) {
+                    currentItems[index] = newItem
+                } else {
+                    currentItems.append(newItem)
+                }
             }
+            
+            self.items = currentItems
         }
-        isLoading = false
     }
 }
 
