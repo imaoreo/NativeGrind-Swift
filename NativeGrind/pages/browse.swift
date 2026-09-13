@@ -25,9 +25,13 @@ struct browseView: View {
     @State private var activeTaskID = UUID()
     @State private var isLocationRequired = false
     
-    #if os(macOS)
+    #if os(tvOS)
     private let columns = [
-        GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 12)
+        GridItem(.adaptive(minimum: 240, maximum: 360), spacing: 24)
+    ]
+    #elseif os(macOS)
+    private let columns = [
+        GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 16)
     ]
     #else
     private let columns = [
@@ -116,6 +120,7 @@ struct browseView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            #if !os(tvOS)
             .navigationTitle("Browse")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -164,6 +169,7 @@ struct browseView: View {
                 .frame(width: 300, height: 250)
                 #endif
             }
+            #endif
             .sheetWithToast(isPresented: $showLocation) {
                 LocationView(
                     onApply: {
@@ -228,6 +234,7 @@ struct browseView: View {
         activeTaskID = taskID
         
         isLoading = true
+        await locationController.shared.syncWithServer()
         let geohash = await locationController.shared.currentGeohash
         
         guard let geohash = geohash else {
