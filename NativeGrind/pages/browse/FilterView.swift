@@ -77,7 +77,9 @@ struct filterView: View {
                     Button("Apply") {
                         onApply(draftFilters)
                     }
+                    #if os(macOS)
                     .keyboardShortcut(.defaultAction)
+                    #endif
                 }
                 
                 #if os(macOS)

@@ -41,6 +41,7 @@ struct profileDetailView: View {
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(.container, edges: .top)
+        #if !os(tvOS)
         .gesture(
             DragGesture(minimumDistance: 25, coordinateSpace: .local)
                 .onEnded { value in
@@ -55,7 +56,23 @@ struct profileDetailView: View {
                         navigateProfile(forward: false)
                     }
                 }
+            
         )
+        #else
+        .focusable()
+        .onMoveCommand { direction in
+            switch direction {
+            case .left:
+                navigateProfile(forward: true)
+            case .right:
+                navigateProfile(forward: false)
+            case .up, .down:
+                break
+            @unknown default:
+                break
+            }
+        }
+        #endif
         .task(id: profileId) {
             await fetchFullProfile()
         }

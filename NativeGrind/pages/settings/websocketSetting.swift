@@ -59,7 +59,9 @@ struct websocketsSettingView: View {
                             }
                             Text(log.message)
                                 .font(.system(.footnote, design: .monospaced))
+                            #if !os(tvOS)
                                 .textSelection(.enabled)
+                            #endif
                         }
                         .padding(.vertical, 4)
                     }
