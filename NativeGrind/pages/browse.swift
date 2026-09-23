@@ -169,9 +169,8 @@ struct browseView: View {
                 .frame(width: 300, height: 250)
                 #endif
             }
-            #endif
             .sheetWithToast(isPresented: $showLocation) {
-                LocationView(
+                locationView(
                     onApply: {
                         showLocation = false
                         applyFilters()
@@ -184,6 +183,7 @@ struct browseView: View {
                 .frame(width: 450, height: 350)
                 #endif
             }
+            #endif
             .sheetWithToast(item: $selectedProfile) { item in
                 profileDetailView(profileId: String(item.profileId), profiles: profiles)
             }

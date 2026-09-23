@@ -1,8 +1,14 @@
+//
+//  locationView.swift
+//  NativeGrind
+//
+
 import SwiftUI
 import MapKit
 import NativeGrindCore
 
-struct LocationView: View {
+#if !os(tvOS)
+struct locationView: View {
     var onApply: () -> Void
     var onCancel: () -> Void
     
@@ -156,3 +162,4 @@ struct LocationView: View {
         cameraPosition = .region(MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
     }
 }
+#endif
