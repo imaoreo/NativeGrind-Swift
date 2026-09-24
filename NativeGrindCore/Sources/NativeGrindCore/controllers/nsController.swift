@@ -97,8 +97,8 @@ public final class webSocketAttestManager {
                         let decodedKey = try await cryptoController.shared.decryptWithPrivateKey(encryptedBase64: key)
                         
                         keychainManager.shared.saveToken(decodedKey, type: .accountKey)
-                        
-                        try await accountController.shared.syncFromCloud()
+
+                        await syncController.shared.syncNow()
                     } catch {
                         errorManager.shared.error("nsConnect", "Failed: \(error.localizedDescription)")
                     }
@@ -109,12 +109,10 @@ public final class webSocketAttestManager {
         wsController.shared.publisher(for: .onAccountCreated)
             .sink { payload in
                 Task {
-                    do {
-                        if payload.status == .success {
-                            try await accountController.shared.syncToCloud()
-                        }
-                    } catch {
-                        errorManager.shared.error("nsSetup", "Failed to sync after account creation: \(error.localizedDescription)")
+                    if payload.status == .success {
+                        await accountController.shared.queueAllForSync()
+                        await locationController.shared.queueForSync()
+                        await syncController.shared.syncNow()
                     }
                 }
             }
@@ -124,40 +122,14 @@ public final class webSocketAttestManager {
             .sink { payload in
                 Task {
                     if payload.status == .success {
+                        // syncController syncs as soon as this flips
                         await MainActor.run {
                             wsController.shared.isServerAuthorized = true
                         }
-                        do {
-                            try await accountController.shared.syncFromCloud()
-                        } catch {
-                            errorManager.shared.error("nsConnect", "Failed to sync after device auth: \(error.localizedDescription)")
-                        }
-                        
-                        await locationController.shared.syncWithServer()
                     } else {
                         await MainActor.run {
                             wsController.shared.isServerAuthorized = false
                         }
-                    }
-                }
-            }
-            .store(in: &cancellables)
-
-        wsController.shared.publisher(for: .onDataSaved)
-            .sink { payload in
-                Task {
-                    if payload.message != "Data updated by another device" {
-                        return;
-                    }
-                    
-                    if payload.location == "grindr_accounts" {
-                        do {
-                            try await accountController.shared.syncFromCloud()
-                        } catch {
-                            errorManager.shared.error("nsConnect", "Failed to sync after external account data update: \(error.localizedDescription)")
-                        }
-                    } else if payload.location == "device_location" {
-                        await locationController.shared.syncWithServer()
                     }
                 }
             }

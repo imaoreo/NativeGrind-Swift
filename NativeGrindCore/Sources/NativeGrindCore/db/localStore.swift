@@ -11,6 +11,8 @@ public enum storeCollection: String, Codable, Sendable, CaseIterable {
     case profiles
     case profileHistory
     case conversations
+    case grindrAccounts
+    case deviceLocation
 }
 
 public struct storeChange: Codable, Sendable, Hashable {
@@ -110,6 +112,10 @@ public actor localStore {
             }
         }
         saveLedger(ledger)
+    }
+
+    public func noteChange(collection: storeCollection, key: String, kind: storeChange.kind) {
+        record(storeChange(collection: collection, key: key, kind: kind, changedAt: Date()))
     }
 
     public func markSynced(collection: storeCollection, key: String) {

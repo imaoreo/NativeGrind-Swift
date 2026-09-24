@@ -234,7 +234,6 @@ struct browseView: View {
         activeTaskID = taskID
         
         isLoading = true
-        await locationController.shared.syncWithServer()
         let geohash = await locationController.shared.currentGeohash
         
         guard let geohash = geohash else {

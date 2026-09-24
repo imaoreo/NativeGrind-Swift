@@ -66,10 +66,6 @@ public extension wsEvent {
         return wsEvent<nsDevicePublicKeyResponse>(domain: .nativeServer, eventName: "link_device_public_key")
     }
     
-    static var onDataSaved: wsEvent<nsSaveDataResponse> {
-        return wsEvent<nsSaveDataResponse>(domain: .nativeServer, eventName: "save_data")
-    }
-    
     static var onSyncPushed: wsEvent<nsSyncPushResponse> {
         return wsEvent<nsSyncPushResponse>(domain: .nativeServer, eventName: "sync_push")
     }
@@ -80,10 +76,6 @@ public extension wsEvent {
 
     static var onSyncChanged: wsEvent<nsResponse> {
         return wsEvent<nsResponse>(domain: .nativeServer, eventName: "sync_changed")
-    }
-
-    static var onDataGet: wsEvent<nsGetDataResponse> {
-        return wsEvent<nsGetDataResponse>(domain: .nativeServer, eventName: "get_data")
     }
 
     static var onProfileSynced: wsEvent<nsSyncProfileResponse> {

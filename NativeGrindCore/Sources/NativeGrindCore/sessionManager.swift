@@ -29,11 +29,7 @@ public final class sessionManager: ObservableObject {
            let isEmail = keychain.getToken(type: .isEmail),
            let data = keychain.getToken(type: .data) {
             let account = nsAccount(authToken: authToken, sessionId: sessionId, isEmail: isEmail, data: data)
-            do {
-                try await accountController.shared.addAccount(account)
-            } catch {
-                errorManager.shared.error("SessionManager", "Failed to add account to accountController: \(error.localizedDescription)")
-            }
+            await accountController.shared.addAccount(account)
         }
     }
 
@@ -264,7 +260,7 @@ public final class sessionManager: ObservableObject {
         let currentData = keychain.getToken(type: .data)
         
         if !isSwitching, let data = currentData {
-            try? await accountController.shared.removeAccount(sessionId: data)
+            await accountController.shared.removeAccount(sessionId: data)
         }
         
         keychain.deleteToken(type: .authToken)

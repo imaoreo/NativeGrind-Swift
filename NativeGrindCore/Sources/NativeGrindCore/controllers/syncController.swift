@@ -19,6 +19,14 @@ struct syncEnvelope: Codable {
 public actor syncController {
     public static let shared = syncController()
 
+    private let sources: [storeCollection: any syncSource] = Dictionary(uniqueKeysWithValues: ([
+        conversationSyncSource(),
+        grindrAccountSyncSource(),
+        deviceLocationSyncSource(),
+        profileSyncSource(),
+        profileHistorySyncSource()
+    ] as [any syncSource]).map { ($0.collection, $0) })
+
     private let store: localStore
     private var isSyncing = false
     private var syncAgain = false
@@ -53,8 +61,9 @@ public actor syncController {
             syncAgain = true
             return
         }
+
         guard await wsController.shared.isServerAuthorized,
-              let profileId = await sessionManager.shared.profileId else {
+              keychainManager.shared.getToken(type: .accountKey) != nil else {
             return
         }
 
@@ -63,70 +72,94 @@ public actor syncController {
 
         repeat {
             syncAgain = false
-            let prefix = "sync/\(profileId)/"
-            await pull(prefix: prefix)
-            await push(prefix: prefix)
+            let profileId = await sessionManager.shared.profileId
+            let prefixes = scopePrefixes(profileId: profileId)
+
+            let isFirstAccountSync = await store.syncCursor(for: prefixes[.account]!) == nil
+
+            for prefix in prefixes.values {
+                await pull(prefix: prefix)
+            }
+
+            if isFirstAccountSync {
+                await accountController.shared.queueAllForSync()
+                await locationController.shared.queueForSync()
+            }
+            await push(prefixes: prefixes)
         } while syncAgain
+    }
+
+    private func scopePrefixes(profileId: Int?) -> [syncScope: String] {
+        var prefixes: [syncScope: String] = [.account: "sync/account/"]
+        if let profileId {
+            prefixes[.profile] = "sync/\(profileId)/"
+        }
+        return prefixes
     }
 
     private func pull(prefix: String) async {
         var cursor = await store.syncCursor(for: prefix)
+        var imported = Set<storeCollection>()
 
         while true {
             guard let response = await wsController.shared.sendAndWait(
                 request: .syncPull(prefix: prefix, cursor: cursor),
                 expectedEvent: .onSyncPulled
             ), response.status == .success else {
-                return
+                break
             }
 
             for item in response.items ?? [] {
-                await apply(item)
+                if let collection = await apply(item) {
+                    imported.insert(collection)
+                }
             }
 
             cursor = response.cursor
             await store.saveSyncCursor(cursor, for: prefix)
 
-            guard response.hasMore == true else { return }
+            guard response.hasMore == true else { break }
+        }
+
+        for collection in imported {
+            await sources[collection]?.finishImport()
         }
     }
 
-    private func apply(_ item: nsSyncItem) async {
+    private func apply(_ item: nsSyncItem) async -> storeCollection? {
         guard let json = try? cryptoController.shared.decryptTextWithSharedKey(encryptedBase64: item.encryptedPayload),
-              let envelope = try? Self.decoder.decode(syncEnvelope.self, from: Data(json.utf8)) else {
-            await errorManager.shared.warn("syncController", "Couldn't decrypt \(item.location)")
-            return
+              let envelope = try? syncCoding.decoder.decode(syncEnvelope.self, from: Data(json.utf8)),
+              let source = sources[envelope.collection],
+              !source.isPublic else {
+            await errorManager.shared.warn("syncController", "Couldn't read \(item.location)")
+            return nil
         }
 
-        switch envelope.collection {
-        case .conversations:
-            if envelope.deleted {
-                await conversationCache.shared.removeRemote(key: envelope.key, deletedAt: envelope.changedAt)
-            } else if let value = envelope.value,
-                      let conversation = try? Self.decoder.decode(cachedConversation.self, from: value) {
-                await conversationCache.shared.mergeRemote(key: envelope.key, remote: conversation)
-            }
-        case .profiles, .profileHistory:
-            break
-        }
+        await source.importRecord(key: envelope.key, value: envelope.deleted ? nil : envelope.value, changedAt: envelope.changedAt)
+        return envelope.collection
     }
 
-    private func push(prefix: String) async {
+    private func push(prefixes: [syncScope: String]) async {
         let pending = await store.pendingChanges()
         guard !pending.isEmpty else { return }
 
         var encrypted: [(change: storeChange, item: nsSyncItem)] = []
 
         for change in pending {
-            switch change.collection {
-            case .profiles:
-                await pushProfile(change)
-            case .profileHistory:
+            guard let source = sources[change.collection] else {
                 await store.markSynced([change])
-            case .conversations:
-                if let item = await encryptedItem(for: change, prefix: prefix) {
-                    encrypted.append((change, item))
+                continue
+            }
+
+            guard let prefix = prefixes[source.scope] else { continue }
+
+            if source.isPublic {
+                if change.kind == .upsert {
+                    await source.publish(key: change.key)
                 }
+                await store.markSynced([change])
+            } else if let item = await encryptedItem(for: change, source: source, prefix: prefix) {
+                encrypted.append((change, item))
             }
         }
 
@@ -135,39 +168,24 @@ public actor syncController {
                 request: .syncPush(items: batch.map(\.item)),
                 expectedEvent: .onSyncPushed
             ), response.status == .success else {
-                return // left pending, tried again next sync
+                return
             }
             await store.markSynced(batch.map(\.change))
         }
     }
 
-    private func pushProfile(_ change: storeChange) async {
-        guard change.kind == .upsert,
-              let profile = await store.read(NativeGrindCore.profile.self, from: .profiles, key: change.key) else {
-            await store.markSynced([change])
-            return
-        }
+    private func encryptedItem(for change: storeChange, source: any syncSource, prefix: String) async -> nsSyncItem? {
+        let value = change.kind == .upsert ? await source.exportRecord(key: change.key) : nil
 
-        let geohash = await locationController.shared.currentGeohash
-        await wsController.shared.send(request: .syncSeenProfile(profile: profile, geohash: geohash))
-        await store.markSynced([change])
+        let envelope = syncEnvelope(
+            collection: change.collection,
+            key: change.key,
+            deleted: value == nil,
+            changedAt: change.changedAt,
+            value: value
+        )
 
-        try? await Task.sleep(for: .milliseconds(50))
-    }
-
-    private func encryptedItem(for change: storeChange, prefix: String) async -> nsSyncItem? {
-        var value: Data? = nil
-        if change.kind == .upsert {
-            guard let record = await store.read(cachedConversation.self, from: change.collection, key: change.key) else {
-                await store.markSynced([change])
-                return nil
-            }
-            value = try? Self.encoder.encode(record)
-        }
-
-        let envelope = syncEnvelope(collection: change.collection, key: change.key, deleted: change.kind == .delete, changedAt: change.changedAt, value: value)
-
-        guard let json = try? Self.encoder.encode(envelope),
+        guard let json = try? syncCoding.encoder.encode(envelope),
               let payload = try? cryptoController.shared.encryptTextWithSharedKey(text: String(decoding: json, as: UTF8.self)),
               let identifier = try? cryptoController.shared.syncIdentifier(for: "\(change.collection.rawValue)/\(change.key)") else {
             return nil
@@ -195,18 +213,6 @@ public actor syncController {
             batches.append(current)
         }
         return batches
-    }
-
-    private static var encoder: JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .millisecondsSince1970
-        return encoder
-    }
-
-    private static var decoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .millisecondsSince1970
-        return decoder
     }
 }
 
