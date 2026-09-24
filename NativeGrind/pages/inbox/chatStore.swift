@@ -22,6 +22,8 @@ final class chatStore {
     private(set) var isSending = false
     private(set) var isOtherTyping = false
     private(set) var replyingTo: chatMessage? = nil
+    private(set) var jumpTargetId: String? = nil
+    private(set) var highlightedMessageId: String? = nil
 
     private(set) var olderPageAnchorId: String? = nil
 
@@ -108,23 +110,59 @@ final class chatStore {
         await markReadIfNeeded()
     }
 
-    func loadOlder() async {
-        guard !isLoadingOlder, hasMoreOlder, let pageKey = messages.first?.id else { return }
+    /// Returns false if nothing was loaded (already loading or no more pages)
+    @discardableResult
+    func loadOlder(keepPosition: Bool = true) async -> Bool {
+        guard !isLoadingOlder, hasMoreOlder, let pageKey = messages.first?.id else { return false }
         isLoadingOlder = true
         defer { isLoadingOlder = false }
 
         guard let page = await conversationController.shared.fetchMessages(conversationId: conversationId, before: pageKey) else {
             hasMoreOlder = false
-            return
+            return false
         }
 
         let known = Set(messages.map(\.id))
         let fresh = page.messages.filter { !known.contains($0.id) }
         hasMoreOlder = !fresh.isEmpty
-        if !fresh.isEmpty {
+        if !fresh.isEmpty && keepPosition {
             olderPageAnchorId = pageKey
         }
         merge(fresh)
+        return !fresh.isEmpty
+    }
+
+    private static let maxJumpPages = 10
+
+    func jump(to messageId: String) async {
+        var pagesLoaded = 0
+        while !messages.contains(where: { $0.id == messageId }), hasMoreOlder, pagesLoaded < Self.maxJumpPages {
+            if await loadOlder(keepPosition: false) {
+                pagesLoaded += 1
+            } else if isLoadingOlder {
+                try? await Task.sleep(for: .milliseconds(100))
+            } else {
+                break
+            }
+        }
+
+        guard messages.contains(where: { $0.id == messageId }) else {
+            toastManager.shared.show(style: .warn, header: "Reply", message: "Couldn't find the original message")
+            return
+        }
+
+        jumpTargetId = messageId
+        highlightedMessageId = messageId
+
+        try? await Task.sleep(for: .seconds(1.5))
+        if highlightedMessageId == messageId {
+            highlightedMessageId = nil
+        }
+    }
+
+    func consumeJumpTarget() -> String? {
+        defer { jumpTargetId = nil }
+        return jumpTargetId
     }
 
     private func markReadIfNeeded() async {

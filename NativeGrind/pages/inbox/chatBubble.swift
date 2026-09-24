@@ -12,6 +12,9 @@ struct chatBubble: View {
     let message: chatMessage
     let isMine: Bool
     let showRead: Bool
+    var isHighlighted: Bool = false
+    var replyAuthor: String = ""
+    var onTapReply: (() -> Void)? = nil
 
     private var hasReactions: Bool {
         !(message.reactions?.isEmpty ?? true)
@@ -23,11 +26,9 @@ struct chatBubble: View {
 
             VStack(alignment: isMine ? .trailing : .leading, spacing: 2) {
                 if let reply = message.replyToMessage?.value {
-                    Text(reply.summaryText)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .padding(.horizontal, 8)
+                    chatReplyPreview(reply: reply, author: replyAuthor) {
+                        onTapReply?()
+                    }
                 }
 
                 chatBubbleContent(message: message, isMine: isMine)
@@ -60,5 +61,11 @@ struct chatBubble: View {
 
             if !isMine { Spacer(minLength: 48) }
         }
+        .padding(.vertical, 2)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.accentColor.opacity(isHighlighted ? 0.18 : 0))
+        )
+        .animation(.easeInOut(duration: 0.3), value: isHighlighted)
     }
 }

@@ -11,6 +11,7 @@ import NativeGrindCore
 struct chatMessageList: View {
     let store: chatStore
     let canReply: Bool
+    let otherName: String
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -38,7 +39,13 @@ struct chatMessageList: View {
                         chatBubble(
                             message: message,
                             isMine: store.isMine(message),
-                            showRead: message.id == store.lastReadOwnMessageId
+                            showRead: message.id == store.lastReadOwnMessageId,
+                            isHighlighted: message.id == store.highlightedMessageId,
+                            replyAuthor: replyAuthor(for: message),
+                            onTapReply: {
+                                guard let replyId = message.replyToMessage?.value.id else { return }
+                                Task { await store.jump(to: replyId) }
+                            }
                         )
                         .id(message.id)
                         .swipeToReply(isEnabled: canReply && message.unsent != true) {
@@ -72,6 +79,12 @@ struct chatMessageList: View {
                 guard let anchor = store.consumeOlderPageAnchor() else { return }
                 proxy.scrollTo(anchor, anchor: .top)
             }
+            .onChange(of: store.jumpTargetId) { _, _ in
+                guard let target = store.consumeJumpTarget() else { return }
+                withAnimation {
+                    proxy.scrollTo(target, anchor: .center)
+                }
+            }
             .onChange(of: store.isOtherTyping) { _, typing in
                 guard typing else { return }
                 withAnimation {
@@ -79,6 +92,11 @@ struct chatMessageList: View {
                 }
             }
         }
+    }
+
+    private func replyAuthor(for message: chatMessage) -> String {
+        guard let reply = message.replyToMessage?.value else { return "" }
+        return store.isMine(reply) ? "You" : otherName
     }
 
     private var typingIndicator: some View {

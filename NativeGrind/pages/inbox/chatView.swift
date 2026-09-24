@@ -32,7 +32,7 @@ struct chatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            chatMessageList(store: store, canReply: canReply)
+            chatMessageList(store: store, canReply: canReply, otherName: title.isEmpty ? "Someone" : title)
             Divider()
             chatComposer(
                 draft: $draft,
