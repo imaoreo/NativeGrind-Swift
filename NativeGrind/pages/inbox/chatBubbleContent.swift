@@ -28,14 +28,14 @@ struct chatBubbleContent: View {
 
             case .image, .expiringImage:
                 if let urlString = body?.url, let url = URL(string: urlString) {
-                    remoteImage(url: url)
+                    remoteImage(url: url, width: body?.width, height: body?.height)
                 } else {
                     Text(message.type == .expiringImage ? "📷 Expiring Photo" : "📷 Photo")
                 }
 
             case .giphy:
                 if let urlString = body?.urlPath ?? body?.stillPath, let url = URL(string: urlString) {
-                    remoteImage(url: url)
+                    remoteImage(url: url, width: body?.width, height: body?.height)
                 } else {
                     Text("GIF")
                 }
@@ -53,22 +53,33 @@ struct chatBubbleContent: View {
         }
     }
 
-    private func remoteImage(url: URL) -> some View {
-        AsyncImage(url: url) { phase in
+    private static let maxImageSize = CGSize(width: 220, height: 280)
+    private static let fallbackImageSize = CGSize(width: 200, height: 200)
+
+    private func imageSize(width: Int?, height: Int?) -> CGSize {
+        guard let width, let height, width > 0, height > 0 else {
+            return Self.fallbackImageSize
+        }
+        let scale = min(Self.maxImageSize.width / CGFloat(width), Self.maxImageSize.height / CGFloat(height))
+        return CGSize(width: CGFloat(width) * scale, height: CGFloat(height) * scale)
+    }
+
+    private func remoteImage(url: URL, width: Int?, height: Int?) -> some View {
+        let size = imageSize(width: width, height: height)
+
+        return AsyncImage(url: url) { phase in
             switch phase {
             case .success(let image):
                 image
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .aspectRatio(contentMode: .fill)
             case .failure:
                 Image(systemName: "photo")
-                    .frame(width: 60, height: 60)
             default:
                 ProgressView()
-                    .frame(width: 60, height: 60)
             }
         }
-        .frame(maxWidth: 220, maxHeight: 280)
+        .frame(width: size.width, height: size.height)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }

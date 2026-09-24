@@ -54,10 +54,14 @@ struct chatMessageList: View {
                 .padding(.vertical, 8)
             }
             .defaultScrollAnchor(.bottom)
-            .onChange(of: store.messages.last?.id) { _, newId in
+            .onChange(of: store.messages.last?.id) { oldId, newId in
                 guard let newId else { return }
-                withAnimation {
+                if oldId == nil {
                     proxy.scrollTo(newId, anchor: .bottom)
+                } else {
+                    withAnimation {
+                        proxy.scrollTo(newId, anchor: .bottom)
+                    }
                 }
             }
             .onChange(of: store.messages.first?.id) { _, _ in
