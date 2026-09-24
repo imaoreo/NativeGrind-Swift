@@ -8,7 +8,9 @@ import NativeGrindCore
 
 struct profileDetailView: View {
     let profiles: [CascadeResponseProfile]?
+    let allowsMessaging: Bool
     @State private var profileId: String
+    @State private var chatTarget: chatSheetTarget? = nil
     
     @State private var fullProfile: profile? = nil
     @State private var isLoading = true
@@ -16,8 +18,9 @@ struct profileDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    init(profileId: String, profiles: [CascadeResponseProfile]? = nil) {
+    init(profileId: String, profiles: [CascadeResponseProfile]? = nil, allowsMessaging: Bool = true) {
         self.profiles = profiles
+        self.allowsMessaging = allowsMessaging
         self._profileId = State(initialValue: profileId)
     }
     
@@ -76,6 +79,22 @@ struct profileDetailView: View {
         .task(id: profileId) {
             await fetchFullProfile()
         }
+        .sheetWithToast(item: $chatTarget) { target in
+            chatSheet(target: target)
+        }
+    }
+
+    private func openChat() {
+        guard let ownProfileId = sessionManager.shared.profileId, let otherProfileId = Int(profileId) else {
+            toastManager.shared.show(style: .error, header: "Chat Error", message: "Couldn't find your profile id, try logging in again")
+            return
+        }
+
+        chatTarget = chatSheetTarget(
+            id: conversationController.conversationId(between: ownProfileId, and: otherProfileId),
+            otherProfileId: otherProfileId,
+            title: fullProfile?.displayName ?? ""
+        )
     }
     
     private func navigateProfile(forward: Bool) {
@@ -167,6 +186,17 @@ struct profileDetailView: View {
                     Spacer()
                      
                     HStack(spacing: 12) {
+                        if allowsMessaging {
+                            Button(action: openChat) {
+                                Image(systemName: "bubble.left.fill")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .padding(8)
+                                    .background(.black.opacity(0.4))
+                                    .foregroundColor(.white)
+                                    .clipShape(Circle())
+                            }
+                        }
+
                         Button {
                             if !(fullProfile?.isFavorite ?? false) {
                                 Task {
@@ -445,5 +475,33 @@ struct profileDetailView: View {
             let km = distance / 1000.0
             return String(format: "%@%.1f km away", prefix, km)
         }
+    }
+}
+
+struct chatSheetTarget: Identifiable {
+    let id: String // conversation id
+    let otherProfileId: Int
+    let title: String
+}
+
+private struct chatSheet: View {
+    let target: chatSheetTarget
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") {
+                            dismiss()
+                        }
+                    }
+                }
+        }
+        #if os(macOS)
+        .frame(minWidth: 420, minHeight: 520)
+        #endif
     }
 }
