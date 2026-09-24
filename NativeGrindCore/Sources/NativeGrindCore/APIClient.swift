@@ -190,6 +190,11 @@ public actor APIClient {
                 if T.self == Data.self {
                     return data as? T
                 }
+
+                if T.self == emptyResponse.self && data.isEmpty {
+                    return emptyResponse() as? T
+                }
+                
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .secondsSince1970
                 return try decoder.decode(T.self, from: data)
