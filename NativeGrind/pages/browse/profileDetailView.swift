@@ -234,6 +234,7 @@ struct profileDetailView: View {
                         .disabled(fullProfile?.tapped ?? false)
                     }
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
             }
