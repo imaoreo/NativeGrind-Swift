@@ -1,5 +1,9 @@
 import Foundation
 
+public extension Notification.Name {
+    static let locationDidChange = Notification.Name("nativegrind.locationDidChange")
+}
+
 public actor locationController {
     public static let shared = locationController()
     
@@ -32,11 +36,16 @@ public actor locationController {
     }
 
     private func save(_ geohash: String?) {
+        let changed = geohash != currentGeohash
         self._currentGeohash = geohash
         if let geohash {
             UserDefaults.standard.set(geohash, forKey: "saved_geohash")
         } else {
             UserDefaults.standard.removeObject(forKey: "saved_geohash")
+        }
+
+        if changed {
+            NotificationCenter.default.post(name: .locationDidChange, object: nil)
         }
     }
 
