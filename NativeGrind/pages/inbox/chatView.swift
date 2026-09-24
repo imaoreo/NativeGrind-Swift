@@ -14,6 +14,10 @@ struct chatView: View {
     @State private var store: chatStore
     @State private var draft = ""
     @State private var showProfile: identifiableId? = nil
+    @State private var confirmSendLocation = false
+    #if !os(tvOS)
+    @State private var recorder = chatAudioRecorder()
+    #endif
 
     @ObservedObject private var sockets = wsController.shared
 
@@ -38,14 +42,9 @@ struct chatView: View {
                 draft: $draft,
                 isSending: store.isSending,
                 replyingTo: store.replyingTo,
-                onCancelReply: store.cancelReply
-            ) {
-                Task {
-                    if await store.send(draft) {
-                        draft = ""
-                    }
-                }
-            }
+                recordingStartedAt: recordingStartedAt,
+                actions: composerActions
+            )
         }
         .navigationTitle(title.isEmpty ? "Someone" : title)
         #if os(iOS)
@@ -61,6 +60,14 @@ struct chatView: View {
                     Image(systemName: "person.crop.circle")
                 }
             }
+        }
+        .confirmationDialog("Send your current location?", isPresented: $confirmSendLocation, titleVisibility: .visible) {
+            Button("Send Location") {
+                Task { await store.sendCurrentLocation() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("They'll see a pin where you are right now.")
         }
         .sheetWithToast(item: $showProfile) { item in
             profileDetailView(profileId: item.id, allowsMessaging: false)
@@ -87,5 +94,48 @@ struct chatView: View {
             guard wasEmpty != isEmpty else { return }
             Task { await store.setTyping(!isEmpty) }
         }
+        #if !os(tvOS)
+        .onDisappear {
+            recorder.cancel()
+        }
+        #endif
+    }
+
+    private var recordingStartedAt: Date? {
+        #if os(tvOS)
+        return nil
+        #else
+        return recorder.startedAt
+        #endif
+    }
+
+    private var composerActions: chatComposerActions {
+        var actions = chatComposerActions(
+            send: {
+                Task {
+                    if await store.send(draft) {
+                        draft = ""
+                    }
+                }
+            },
+            cancelReply: store.cancelReply,
+            sendLocation: { confirmSendLocation = true },
+            startRecording: nil,
+            cancelRecording: {},
+            finishRecording: {}
+        )
+
+        #if !os(tvOS)
+        actions.startRecording = {
+            Task { await recorder.start() }
+        }
+        actions.cancelRecording = recorder.cancel
+        actions.finishRecording = {
+            guard let recording = recorder.finish() else { return }
+            Task { await store.sendAudio(recording.data, contentType: chatAudioRecorder.contentType, lengthMs: recording.lengthMs) }
+        }
+        #endif
+
+        return actions
     }
 }

@@ -377,11 +377,11 @@ public extension endpoint {
         )
     }
 
-    static func uploadChatMediaSigned(data: Data, contentType: String, signatureHeaders: [String: String]) -> endpoint<mediaUploadResponse> {
+    static func uploadChatMediaSigned(data: Data, contentType: String, lengthMs: Int64? = nil, signatureHeaders: [String: String]) -> endpoint<mediaUploadResponse> {
         return endpoint<mediaUploadResponse>(
             path: "/v6/chat/media/upload",
             method: .post,
-            queryItems: nil,
+            queryItems: lengthMs.map { ["length": String($0)] },
             rawBody: data,
             contentType: contentType,
             headers: signatureHeaders,

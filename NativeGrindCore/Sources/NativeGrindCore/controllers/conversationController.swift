@@ -74,8 +74,8 @@ public actor conversationController {
         await run(.sendLocationMessage(targetProfileId: profileId, latitude: latitude, longitude: longitude), "send location")
     }
 
-    public func sendAudio(_ data: Data, contentType: String, to profileId: Int) async -> chatMessage? {
-        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType) else {
+    public func sendAudio(_ data: Data, contentType: String, lengthMs: Int64, to profileId: Int) async -> chatMessage? {
+        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType, lengthMs: lengthMs) else {
             return nil
         }
         return await run(.sendAudioMessage(targetProfileId: profileId, mediaId: upload.mediaId), "send audio")

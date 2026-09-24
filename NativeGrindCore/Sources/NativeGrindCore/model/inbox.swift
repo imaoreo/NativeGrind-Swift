@@ -59,12 +59,12 @@ public struct conversationPreview: Codable, Sendable {
     public let chat1Type: chat1MessageType?
     public let text: String?
     public let url: String?
-    public let lat: String?
-    public let lon: String?
+    public let lat: flexibleDouble?
+    public let lon: flexibleDouble?
     public let albumId: Int?
     public let albumContentId: Int?
     public let albumContentReply: String?
-    public let duration: String?
+    public let duration: flexibleDouble?
     public let imageHash: String?
     public let photoContentReply: String?
 }
@@ -82,5 +82,29 @@ public struct conversationIdObject: Codable, Sendable {
         } else {
             self.value = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .value)
         }
+    }
+}
+
+public struct flexibleDouble: Codable, Sendable {
+    public let value: Double
+
+    public init(_ value: Double) {
+        self.value = value
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let number = try? container.decode(Double.self) {
+            self.value = number
+        } else if let string = try? container.decode(String.self), let number = Double(string) {
+            self.value = number
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Expected a number or numeric string")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }

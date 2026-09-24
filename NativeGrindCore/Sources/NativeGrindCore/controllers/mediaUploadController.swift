@@ -15,7 +15,7 @@ public actor mediaUploadController {
 
     private static let maxAttempts = 3
 
-    public func uploadChatMedia(_ data: Data, contentType: String) async -> mediaUploadResponse? {
+    public func uploadChatMedia(_ data: Data, contentType: String, lengthMs: Int64? = nil) async -> mediaUploadResponse? {
         var hasReregistered = false
 
         for _ in 0..<Self.maxAttempts {
@@ -24,6 +24,7 @@ public actor mediaUploadController {
             let upload = endpoint<mediaUploadResponse>.uploadChatMediaSigned(
                 data: data,
                 contentType: contentType,
+                lengthMs: lengthMs,
                 signatureHeaders: signatureHeaders(for: data, identity: identity)
             )
 
@@ -63,7 +64,10 @@ public actor mediaUploadController {
                 continue
             }
 
-            if (400...499).contains(response.statusCode) && !hasReregistered {
+            // Only a rejected key is worth registering a new one for, not a normal bad request
+            let detail = (signingError?.detail ?? "").lowercased()
+            let isKeyProblem = response.statusCode == 403 || errorType.contains("key") || errorType.contains("signature") || detail.contains("key") || detail.contains("signature")
+            if isKeyProblem && !hasReregistered {
                 hasReregistered = true
                 resetKey()
                 continue
@@ -120,27 +124,57 @@ public actor mediaUploadController {
             return identity(key: key, keyId: keyId, userId: userId, androidId: androidId)
         }
 
-        do {
-            guard let challenge = try await APIClient.shared.request(.getDeviceKeyChallenge()) else {
-                return nil
-            }
-
-            let registration = [userId, keyId, publicKey, androidId, challenge.challenge].joined(separator: "|")
-
-            guard let registered = try await APIClient.shared.request(.registerDeviceKey(
-                publicKey: publicKey,
-                keyId: keyId,
-                registrationSignature: sign(registration, with: key)
-            )) else {
-                return nil
-            }
-
-            keychainManager.shared.saveToken(registered.keyId, type: .uploadSigningKeyId)
-            return identity(key: key, keyId: registered.keyId, userId: userId, androidId: androidId)
-        } catch {
-            await fail("Device key registration failed: \(error.localizedDescription)", toast: "Couldn't set up uploads")
+        guard let challengeBody = await registrationCall(step: "challenge", { .getDeviceKeyChallenge() }) else {
             return nil
         }
+
+        guard let challenge = try? JSONDecoder().decode(deviceKeyChallengeResponse.self, from: challengeBody) else {
+            await fail("Device key challenge had an unexpected body: \(String(decoding: challengeBody, as: UTF8.self))", toast: "Couldn't set up uploads")
+            return nil
+        }
+
+        let registration = [userId, keyId, publicKey, androidId, challenge.challenge].joined(separator: "|")
+        let registrationSignature = sign(registration, with: key)
+
+        guard let registerBody = await registrationCall(step: "register", {
+            .registerDeviceKey(publicKey: publicKey, keyId: keyId, registrationSignature: registrationSignature)
+        }) else {
+            return nil
+        }
+
+        // A 2xx means it was accepted, only use the echoed keyId if there is one
+        let acceptedKeyId = (try? JSONDecoder().decode(registerDeviceKeyResponse.self, from: registerBody))?.keyId ?? keyId
+        if acceptedKeyId != keyId {
+            await errorManager.shared.warn("mediaUploadController", "Server echoed a different keyId: \(acceptedKeyId)")
+        }
+
+        keychainManager.shared.saveToken(acceptedKeyId, type: .uploadSigningKeyId)
+        return identity(key: key, keyId: acceptedKeyId, userId: userId, androidId: androidId)
+    }
+
+    /// Runs one step of key registration and returns the raw body on a 2xx, logging the status and body otherwise
+    private func registrationCall<T>(step: String, _ makeRequest: () -> endpoint<T>) async -> Data? {
+        for attempt in 0..<2 {
+            do {
+                let (body, response) = try await APIClient.shared.rawRequest(makeRequest())
+
+                if response.statusCode == 401 && attempt == 0 {
+                    await sessionManager.shared.refreshToken(showError: false)
+                    continue
+                }
+
+                guard (200...299).contains(response.statusCode) else {
+                    await fail("Device key \(step) failed with status \(response.statusCode): \(String(decoding: body, as: UTF8.self))", toast: "Couldn't set up uploads (\(response.statusCode))")
+                    return nil
+                }
+
+                return body
+            } catch {
+                await fail("Device key \(step) failed: \(error.localizedDescription)", toast: "Couldn't set up uploads")
+                return nil
+            }
+        }
+        return nil
     }
 
     private func loadOrCreateKey() -> P256.Signing.PrivateKey {

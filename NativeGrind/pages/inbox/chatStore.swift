@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreLocation
 import NativeGrindCore
 
 @MainActor
@@ -28,6 +29,7 @@ final class chatStore {
     private(set) var olderPageAnchorId: String? = nil
 
     private var isLoadingOlder = false
+    @ObservationIgnored private let locationManager = deviceLocationManager()
     private var lastMarkedReadId: String? = nil
 
     init(conversationId: String, otherProfileId: Int) {
@@ -197,6 +199,38 @@ final class chatStore {
         replyingTo = nil
         merge([sent])
         return true
+    }
+
+    func sendCurrentLocation() async {
+        guard !isSending else { return }
+        isSending = true
+        defer { isSending = false }
+
+        let location: CLLocation
+        do {
+            location = try await locationManager.getCurrentLocation()
+        } catch {
+            toastManager.shared.show(style: .warn, header: "Location", message: "Couldn't get your location, check location access in Settings")
+            return
+        }
+
+        if let sent = await conversationController.shared.sendLocation(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            to: otherProfileId
+        ) {
+            merge([sent])
+        }
+    }
+
+    func sendAudio(_ data: Data, contentType: String, lengthMs: Int64) async {
+        guard !isSending else { return }
+        isSending = true
+        defer { isSending = false }
+
+        if let sent = await conversationController.shared.sendAudio(data, contentType: contentType, lengthMs: lengthMs, to: otherProfileId) {
+            merge([sent])
+        }
     }
 
     func setTyping(_ typing: Bool) async {
