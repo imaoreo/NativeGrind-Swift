@@ -18,21 +18,26 @@ struct locationView: View {
     @State private var selectedCoordinate: CLLocationCoordinate2D?
     @State private var latitudeString: String = ""
     @State private var longitudeString: String = ""
+    @State private var search = placeSearch()
+    @State private var selectedPlaceName: String? = nil
     
     var body: some View {
         NavigationStack {
             Form {
+                searchSection
+
                 Section("Select Location on Map") {
                     MapReader { proxy in
                         Map(position: $cameraPosition) {
                             if let coordinate = selectedCoordinate {
-                                Marker("Selected Location", coordinate: coordinate)
+                                Marker(selectedPlaceName ?? "Selected Location", coordinate: coordinate)
                             }
                         }
                         .frame(height: 250)
                         .cornerRadius(12)
                         .onTapGesture { position in
                             if let coordinate = proxy.convert(position, from: .local) {
+                                selectedPlaceName = nil
                                 selectedCoordinate = coordinate
                                 currentGeohash = geohashEncoder.encode(latitude: coordinate.latitude, longitude: coordinate.longitude)
                                 latitudeString = String(format: "%.6f", coordinate.latitude)
@@ -133,6 +138,57 @@ struct locationView: View {
         }
     }
     
+    private var searchSection: some View {
+        Section("Search") {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                TextField("Search for a place", text: $search.query)
+                    .autocorrectionDisabled()
+                if search.isResolving {
+                    ProgressView()
+                        .controlSize(.small)
+                } else if !search.query.isEmpty {
+                    Button {
+                        search.clear()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            ForEach(search.results, id: \.self) { result in
+                Button {
+                    Task { await select(result) }
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(result.title)
+                            .foregroundColor(.primary)
+                        if !result.subtitle.isEmpty {
+                            Text(result.subtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func select(_ result: MKLocalSearchCompletion) async {
+        guard let coordinate = await search.coordinate(for: result) else { return }
+        latitudeString = String(format: "%.6f", coordinate.latitude)
+        longitudeString = String(format: "%.6f", coordinate.longitude)
+        updateFromCoordinates()
+        selectedPlaceName = result.title
+        search.clear()
+    }
+
     private func updateFromCoordinates() {
         guard let lat = Double(latitudeString.trimmingCharacters(in: .whitespacesAndNewlines)),
               let lon = Double(longitudeString.trimmingCharacters(in: .whitespacesAndNewlines)),
