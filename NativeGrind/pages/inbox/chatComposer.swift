@@ -32,8 +32,10 @@ struct chatComposer: View {
         !isSending && hasText
     }
 
+    private let iconSize: CGFloat = 30
+
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             if let replyingTo {
                 replyBanner(for: replyingTo)
             }
@@ -45,7 +47,13 @@ struct chatComposer: View {
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
+        #if !os(tvOS)
+        .background(.bar)
+        #endif
+        .overlay(alignment: .top) {
+            Divider()
+        }
     }
 
     private func replyBanner(for message: chatMessage) -> some View {
@@ -81,18 +89,28 @@ struct chatComposer: View {
                     Label("Send Location", systemImage: "location.fill")
                 }
             } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title2)
+                Image(systemName: "plus")
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.secondary)
+                    .frame(width: iconSize, height: iconSize)
+                    .background(Color.gray.opacity(0.18), in: Circle())
             }
             .menuIndicator(.hidden)
+            .menuStyle(.button)
             .buttonStyle(.plain)
+            .fixedSize()
             .disabled(isSending)
 
             TextField("Message", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 #if !os(tvOS)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(Color.gray.opacity(0.15), in: RoundedRectangle(cornerRadius: 17))
+                #endif
+                #if os(macOS)
+                .focusEffectDisabled()
                 #endif
                 .onSubmit {
                     if canSend { actions.send() }
@@ -107,17 +125,20 @@ struct chatComposer: View {
     private var trailingButton: some View {
         if isSending {
             ProgressView()
+                .controlSize(.small)
+                .frame(width: iconSize, height: iconSize)
         } else if !hasText, let startRecording = actions.startRecording {
             Button(action: startRecording) {
                 Image(systemName: "mic.circle.fill")
-                    .font(.title2)
+                    .font(.system(size: iconSize))
             }
             .buttonStyle(.plain)
             .foregroundColor(.blue)
+            .help("Record Voice Message")
         } else {
             Button(action: actions.send) {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.title2)
+                    .font(.system(size: iconSize))
             }
             .buttonStyle(.plain)
             .foregroundColor(.blue)
@@ -129,7 +150,7 @@ struct chatComposer: View {
         HStack(spacing: 12) {
             Button(action: actions.cancelRecording) {
                 Image(systemName: "trash.circle.fill")
-                    .font(.title2)
+                    .font(.system(size: iconSize))
                     .foregroundColor(.red)
             }
             .buttonStyle(.plain)
@@ -151,7 +172,7 @@ struct chatComposer: View {
 
             Button(action: actions.finishRecording) {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.title2)
+                    .font(.system(size: iconSize))
             }
             .buttonStyle(.plain)
             .foregroundColor(.blue)

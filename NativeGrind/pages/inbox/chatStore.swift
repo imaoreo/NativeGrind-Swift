@@ -23,6 +23,7 @@ final class chatStore {
     private(set) var isSending = false
     private(set) var isOtherTyping = false
     private(set) var replyingTo: chatMessage? = nil
+    private(set) var otherProfile: conversationProfileMini? = nil
     private(set) var jumpTargetId: String? = nil
     private(set) var highlightedMessageId: String? = nil
 
@@ -92,13 +93,15 @@ final class chatStore {
             hasLoaded = true
         }
 
-        guard let page = await conversationController.shared.fetchMessages(conversationId: conversationId) else {
+        // profile=true also returns their name and photo hash for the header
+        guard let page = await conversationController.shared.fetchMessages(conversationId: conversationId, includeProfile: true) else {
             return
         }
 
         merge(page.messages)
         lastReadTimestamp = page.lastReadTimestamp
         hasMoreOlder = page.hasMore
+        otherProfile = page.profile
         await markReadIfNeeded()
     }
 

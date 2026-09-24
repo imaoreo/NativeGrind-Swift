@@ -10,6 +10,7 @@ import NativeGrindCore
 
 struct chatView: View {
     let title: String
+    let isSheet: Bool
 
     @State private var store: chatStore
     @State private var draft = ""
@@ -21,9 +22,11 @@ struct chatView: View {
     #endif
 
     @ObservedObject private var sockets = wsController.shared
+    @Environment(\.dismiss) private var dismiss
 
-    init(conversationId: String, otherProfileId: Int, title: String) {
+    init(conversationId: String, otherProfileId: Int, title: String, isSheet: Bool = false) {
         self.title = title
+        self.isSheet = isSheet
         self._store = State(initialValue: chatStore(conversationId: conversationId, otherProfileId: otherProfileId))
     }
 
@@ -35,10 +38,19 @@ struct chatView: View {
         sockets.connectedDomains.contains(.main) ? .seconds(30) : .seconds(5)
     }
 
+    private var displayName: String {
+        if !title.isEmpty { return title }
+        if let name = store.otherProfile?.name, !name.isEmpty { return name }
+        return "Someone"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            chatMessageList(store: store, canReply: canReply, otherName: title.isEmpty ? "Someone" : title)
-            Divider()
+            if isSheet {
+                chatHeader(title: displayName, mediaHash: store.otherProfile?.mediaHash, onShowProfile: showOtherProfile, onClose: { dismiss() })
+                Divider()
+            }
+            chatMessageList(store: store, canReply: canReply, otherName: displayName)
             chatComposer(
                 draft: $draft,
                 isSending: store.isSending,
@@ -47,18 +59,18 @@ struct chatView: View {
                 actions: composerActions
             )
         }
-        .navigationTitle(title.isEmpty ? "Someone" : title)
+        .navigationTitle(displayName)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         #endif
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showProfile = identifiableId(id: String(store.otherProfileId))
-                } label: {
-                    Image(systemName: "person.crop.circle")
+            if !isSheet {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: showOtherProfile) {
+                        Image(systemName: "person.crop.circle")
+                    }
                 }
             }
         }
@@ -107,6 +119,10 @@ struct chatView: View {
             recorder.cancel()
             #endif
         }
+    }
+
+    private func showOtherProfile() {
+        showProfile = identifiableId(id: String(store.otherProfileId))
     }
 
     private var recordingStartedAt: Date? {

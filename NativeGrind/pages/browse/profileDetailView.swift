@@ -488,21 +488,10 @@ struct chatSheetTarget: Identifiable {
 private struct chatSheet: View {
     let target: chatSheetTarget
 
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
-        NavigationStack {
-            chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            dismiss()
-                        }
-                    }
-                }
-        }
-        #if os(macOS)
-        .frame(minWidth: 420, minHeight: 520)
-        #endif
+        chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title, isSheet: true)
+            #if os(macOS)
+            .frame(minWidth: 460, idealWidth: 520, minHeight: 600, idealHeight: 700)
+            #endif
     }
 }
