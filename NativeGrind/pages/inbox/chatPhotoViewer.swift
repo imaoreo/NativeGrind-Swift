@@ -129,7 +129,6 @@ struct chatPhotoViewer: View {
             }
     }
 
-    // Pans when zoomed in, otherwise a vertical drag dismisses
     private var dragGesture: some Gesture {
         DragGesture()
             .onChanged { value in
