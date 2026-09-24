@@ -20,7 +20,7 @@ public struct wsRequest<Payload: Codable> {
     
     public func encode() throws -> Data {
         let currentMillis = Int64(Date().timeIntervalSince1970 * 1000)
-        let envelope = wsMessageEnvelope(event: eventName, payload: payload, clientTime: currentMillis)
+        let envelope = wsNSNotificationEnvelope(event: eventName, payload: payload, clientTime: currentMillis)
         return try JSONEncoder().encode(envelope)
     }
 }
