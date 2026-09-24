@@ -71,4 +71,12 @@ public struct conversationPreview: Codable, Sendable {
 
 public struct conversationIdObject: Codable, Sendable {
     public let value: String
+
+    public init(from decoder: Decoder) throws {
+        if let string = try? decoder.singleValueContainer().decode(String.self) {
+            self.value = string
+        } else {
+            self.value = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .value)
+        }
+    }
 }
