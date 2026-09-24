@@ -36,7 +36,6 @@ public struct conversationData: Codable, Sendable {
     public let translatable: Bool
     public let rightNow: rightNowType
     public let hasUnreadThrob: Bool
-    public var dbCreatedAt: Date?
 }
 
 public struct conversationParticipant: Codable, Sendable {

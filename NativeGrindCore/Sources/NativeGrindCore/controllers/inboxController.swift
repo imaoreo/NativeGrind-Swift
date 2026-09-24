@@ -1,10 +1,4 @@
 import Foundation
-import SwiftData
-
-public enum inboxSource {
-    case inbox(conversationData)
-    case id(String)
-}
 
 public actor inboxController {
     public static let shared = inboxController()
@@ -89,14 +83,6 @@ public actor inboxController {
             
             if let favoritesOnly, favoritesOnly == true {
                 guard inbox.favorite == true else { continue }
-            }
-            
-            if let rightNowOnly, rightNowOnly == true, let createdAt = inbox.dbCreatedAt {
-                if (createdAt > Date().addingTimeInterval(-600)) {
-                    guard inbox.rightNow != .notHosting else { continue }
-                } else {
-                    continue
-                }
             }
             
             // match the user with a Profile

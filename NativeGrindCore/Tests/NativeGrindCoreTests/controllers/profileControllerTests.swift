@@ -20,12 +20,6 @@ struct profileControllerTests {
         errorManager.shared.clearLogs()
         MockURLProtocol.shared.handler = nil
         do {
-            try await inboxController.shared.dbController.clearDatabase()
-        } catch {
-            Issue.record("Failed to clear inbox database: \(error)")
-        }
-
-        do {
             try await profileController.shared.dbController.clearDatabase()
         } catch {
             Issue.record("Failed to clear profile database: \(error)")
