@@ -10,7 +10,7 @@ import AVFoundation
 import NativeGrindCore
 
 #if !os(tvOS)
-/// Records voice messages as AAC (ADTS) which is what Grindr sends as audio/aac
+
 @MainActor
 @Observable
 final class chatAudioRecorder {

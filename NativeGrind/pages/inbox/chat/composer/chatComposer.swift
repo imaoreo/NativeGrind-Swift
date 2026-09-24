@@ -12,7 +12,7 @@ struct chatComposerActions {
     var send: () -> Void
     var cancelReply: () -> Void
     var sendLocation: () -> Void
-    var startRecording: (() -> Void)? // nil where the platform can't record
+    var startRecording: (() -> Void)?
     var cancelRecording: () -> Void
     var finishRecording: () -> Void
 }
@@ -21,7 +21,7 @@ struct chatComposer: View {
     @Binding var draft: String
     let isSending: Bool
     let replyingTo: chatMessage?
-    let recordingStartedAt: Date? // set while recording a voice message
+    let recordingStartedAt: Date?
     let actions: chatComposerActions
 
     private var hasText: Bool {
@@ -120,7 +120,6 @@ struct chatComposer: View {
         }
     }
 
-    // Mic when there's nothing typed (like iMessage), send otherwise
     @ViewBuilder
     private var trailingButton: some View {
         if isSending {
