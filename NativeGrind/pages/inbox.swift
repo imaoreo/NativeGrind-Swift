@@ -308,11 +308,7 @@ struct inboxAvatarView: View {
             
             if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: mediaHash) {
                 if let platformImage = PlatformImage(data: data) {
-                    #if canImport(UIKit)
-                        self.avatarImage = Image(uiImage: platformImage)
-                    #elseif canImport(AppKit)
-                        self.avatarImage = Image(nsImage: platformImage)
-                    #endif
+                    self.avatarImage = Image(platformImage: platformImage)
                 }
             }
             hasLoaded = true

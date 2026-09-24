@@ -435,11 +435,7 @@ struct profileDetailView: View {
                 if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: profileImage),
                    let platformImage = PlatformImage(data: data) {
                     
-                    #if canImport(UIKit)
-                    self.heroImage = Image(uiImage: platformImage)
-                    #elseif canImport(AppKit)
-                    self.heroImage = Image(nsImage: platformImage)
-                    #endif
+                    self.heroImage = Image(platformImage: platformImage)
                 }
             }
         }

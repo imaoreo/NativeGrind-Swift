@@ -167,10 +167,6 @@ struct chatPhotoViewer: View {
             return
         }
 
-        #if canImport(UIKit)
-        image = Image(uiImage: platformImage)
-        #elseif canImport(AppKit)
-        image = Image(nsImage: platformImage)
-        #endif
+        image = Image(platformImage: platformImage)
     }
 }
