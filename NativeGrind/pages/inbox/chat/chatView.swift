@@ -41,9 +41,11 @@ struct chatView: View {
         sockets.connectedDomains.contains(.main)
     }
 
-    private var pollInterval: Duration {
-        sockets.connectedDomains.contains(.main) ? .seconds(30) : .seconds(5)
+    private var isSocketConnected: Bool {
+        sockets.connectedDomains.contains(.main)
     }
+
+    private let pollInterval: Duration = .seconds(5)
 
     private var displayName: String {
         if !title.isEmpty { return title }
@@ -95,10 +97,18 @@ struct chatView: View {
         }
         .task {
             await store.loadInitial()
+        }
+        .task(id: isSocketConnected) {
+            guard !isSocketConnected else { return }
             while !Task.isCancelled {
                 try? await Task.sleep(for: pollInterval)
                 guard !Task.isCancelled else { break }
                 await store.refreshLatest()
+            }
+        }
+        .onChange(of: isSocketConnected) { _, connected in
+            if connected {
+                Task { await store.refreshLatest() }
             }
         }
         .onReceive(sockets.publisher(for: .onChatMessage)) { store.receive($0) }
