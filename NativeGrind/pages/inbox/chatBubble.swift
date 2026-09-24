@@ -21,6 +21,21 @@ struct chatBubble: View {
         !(message.reactions?.isEmpty ?? true)
     }
 
+    @ViewBuilder
+    private var bubbleBody: some View {
+        if chatBubbleContent.isBareMedia(message) {
+            chatBubbleContent(message: message, isMine: isMine)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+        } else {
+            chatBubbleContent(message: message, isMine: isMine)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(isMine ? Color.blue : Color.gray.opacity(0.2))
+                .foregroundColor(isMine ? .white : .primary)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
     var body: some View {
         HStack {
             if isMine { Spacer(minLength: 48) }
@@ -32,12 +47,7 @@ struct chatBubble: View {
                     }
                 }
 
-                chatBubbleContent(message: message, isMine: isMine)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(isMine ? Color.blue : Color.gray.opacity(0.2))
-                    .foregroundColor(isMine ? .white : .primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                bubbleBody
                     .overlay(alignment: isMine ? .bottomLeading : .bottomTrailing) {
                         if let reactions = message.reactions, !reactions.isEmpty {
                             Text(String(repeating: "🔥", count: min(reactions.count, 3)))

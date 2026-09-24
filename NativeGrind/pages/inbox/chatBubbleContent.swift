@@ -29,7 +29,7 @@ struct chatBubbleContent: View {
                     #endif
 
             case .image, .expiringImage:
-                if hasViewableImage {
+                if Self.hasViewableImage(message) {
                     chatRemoteImage(message: message, size: imageSize(width: body?.width, height: body?.height))
                         .onTapGesture {
                             if message.type == .image { openPhoto(message) }
@@ -73,8 +73,24 @@ struct chatBubbleContent: View {
         return CGSize(width: CGFloat(width) * scale, height: CGFloat(height) * scale)
     }
 
-    private var hasViewableImage: Bool {
+    private static func hasViewableImage(_ message: chatMessage) -> Bool {
         if message.body?.url != nil { return true }
         return message.type == .image && !(message.body?.imageHash ?? "").isEmpty
+    }
+
+    static func isBareMedia(_ message: chatMessage) -> Bool {
+        guard message.unsent != true else { return false }
+        let body = message.body
+
+        switch message.type {
+        case .image, .expiringImage:
+            return hasViewableImage(message)
+        case .giphy:
+            return body?.urlPath != nil || body?.stillPath != nil
+        case .location:
+            return body?.lat != nil && body?.lon != nil
+        default:
+            return false
+        }
     }
 }
