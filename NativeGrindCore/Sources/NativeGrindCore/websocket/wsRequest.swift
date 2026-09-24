@@ -19,6 +19,13 @@ public struct wsRequest<Payload: Codable> {
     }
     
     public func encode() throws -> Data {
+        if domain == .main {
+            let token = keychainManager.shared.getToken(type: .sessionId) ?? ""
+            let envelope = wsCommandEnvelope(type: eventName, ref: UUID().uuidString, token: token, payload: payload)
+
+            return try JSONEncoder().encode(envelope)
+        }
+
         let currentMillis = Int64(Date().timeIntervalSince1970 * 1000)
         let envelope = wsNSNotificationEnvelope(event: eventName, payload: payload, clientTime: currentMillis)
         return try JSONEncoder().encode(envelope)
@@ -26,6 +33,23 @@ public struct wsRequest<Payload: Codable> {
 }
 
 public extension wsRequest {
+
+    // Grindr
+
+    static func sendTextMessage(targetProfileId: Int, text: String, replyToMessageId: String? = nil) -> wsRequest<sendTextMessageCommand> {
+        return wsRequest<sendTextMessageCommand>(
+            domain: .main,
+            eventName: "chat.v1.message.send",
+            payload: sendTextMessageCommand(
+                type: .text,
+                target: messageTarget(type: .direct, targetId: targetProfileId),
+                body: textMessageBody(text: text),
+                replyToMessageId: replyToMessageId
+            )
+        )
+    }
+
+    // NativeServer
 
     // authorizes the current users device
     static func authorizeDevice(deviceId: String, deviceName: String?, publicKey: String, signature: String, challenge: String) -> wsRequest<nsAuthentication> {

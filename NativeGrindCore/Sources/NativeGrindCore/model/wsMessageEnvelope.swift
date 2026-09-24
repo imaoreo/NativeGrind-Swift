@@ -54,3 +54,10 @@ public struct wsNotificationEnvelope<T: Decodable>: Decodable {
     public let notificationId: String?
     public let payload: T?
 }
+
+struct wsCommandEnvelope<T: Encodable>: Encodable {
+    let type: String
+    let ref: String
+    let token: String
+    let payload: T?
+}

@@ -90,6 +90,10 @@ public extension wsEvent {
         return wsEvent<nsGetProfileByImageResponse>(domain: .nativeServer, eventName: "get_profile_by_image")
     }
 
+    static var onTextMessageSent: wsEvent<chatMessage> {
+        return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message.send.response")
+    }
+
     static var onChatMessage: wsEvent<chatMessage> {
         return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message_sent")
     }

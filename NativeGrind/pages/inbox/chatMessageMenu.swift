@@ -11,6 +11,7 @@ import NativeGrindCore
 struct chatMessageMenu: View {
     let message: chatMessage
     let store: chatStore
+    let canReply: Bool
 
     private var isMine: Bool { store.isMine(message) }
     private var isUnsent: Bool { message.unsent == true }
@@ -25,6 +26,14 @@ struct chatMessageMenu: View {
             }
         }
         #endif
+
+        if canReply && !isUnsent {
+            Button {
+                store.startReply(to: message)
+            } label: {
+                Label("Reply", systemImage: "arrowshape.turn.up.left")
+            }
+        }
 
         if !isMine && !isUnsent {
             Button {

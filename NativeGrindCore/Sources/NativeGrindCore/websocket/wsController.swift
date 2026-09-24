@@ -121,7 +121,9 @@ public final class wsController: ObservableObject {
             
             do {
                 let data = try request.encode()
-                let message = URLSessionWebSocketTask.Message.data(data)
+                let message: URLSessionWebSocketTask.Message = domain == .main
+                    ? .string(String(decoding: data, as: UTF8.self))
+                    : .data(data)
                 try await task.send(message)
             } catch {
                 Task { @MainActor in

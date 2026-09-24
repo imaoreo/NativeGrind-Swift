@@ -10,6 +10,7 @@ import NativeGrindCore
 
 struct chatMessageList: View {
     let store: chatStore
+    let canReply: Bool
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -40,8 +41,11 @@ struct chatMessageList: View {
                             showRead: message.id == store.lastReadOwnMessageId
                         )
                         .id(message.id)
+                        .swipeToReply(isEnabled: canReply && message.unsent != true) {
+                            store.startReply(to: message)
+                        }
                         .contextMenu {
-                            chatMessageMenu(message: message, store: store)
+                            chatMessageMenu(message: message, store: store, canReply: canReply)
                         }
                     }
 

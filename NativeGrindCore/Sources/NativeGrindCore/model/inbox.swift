@@ -72,6 +72,10 @@ public struct conversationPreview: Codable, Sendable {
 public struct conversationIdObject: Codable, Sendable {
     public let value: String
 
+    public init(value: String) {
+        self.value = value
+    }
+
     public init(from decoder: Decoder) throws {
         if let string = try? decoder.singleValueContainer().decode(String.self) {
             self.value = string

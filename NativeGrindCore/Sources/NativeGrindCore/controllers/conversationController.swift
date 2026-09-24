@@ -70,6 +70,24 @@ public actor conversationController {
         return await run(.sendTextMessage(targetProfileId: profileId, text: trimmed), "send message")
     }
 
+    public func sendReply(_ text: String, to profileId: Int, replyingTo messageId: String) async -> chatMessage? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let sent = await wsController.shared.sendAndWait(
+            request: .sendTextMessage(targetProfileId: profileId, text: trimmed, replyToMessageId: messageId),
+            expectedEvent: .onTextMessageSent
+        )
+
+        if sent == nil {
+            await MainActor.run {
+                toastManager.shared.show(style: .error, header: "Chat Error", message: "Reply could not be sent")
+            }
+        }
+
+        return sent
+    }
+
     @discardableResult
     public func markRead(conversationId: String, messageId: String) async -> Bool {
         await run(.markConversationRead(conversationId: conversationId, messageId: messageId), "mark read", shouldErrorMessage: false) != nil

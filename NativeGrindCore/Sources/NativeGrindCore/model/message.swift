@@ -204,3 +204,19 @@ public enum messageTargetType: String, Codable, Sendable {
     case group = "Group"
     case humanWingman = "HumanWingman"
 }
+
+public struct messageTarget: Codable, Sendable {
+    public let type: messageTargetType
+    public let targetId: Int
+}
+
+public struct textMessageBody: Codable, Sendable {
+    public let text: String
+}
+
+public struct sendTextMessageCommand: Codable, Sendable {
+    public let type: messageType
+    public let target: messageTarget
+    public let body: textMessageBody
+    public let replyToMessageId: String?
+}

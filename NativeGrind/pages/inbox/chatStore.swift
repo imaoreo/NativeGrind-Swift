@@ -21,6 +21,7 @@ final class chatStore {
     private(set) var hasMoreOlder = true
     private(set) var isSending = false
     private(set) var isOtherTyping = false
+    private(set) var replyingTo: chatMessage? = nil
 
     private(set) var olderPageAnchorId: String? = nil
 
@@ -133,15 +134,29 @@ final class chatStore {
         }
     }
 
+    func startReply(to message: chatMessage) {
+        replyingTo = message
+    }
+
+    func cancelReply() {
+        replyingTo = nil
+    }
+
     func send(_ text: String) async -> Bool {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isSending else { return false }
         isSending = true
         defer { isSending = false }
 
-        guard let sent = await conversationController.shared.sendText(text, to: otherProfileId) else {
-            return false
+        let sent: chatMessage?
+        if let replyingTo {
+            sent = await conversationController.shared.sendReply(text, to: otherProfileId, replyingTo: replyingTo.id)
+        } else {
+            sent = await conversationController.shared.sendText(text, to: otherProfileId)
         }
+
+        guard let sent else { return false }
+        replyingTo = nil
         merge([sent])
         return true
     }
