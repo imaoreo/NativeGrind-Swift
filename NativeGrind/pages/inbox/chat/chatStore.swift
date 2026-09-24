@@ -278,15 +278,42 @@ final class chatStore {
     }
 
     func imageData(for message: chatMessage) async -> Data? {
-        if message.type == .image, let hash = message.body?.imageHash, chatMediaController.isValidHash(hash) {
+        let isPhoto = message.type == .image || message.type == .expiringImage
+        if isPhoto, let hash = message.body?.imageHash, chatMediaController.isValidHash(hash) {
             if let local = await chatMediaController.shared.localImage(hash: hash) {
                 return local
             }
+
+            if message.type == .expiringImage {
+                let existingURL = message.body?.url.flatMap(URL.init(string:))
+                return await chatMediaController.shared.loadImage(hash: hash, from: existingURL)
+            }
+
             return await chatMediaController.shared.loadImage(hash: hash, from: await mediaURL(for: message))
         }
 
         guard let url = await mediaURL(for: message) else { return nil }
         return await chatMediaController.shared.download(url)
+    }
+
+    func revealExpiringImage(_ message: chatMessage) async -> Data? {
+        guard message.type == .expiringImage,
+              let hash = message.body?.imageHash,
+              chatMediaController.isValidHash(hash) else {
+            return nil
+        }
+
+        if let saved = await imageData(for: message) {
+            return saved
+        }
+
+        guard let fresh = await conversationController.shared.fetchMessage(conversationId: conversationId, messageId: message.id),
+              let url = fresh.body?.url.flatMap(URL.init(string:)) else {
+            return nil
+        }
+        replace(fresh)
+
+        return await chatMediaController.shared.loadImage(hash: hash, from: url)
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {

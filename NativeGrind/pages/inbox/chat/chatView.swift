@@ -122,6 +122,9 @@ struct chatView: View {
         .environment(\.loadChatImage) { [store] message in
             await store.imageData(for: message)
         }
+        .environment(\.revealExpiringImage) { [store] message in
+            await store.revealExpiringImage(message)
+        }
         #if os(macOS)
         .sheet(item: $viewingPhoto) { message in
             chatPhotoViewer(message: message, loadImage: store.imageData)

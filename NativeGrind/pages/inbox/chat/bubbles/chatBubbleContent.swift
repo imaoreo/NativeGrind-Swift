@@ -28,14 +28,19 @@ struct chatBubbleContent: View {
                     .textSelection(.enabled)
                     #endif
 
-            case .image, .expiringImage:
+            case .image:
                 if Self.hasViewableImage(message) {
                     chatRemoteImage(message: message, size: imageSize(width: body?.width, height: body?.height))
-                        .onTapGesture {
-                            if message.type == .image { openPhoto(message) }
-                        }
+                        .onTapGesture { openPhoto(message) }
                 } else {
-                    Text(message.type == .expiringImage ? "📷 Expiring Photo" : "📷 Photo")
+                    Text("📷 Photo")
+                }
+
+            case .expiringImage:
+                if Self.hasViewableImage(message) {
+                    chatExpiringImage(message: message, size: imageSize(width: body?.width, height: body?.height))
+                } else {
+                    Text("📷 Expiring Photo")
                 }
 
             case .giphy:
@@ -75,7 +80,7 @@ struct chatBubbleContent: View {
 
     private static func hasViewableImage(_ message: chatMessage) -> Bool {
         if message.body?.url != nil { return true }
-        return message.type == .image && !(message.body?.imageHash ?? "").isEmpty
+        return chatMediaController.isValidHash(message.body?.imageHash ?? "")
     }
 
     static func isBareMedia(_ message: chatMessage) -> Bool {

@@ -10,6 +10,7 @@ import NativeGrindCore
 
 extension EnvironmentValues {
     @Entry var loadChatImage: @MainActor (chatMessage) async -> Data? = { _ in nil }
+    @Entry var revealExpiringImage: @MainActor (chatMessage) async -> Data? = { _ in nil }
 }
 
 struct chatRemoteImage: View {
@@ -41,11 +42,7 @@ struct chatRemoteImage: View {
                 failed = true
                 return
             }
-            #if canImport(UIKit)
-            image = Image(uiImage: platformImage)
-            #elseif canImport(AppKit)
-            image = Image(nsImage: platformImage)
-            #endif
+            image = PlatformImage(uiImage: platformImage)
         }
     }
 }
