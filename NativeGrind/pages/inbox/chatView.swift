@@ -119,13 +119,16 @@ struct chatView: View {
         .environment(\.openChatPhoto) { message in
             viewingPhoto = message
         }
+        .environment(\.loadChatImage) { [store] message in
+            await store.imageData(for: message)
+        }
         #if os(macOS)
         .sheet(item: $viewingPhoto) { message in
-            chatPhotoViewer(message: message, resolveURL: store.mediaURL)
+            chatPhotoViewer(message: message, loadImage: store.imageData)
         }
         #else
         .fullScreenCover(item: $viewingPhoto) { message in
-            chatPhotoViewer(message: message, resolveURL: store.mediaURL)
+            chatPhotoViewer(message: message, loadImage: store.imageData)
         }
         #endif
         .onAppear {

@@ -86,6 +86,10 @@ public extension wsEvent {
         return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_media")
     }
 
+    static var onChatMediaUploaded: wsEvent<nsResponse> {
+        return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_chat_media")
+    }
+
     static var onProfileByImage: wsEvent<nsGetProfileByImageResponse> {
         return wsEvent<nsGetProfileByImageResponse>(domain: .nativeServer, eventName: "get_profile_by_image")
     }

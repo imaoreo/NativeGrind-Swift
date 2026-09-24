@@ -150,10 +150,14 @@ public actor profileController {
 
                 }
                 if data == nil {
-                    data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash))
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash), shouldErrorMessage: false)
                 }
             } else {
-                data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+                data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash), shouldErrorMessage: false)
+            }
+
+            if data == nil {
+                data = try? await APIClient.shared.request(.getNativeServerProfileImage(mediaHash: mediaHash), shouldErrorMessage: false)
             }
             
             if let data {

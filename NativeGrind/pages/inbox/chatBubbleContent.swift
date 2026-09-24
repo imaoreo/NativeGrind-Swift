@@ -29,8 +29,8 @@ struct chatBubbleContent: View {
                     #endif
 
             case .image, .expiringImage:
-                if let urlString = body?.url, let url = URL(string: urlString) {
-                    remoteImage(url: url, width: body?.width, height: body?.height)
+                if hasViewableImage {
+                    chatRemoteImage(message: message, size: imageSize(width: body?.width, height: body?.height))
                         .onTapGesture {
                             if message.type == .image { openPhoto(message) }
                         }
@@ -39,8 +39,8 @@ struct chatBubbleContent: View {
                 }
 
             case .giphy:
-                if let urlString = body?.urlPath ?? body?.stillPath, let url = URL(string: urlString) {
-                    remoteImage(url: url, width: body?.width, height: body?.height)
+                if body?.urlPath != nil || body?.stillPath != nil {
+                    chatRemoteImage(message: message, size: imageSize(width: body?.width, height: body?.height))
                         .onTapGesture { openPhoto(message) }
                 } else {
                     Text("GIF")
@@ -73,22 +73,8 @@ struct chatBubbleContent: View {
         return CGSize(width: CGFloat(width) * scale, height: CGFloat(height) * scale)
     }
 
-    private func remoteImage(url: URL, width: Int?, height: Int?) -> some View {
-        let size = imageSize(width: width, height: height)
-
-        return AsyncImage(url: url) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            case .failure:
-                Image(systemName: "photo")
-            default:
-                ProgressView()
-            }
-        }
-        .frame(width: size.width, height: size.height)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+    private var hasViewableImage: Bool {
+        if message.body?.url != nil { return true }
+        return message.type == .image && !(message.body?.imageHash ?? "").isEmpty
     }
 }

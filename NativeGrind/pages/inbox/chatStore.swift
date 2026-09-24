@@ -58,11 +58,23 @@ final class chatStore {
             byId[message.id] = message
         }
         messages = byId.values.sorted { $0.timestamp < $1.timestamp }
+        persist()
     }
 
     private func replace(_ message: chatMessage) {
         if let index = messages.firstIndex(where: { $0.id == message.id }) {
             messages[index] = message
+            persist()
+        }
+    }
+
+    private func persist() {
+        let conversationId = conversationId
+        let messages = messages
+        let lastReadTimestamp = lastReadTimestamp
+        let profile = otherProfile
+        Task {
+            await conversationCache.shared.save(conversationId: conversationId, messages: messages, lastReadTimestamp: lastReadTimestamp, profile: profile)
         }
     }
 
@@ -93,15 +105,21 @@ final class chatStore {
             hasLoaded = true
         }
 
+        if let cached = await conversationCache.shared.load(conversationId: conversationId) {
+            messages = cached.messages
+            lastReadTimestamp = cached.lastReadTimestamp
+            otherProfile = cached.profile
+        }
+
         // profile=true also returns their name and photo hash for the header
         guard let page = await conversationController.shared.fetchMessages(conversationId: conversationId, includeProfile: true) else {
             return
         }
 
-        merge(page.messages)
         lastReadTimestamp = page.lastReadTimestamp
         hasMoreOlder = page.hasMore
-        otherProfile = page.profile
+        otherProfile = page.profile ?? otherProfile
+        merge(page.messages)
         await markReadIfNeeded()
     }
 
@@ -255,7 +273,20 @@ final class chatStore {
     func delete(_ message: chatMessage) async {
         if await conversationController.shared.delete(conversationId: conversationId, messageId: message.id) {
             messages.removeAll { $0.id == message.id }
+            persist()
         }
+    }
+
+    func imageData(for message: chatMessage) async -> Data? {
+        if message.type == .image, let hash = message.body?.imageHash, chatMediaController.isValidHash(hash) {
+            if let local = await chatMediaController.shared.localImage(hash: hash) {
+                return local
+            }
+            return await chatMediaController.shared.loadImage(hash: hash, from: await mediaURL(for: message))
+        }
+
+        guard let url = await mediaURL(for: message) else { return nil }
+        return await chatMediaController.shared.download(url)
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {

@@ -13,6 +13,7 @@ public enum HTTPMethod: String, Sendable, Codable {
     case put = "PUT"
     case delete = "DELETE"
     case patch = "PATCH"
+    case head = "HEAD"
 }
 
 func changeENUMSToRawValues(_ value: Any) -> Any {

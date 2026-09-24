@@ -182,6 +182,14 @@ public extension wsRequest {
         )
     }
 
+    static func uploadChatMedia(mediaHash: String, base64Data: String) -> wsRequest<nsUploadMedia> {
+        return wsRequest<nsUploadMedia>(
+            domain: .nativeServer,
+            eventName: "upload_chat_media",
+            payload: nsUploadMedia(mediaHash: mediaHash, base64Data: base64Data)
+        )
+    }
+
     static func getProfileByImage(mediaHash: String) -> wsRequest<nsGetProfileByImageRequest> {
         return wsRequest<nsGetProfileByImageRequest>(
             domain: .nativeServer,

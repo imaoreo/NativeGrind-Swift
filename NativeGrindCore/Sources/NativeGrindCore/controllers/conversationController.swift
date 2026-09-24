@@ -130,6 +130,10 @@ public actor conversationController {
 
     @discardableResult
     public func deleteConversation(conversationId: String) async -> Bool {
-        await run(.deleteConversation(conversationId: conversationId), "delete conversation") != nil
+        let deleted = await run(.deleteConversation(conversationId: conversationId), "delete conversation") != nil
+        if deleted {
+            await conversationCache.shared.remove(conversationId: conversationId)
+        }
+        return deleted
     }
 }

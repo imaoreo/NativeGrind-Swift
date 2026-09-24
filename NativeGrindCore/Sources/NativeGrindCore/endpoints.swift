@@ -568,7 +568,33 @@ public extension endpoint {
     }
     
     // Images
-    
+
+    static func getNativeServerProfileImage(mediaHash: String) -> endpoint<Data> {
+        return endpoint<Data>(
+            path: "/public/cache/pfp/\(mediaHash).jpg",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
+    static func getNativeServerChatMedia(mediaHash: String, method: HTTPMethod = .get) -> endpoint<Data> {
+        return endpoint<Data>(
+            path: "/public/cache/chat/\(mediaHash)",
+            method: method,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
     static func getProfileImage(size: imageSizes, mediaHash: String) -> endpoint<Data> {
         return endpoint<Data>(
             path: "/images/profile/\(size.rawValue)/\(mediaHash)",

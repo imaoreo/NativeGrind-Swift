@@ -14,7 +14,7 @@ extension EnvironmentValues {
 
 struct chatPhotoViewer: View {
     let message: chatMessage
-    let resolveURL: (chatMessage) async -> URL?
+    let loadImage: (chatMessage) async -> Data?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -162,8 +162,7 @@ struct chatPhotoViewer: View {
     }
 
     private func load() async {
-        guard let url = await resolveURL(message),
-              let (data, _) = try? await URLSession.shared.data(from: url),
+        guard let data = await loadImage(message),
               let platformImage = PlatformImage(data: data) else {
             failed = true
             return
