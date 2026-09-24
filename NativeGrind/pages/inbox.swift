@@ -59,7 +59,7 @@ struct inboxView: View {
                 }
                 else {
                     ForEach(items) { item in
-                        inboxRow(conversation: item.conversation, profile: item.profile)
+                        conversationLink(for: item)
                             .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                     }
                 }
@@ -78,7 +78,7 @@ struct inboxView: View {
                 Spacer()
             } else {
                 List(items) { item in
-                    inboxRow(conversation: item.conversation, profile: item.profile)
+                    conversationLink(for: item)
                         .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                 }
                 .listStyle(.plain)
@@ -112,6 +112,76 @@ struct inboxView: View {
         .task {
             await loadInboxData()
         }
+        .onReceive(wsController.shared.publisher(for: .onChatMessage)) { _ in
+            Task { await loadInboxData() }
+        }
+        .onReceive(wsController.shared.publisher(for: .onConversationsUpdated)) { _ in
+            Task { await loadInboxData() }
+        }
+        .onReceive(wsController.shared.publisher(for: .onConversationsDeleted)) { event in
+            let deleted = Set(event.conversationIds.map(\.value))
+            items.removeAll { deleted.contains($0.id) }
+        }
+    }
+
+    @ViewBuilder
+    private func conversationLink(for item: inboxItem) -> some View {
+        let row = inboxRow(conversation: item.conversation, profile: item.profile)
+
+        if let otherProfileId = item.conversation.participants.first?.profileId {
+            NavigationLink {
+                chatView(
+                    conversationId: item.conversation.conversationId,
+                    otherProfileId: otherProfileId,
+                    title: item.conversation.name
+                )
+            } label: {
+                row
+            }
+            #if !os(tvOS)
+            .swipeActions(edge: .leading) {
+                Button {
+                    Task { await setPinned(item, pinned: !item.conversation.pinned) }
+                } label: {
+                    Label(item.conversation.pinned ? "Unpin" : "Pin", systemImage: item.conversation.pinned ? "pin.slash" : "pin")
+                }
+                .tint(.orange)
+            }
+            .swipeActions(edge: .trailing) {
+                Button(role: .destructive) {
+                    Task { await deleteConversation(item) }
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+            #endif
+            .contextMenu {
+                Button {
+                    Task { await setPinned(item, pinned: !item.conversation.pinned) }
+                } label: {
+                    Label(item.conversation.pinned ? "Unpin" : "Pin", systemImage: item.conversation.pinned ? "pin.slash" : "pin")
+                }
+                Button(role: .destructive) {
+                    Task { await deleteConversation(item) }
+                } label: {
+                    Label("Delete Conversation", systemImage: "trash")
+                }
+            }
+        } else {
+            row
+        }
+    }
+
+    private func setPinned(_ item: inboxItem, pinned: Bool) async {
+        if await conversationController.shared.setPinned(conversationId: item.id, pinned: pinned) {
+            await loadInboxData()
+        }
+    }
+
+    private func deleteConversation(_ item: inboxItem) async {
+        if await conversationController.shared.deleteConversation(conversationId: item.id) {
+            items.removeAll { $0.id == item.id }
+        }
     }
 
     private func loadInboxData() async {
@@ -132,7 +202,12 @@ struct inboxView: View {
                 }
             }
             
-            self.items = currentItems
+            self.items = currentItems.sorted { lhs, rhs in
+                if lhs.conversation.pinned != rhs.conversation.pinned {
+                    return lhs.conversation.pinned
+                }
+                return lhs.conversation.lastActivityTimestamp > rhs.conversation.lastActivityTimestamp
+            }
         }
     }
 }
