@@ -16,6 +16,11 @@ public final class sessionManager: ObservableObject {
     @Published public private(set) var isLoading: Bool = false
     
     private let keychain = keychainManager.shared
+
+    public var profileId: Int? {
+        keychain.getToken(type: .profileId).flatMap { Int($0) }
+    }
+
     private var activeRefreshTask: Task<Void, Never>? = nil
     
     private func registerCurrentAccount() async {
@@ -77,6 +82,7 @@ public final class sessionManager: ObservableObject {
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
         
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -100,7 +106,8 @@ public final class sessionManager: ObservableObject {
         let sessionId = response.authenticationResponse.sessionId
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
-        
+
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -122,7 +129,8 @@ public final class sessionManager: ObservableObject {
         
         let sessionId = response.sessionId
         let authToken = response.authToken
-        
+
+        keychainManager.shared.saveToken(response.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
@@ -144,7 +152,8 @@ public final class sessionManager: ObservableObject {
             
         let sessionId = response.sessionId
         let authToken = response.authToken
-        
+
+        keychainManager.shared.saveToken(response.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
@@ -166,7 +175,8 @@ public final class sessionManager: ObservableObject {
         
         let sessionId = response.authenticationResponse.sessionId
         let authToken = response.authenticationResponse.authToken
-        
+
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -204,7 +214,8 @@ public final class sessionManager: ObservableObject {
                 
                 let sessionId = response.sessionId
                 let authToken = response.authToken
-                
+
+                keychainManager.shared.saveToken(response.profileId, type: .profileId)
                 keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
                 keychainManager.shared.saveToken(authToken, type: .authToken)
                 
@@ -220,7 +231,8 @@ public final class sessionManager: ObservableObject {
             
             let sessionId = response.authenticationResponse.sessionId
             let responseAuthToken = response.authenticationResponse.authToken
-            
+
+            keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
             keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
             keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
         } catch requestError.networkError  {
@@ -259,6 +271,7 @@ public final class sessionManager: ObservableObject {
         keychain.deleteToken(type: .sessionId)
         keychain.deleteToken(type: .isEmail)
         keychain.deleteToken(type: .data)
+        keychain.deleteToken(type: .profileId)
 
         self.isAuthenticated = false
     }
