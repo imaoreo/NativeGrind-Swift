@@ -4,6 +4,8 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to show users near you.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need your microphone to record voice messages.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
