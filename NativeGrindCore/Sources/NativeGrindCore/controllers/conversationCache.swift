@@ -19,16 +19,19 @@ public actor conversationCache {
 
     public static let maxMessages = 300
 
-    public func load(conversationId: String) -> cachedConversation? {
-        guard let url = fileURL(for: conversationId),
-              let data = try? Data(contentsOf: url) else {
-            return nil
-        }
-        return try? JSONDecoder().decode(cachedConversation.self, from: data)
+    private let store: localStore
+
+    public init(store: localStore = .shared) {
+        self.store = store
     }
 
-    public func save(conversationId: String, messages: [chatMessage], lastReadTimestamp: Int64?, profile: conversationProfileMini?) {
-        guard !appEnvironment.isTesting, let url = fileURL(for: conversationId) else { return }
+    public func load(conversationId: String) async -> cachedConversation? {
+        guard let key = storeKey(for: conversationId) else { return nil }
+        return await store.read(cachedConversation.self, from: .conversations, key: key)
+    }
+
+    public func save(conversationId: String, messages: [chatMessage], lastReadTimestamp: Int64?, profile: conversationProfileMini?) async {
+        guard !appEnvironment.isTesting, let key = storeKey(for: conversationId) else { return }
 
         let conversation = cachedConversation(
             messages: Array(messages.suffix(Self.maxMessages)),
@@ -37,30 +40,20 @@ public actor conversationCache {
             savedAt: Date()
         )
 
-        guard let data = try? JSONEncoder().encode(conversation) else { return }
-        try? data.write(to: url, options: [.atomic, .completeFileProtection])
+        try? await store.write(conversation, to: .conversations, key: key)
     }
 
-    public func remove(conversationId: String) {
-        guard let url = fileURL(for: conversationId) else { return }
-        try? FileManager.default.removeItem(at: url)
+    public func remove(conversationId: String) async {
+        guard let key = storeKey(for: conversationId) else { return }
+        await store.delete(from: .conversations, key: key)
     }
 
-    public func clearAll() {
-        if let directory {
-            try? FileManager.default.removeItem(at: directory)
-        }
+    public func clearAll() async {
+        await store.clear(.conversations)
     }
 
-    private var directory: URL? {
-        guard let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-        let directory = support.appendingPathComponent("chats", isDirectory: true)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return directory
-    }
-
-    private func fileURL(for conversationId: String) -> URL? {
+    private func storeKey(for conversationId: String) -> String? {
         guard conversationId.wholeMatch(of: /^[0-9]+:[0-9]+$/) != nil else { return nil }
-        return directory?.appendingPathComponent(conversationId.replacingOccurrences(of: ":", with: "_") + ".json")
+        return conversationId.replacingOccurrences(of: ":", with: "_")
     }
 }

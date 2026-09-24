@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 public enum profileSource {
     case profile(profile)
@@ -17,13 +16,7 @@ public actor profileController {
     private var missingMediaHashesOnServer = Set<String>()
     
     private init() {
-        do {
-            let config = ModelConfiguration("profile", isStoredInMemoryOnly: appEnvironment.isTesting)
-            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
-            self.dbController = dbProfileController(modelContainer: container)
-        } catch {
-            fatalError("Container failed: \(error)")
-        }
+        self.dbController = dbProfileController()
     }
     
     public func proactiveSyncMissingMedias(_ hashes: [String]) async {

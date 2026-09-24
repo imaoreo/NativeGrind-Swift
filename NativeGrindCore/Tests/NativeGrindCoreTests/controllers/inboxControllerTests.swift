@@ -7,7 +7,6 @@
 
 import Testing
 import Foundation
-import SwiftData
 @testable import NativeGrindCore
 
 @Suite("Inbox Controller Tests", .serialized)
