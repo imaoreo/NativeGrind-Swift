@@ -41,10 +41,8 @@ struct chatBubbleContent: View {
                 }
 
             case .location:
-                if let lat = body?.lat, let lon = body?.lon,
-                   let url = URL(string: "https://maps.apple.com/?ll=\(lat),\(lon)") {
-                    Link("📍 Location", destination: url)
-                        .foregroundColor(isMine ? .white : .blue)
+                if let lat = body?.lat, let lon = body?.lon {
+                    chatLocationBubble(latitude: lat, longitude: lon)
                 } else {
                     Text("📍 Location")
                 }
