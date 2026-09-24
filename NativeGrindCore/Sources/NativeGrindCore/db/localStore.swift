@@ -65,7 +65,7 @@ public actor localStore {
             .map { $0.deletingPathExtension().lastPathComponent }
     }
 
-    public func write<T: Encodable>(_ value: T, to collection: storeCollection, key: String) throws {
+    public func write<T: Encodable>(_ value: T, to collection: storeCollection, key: String, recordChange: Bool = true) throws {
         guard let url = fileURL(collection, key) else {
             throw storeError.invalidKey(key)
         }
@@ -77,13 +77,17 @@ public actor localStore {
         try FileManager.default.createDirectory(at: directory(collection), withIntermediateDirectories: true)
         try encoder.encode(value).write(to: url, options: [.atomic, .completeFileProtection])
 
-        record(storeChange(collection: collection, key: key, kind: .upsert, changedAt: Date()))
+        if recordChange {
+            record(storeChange(collection: collection, key: key, kind: .upsert, changedAt: Date()))
+        }
     }
 
-    public func delete(from collection: storeCollection, key: String) {
+    public func delete(from collection: storeCollection, key: String, recordChange: Bool = true) {
         guard let url = fileURL(collection, key), FileManager.default.fileExists(atPath: url.path) else { return }
         try? FileManager.default.removeItem(at: url)
-        record(storeChange(collection: collection, key: key, kind: .delete, changedAt: Date()))
+        if recordChange {
+            record(storeChange(collection: collection, key: key, kind: .delete, changedAt: Date()))
+        }
     }
 
     public func clear(_ collection: storeCollection) {
@@ -106,6 +110,35 @@ public actor localStore {
             }
         }
         saveLedger(ledger)
+    }
+
+    public func markSynced(collection: storeCollection, key: String) {
+        var ledger = loadLedger()
+        guard ledger.removeValue(forKey: ledgerKey(collection, key)) != nil else { return }
+        saveLedger(ledger)
+    }
+
+    public func syncCursor(for prefix: String) -> nsSyncCursor? {
+        loadSyncState()[prefix]
+    }
+
+    public func saveSyncCursor(_ cursor: nsSyncCursor?, for prefix: String) {
+        var state = loadSyncState()
+        state[prefix] = cursor
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(state).write(to: syncStateURL, options: .atomic)
+    }
+
+    public func clearSyncCursors() {
+        try? FileManager.default.removeItem(at: syncStateURL)
+    }
+
+    private func loadSyncState() -> [String: nsSyncCursor] {
+        (try? Data(contentsOf: syncStateURL)).flatMap { try? JSONDecoder().decode([String: nsSyncCursor].self, from: $0) } ?? [:]
+    }
+
+    private var syncStateURL: URL {
+        root.appendingPathComponent("syncState.json")
     }
 
     private func record(_ change: storeChange) {

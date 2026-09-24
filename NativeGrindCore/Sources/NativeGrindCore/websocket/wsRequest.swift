@@ -148,6 +148,22 @@ public extension wsRequest {
         )
     }
     
+    static func syncPush(items: [nsSyncItem]) -> wsRequest<nsSyncPushRequest> {
+        return wsRequest<nsSyncPushRequest>(
+            domain: .nativeServer,
+            eventName: "sync_push",
+            payload: nsSyncPushRequest(items: items)
+        )
+    }
+
+    static func syncPull(prefix: String, cursor: nsSyncCursor?) -> wsRequest<nsSyncPullRequest> {
+        return wsRequest<nsSyncPullRequest>(
+            domain: .nativeServer,
+            eventName: "sync_pull",
+            payload: nsSyncPullRequest(prefix: prefix, cursor: cursor)
+        )
+    }
+
     static func getData(location: String) -> wsRequest<nsGetData> {
         return wsRequest<nsGetData>(
             domain: .nativeServer,

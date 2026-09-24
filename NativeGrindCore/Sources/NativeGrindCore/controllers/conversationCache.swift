@@ -52,6 +52,36 @@ public actor conversationCache {
         await store.clear(.conversations)
     }
 
+    public func mergeRemote(key: String, remote: cachedConversation) async {
+        guard let local = await store.read(cachedConversation.self, from: .conversations, key: key) else {
+            try? await store.write(remote, to: .conversations, key: key, recordChange: false)
+            return
+        }
+
+        let (older, newer) = remote.savedAt > local.savedAt ? (local, remote) : (remote, local)
+
+        var byId = Dictionary(older.messages.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
+        for message in newer.messages {
+            byId[message.id] = message
+        }
+
+        let merged = cachedConversation(
+            messages: Array(byId.values.sorted { $0.timestamp < $1.timestamp }.suffix(Self.maxMessages)),
+            lastReadTimestamp: [local.lastReadTimestamp, remote.lastReadTimestamp].compactMap { $0 }.max(),
+            profile: newer.profile ?? older.profile,
+            savedAt: newer.savedAt
+        )
+
+        try? await store.write(merged, to: .conversations, key: key, recordChange: false)
+    }
+
+    public func removeRemote(key: String, deletedAt: Date) async {
+        if let local = await store.read(cachedConversation.self, from: .conversations, key: key), local.savedAt > deletedAt {
+            return
+        }
+        await store.delete(from: .conversations, key: key, recordChange: false)
+    }
+
     private func storeKey(for conversationId: String) -> String? {
         guard conversationId.wholeMatch(of: /^[0-9]+:[0-9]+$/) != nil else { return nil }
         return conversationId.replacingOccurrences(of: ":", with: "_")

@@ -70,6 +70,18 @@ public extension wsEvent {
         return wsEvent<nsSaveDataResponse>(domain: .nativeServer, eventName: "save_data")
     }
     
+    static var onSyncPushed: wsEvent<nsSyncPushResponse> {
+        return wsEvent<nsSyncPushResponse>(domain: .nativeServer, eventName: "sync_push")
+    }
+
+    static var onSyncPulled: wsEvent<nsSyncPullResponse> {
+        return wsEvent<nsSyncPullResponse>(domain: .nativeServer, eventName: "sync_pull")
+    }
+
+    static var onSyncChanged: wsEvent<nsResponse> {
+        return wsEvent<nsResponse>(domain: .nativeServer, eventName: "sync_changed")
+    }
+
     static var onDataGet: wsEvent<nsGetDataResponse> {
         return wsEvent<nsGetDataResponse>(domain: .nativeServer, eventName: "get_data")
     }

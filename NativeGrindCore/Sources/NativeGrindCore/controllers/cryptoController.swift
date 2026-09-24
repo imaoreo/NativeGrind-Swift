@@ -150,6 +150,25 @@ public final class cryptoController: Sendable {
         return combinedData.base64EncodedString()
     }
     
+    public func syncIdentifier(for value: String) throws -> String {
+        guard let accountKeyBase64 = keychainManager.shared.getToken(type: .accountKey),
+              let keyData = Data(base64Encoded: accountKeyBase64) else {
+            throw cryptoError.keyNotFound
+        }
+
+        let identifierKey = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: SymmetricKey(data: keyData),
+            info: Data("nativegrind-sync-identifier".utf8),
+            outputByteCount: 32
+        )
+        let mac = HMAC<SHA256>.authenticationCode(for: Data(value.utf8), using: identifierKey)
+
+        return Data(mac).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
     /// Decrypt text using shared Account Key
     public func decryptTextWithSharedKey(encryptedBase64: String) throws -> String {
         guard let accountKeyBase64 = keychainManager.shared.getToken(type: .accountKey),

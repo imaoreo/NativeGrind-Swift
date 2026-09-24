@@ -276,6 +276,7 @@ public final class sessionManager: ObservableObject {
         keychain.deleteToken(type: .uploadSigningKeyId)
 
         await conversationCache.shared.clearAll()
+        await localStore.shared.clearSyncCursors()
         await chatMediaController.shared.clearAll()
 
         self.isAuthenticated = false

@@ -76,6 +76,7 @@ struct myApp: App {
         Task { @MainActor in
             #if INCLUDE_SERVER
                 wsController.shared.connect(to: .nativeServer)
+                Task { await syncController.shared.start() }
             #endif
             
             for await isAuthenticated in sessionManager.shared.$isAuthenticated.values {

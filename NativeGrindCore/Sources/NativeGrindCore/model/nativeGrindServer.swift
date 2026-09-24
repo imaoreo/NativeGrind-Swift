@@ -143,6 +143,40 @@ public struct nsSaveDataResponse: nsResponseProtocol, Codable, Sendable {
     public let location: String?
 }
 
+public struct nsSyncItem: Codable, Sendable {
+    public let location: String
+    public let encryptedPayload: String
+    public let updatedAt: Int64?
+}
+
+public struct nsSyncCursor: Codable, Sendable, Equatable {
+    public let updatedAt: Int64
+    public let id: String
+}
+
+public struct nsSyncPushRequest: Codable, Sendable {
+    public let items: [nsSyncItem]
+}
+
+public struct nsSyncPullRequest: Codable, Sendable {
+    public let prefix: String
+    public let cursor: nsSyncCursor?
+}
+
+public struct nsSyncPushResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let count: Int?
+}
+
+public struct nsSyncPullResponse: nsResponseProtocol, Codable, Sendable {
+    public let status: nsStatus
+    public let message: String
+    public let items: [nsSyncItem]?
+    public let cursor: nsSyncCursor?
+    public let hasMore: Bool?
+}
+
 public struct nsSyncProfileRequest: Codable, Sendable {
     public let profile: profile
     public let geohash: String?

@@ -39,6 +39,8 @@ public actor profileController {
             if await wsController.shared.isServerAuthorized {
                 let geohash = await locationController.shared.currentGeohash
                 await wsController.shared.send(request: .syncSeenProfile(profile: profile, geohash: geohash))
+                await localStore.shared.markSynced(collection: .profiles, key: profileId)
+                await localStore.shared.markSynced(collection: .profileHistory, key: profileId)
             }
         } catch {
             let isNetworkError = (error as? requestError) == .networkError
