@@ -89,4 +89,25 @@ public extension wsEvent {
     static var onProfileByImage: wsEvent<nsGetProfileByImageResponse> {
         return wsEvent<nsGetProfileByImageResponse>(domain: .nativeServer, eventName: "get_profile_by_image")
     }
+
+    static var onChatMessage: wsEvent<chatMessage> {
+        return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message_sent")
+    }
+
+    static var onConversationRead: wsEvent<conversationReadEvent> {
+        return wsEvent<conversationReadEvent>(domain: .main, eventName: "chat.v1.conversation_read")
+    }
+
+    static var onTypingStatus: wsEvent<typingStatusEvent> {
+        return wsEvent<typingStatusEvent>(domain: .main, eventName: "chat.v1.typing_status")
+    }
+
+    /// Can be used to detect blocks
+    static var onConversationsDeleted: wsEvent<conversationIdsEvent> {
+        return wsEvent<conversationIdsEvent>(domain: .main, eventName: "chat.v1.conversation.delete")
+    }
+
+    static var onConversationsUpdated: wsEvent<conversationIdsEvent> {
+        return wsEvent<conversationIdsEvent>(domain: .main, eventName: "chat.v1.conversation.update")
+    }
 }

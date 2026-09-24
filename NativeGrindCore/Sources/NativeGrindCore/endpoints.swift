@@ -180,6 +180,156 @@ public extension endpoint {
         )
     }
     
+    // Conversations
+
+    static func getMessages(conversationId: String, pageKey: String? = nil, includeProfile: Bool = false) -> endpoint<conversationMessagesResponse> {
+        var queryItems: [String: String] = [:]
+        if let pageKey {
+            queryItems["pageKey"] = pageKey
+        }
+        if includeProfile {
+            queryItems["profile"] = "true"
+        }
+
+        return endpoint<conversationMessagesResponse>(
+            path: "/v5/chat/conversation/\(conversationId)/message",
+            method: .get,
+            queryItems: queryItems.isEmpty ? nil : queryItems,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: nil, jsonLocationValue: nil, message: "This conversation is no longer available", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func getMessage(conversationId: String, messageId: String) -> endpoint<singleMessageResponse> {
+        return endpoint<singleMessageResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/message/\(messageId)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func sendTextMessage(targetProfileId: Int, text: String) -> endpoint<chatMessage> {
+        return endpoint<chatMessage>(
+            path: "/v4/chat/message/send",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "type": messageType.text,
+                "target": [
+                    "type": messageTargetType.direct,
+                    "targetId": targetProfileId
+                ],
+                "body": [
+                    "text": text
+                ]
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: nil, jsonLocationValue: nil, message: "You can't message this profile", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func markConversationRead(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/read/\(messageId)",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func unsendMessage(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/unsend",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 500, jsonLocation: nil, jsonLocationValue: nil, message: "Message could not be unsent", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func deleteMessage(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/delete",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 500, jsonLocation: nil, jsonLocationValue: nil, message: "Message could not be deleted", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func reactToMessage(conversationId: String, messageId: String, reactionType: Int = 1) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/reaction",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId,
+                "reactionType": reactionType
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func sendTypingStatus(conversationId: String, status: typingStatus) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chatstatus/typing",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "status": status
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func pinConversation(conversationId: String, pinned: Bool) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/\(pinned ? "pin" : "unpin")",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func deleteConversation(conversationId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)",
+            method: .delete,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
     // Profiles
 
     static func getGrid(
