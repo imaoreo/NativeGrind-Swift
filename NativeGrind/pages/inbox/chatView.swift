@@ -23,6 +23,7 @@ struct chatView: View {
     @State private var showProfile: identifiableId? = nil
     @State private var confirmSendLocation = false
     @State private var audioPlayer = chatAudioPlayer()
+    @State private var viewingPhoto: chatMessage? = nil
     #if !os(tvOS)
     @State private var recorder = chatAudioRecorder()
     #endif
@@ -115,9 +116,21 @@ struct chatView: View {
             Task { await store.setTyping(!isEmpty) }
         }
         .environment(audioPlayer)
+        .environment(\.openChatPhoto) { message in
+            viewingPhoto = message
+        }
+        #if os(macOS)
+        .sheet(item: $viewingPhoto) { message in
+            chatPhotoViewer(message: message, resolveURL: store.mediaURL)
+        }
+        #else
+        .fullScreenCover(item: $viewingPhoto) { message in
+            chatPhotoViewer(message: message, resolveURL: store.mediaURL)
+        }
+        #endif
         .onAppear {
             audioPlayer.resolveURL = { [store] message in
-                await store.playableURL(for: message)
+                await store.mediaURL(for: message)
             }
         }
         .onDisappear {

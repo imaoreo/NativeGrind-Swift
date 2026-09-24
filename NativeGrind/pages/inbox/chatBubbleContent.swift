@@ -12,6 +12,8 @@ struct chatBubbleContent: View {
     let message: chatMessage
     let isMine: Bool
 
+    @Environment(\.openChatPhoto) private var openPhoto
+
     var body: some View {
         let body = message.body
 
@@ -29,6 +31,9 @@ struct chatBubbleContent: View {
             case .image, .expiringImage:
                 if let urlString = body?.url, let url = URL(string: urlString) {
                     remoteImage(url: url, width: body?.width, height: body?.height)
+                        .onTapGesture {
+                            if message.type == .image { openPhoto(message) }
+                        }
                 } else {
                     Text(message.type == .expiringImage ? "📷 Expiring Photo" : "📷 Photo")
                 }
@@ -36,6 +41,7 @@ struct chatBubbleContent: View {
             case .giphy:
                 if let urlString = body?.urlPath ?? body?.stillPath, let url = URL(string: urlString) {
                     remoteImage(url: url, width: body?.width, height: body?.height)
+                        .onTapGesture { openPhoto(message) }
                 } else {
                     Text("GIF")
                 }
