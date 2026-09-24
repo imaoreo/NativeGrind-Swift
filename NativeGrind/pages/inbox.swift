@@ -371,6 +371,14 @@ struct inboxRow: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     Spacer()
+
+                    if conversation.pinned {
+                        Image(systemName: "pin.fill")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .rotationEffect(.degrees(45))
+                            .accessibilityLabel("Pinned")
+                    }
                     
                     if conversation.unreadCount > 0 {
                         Circle()
