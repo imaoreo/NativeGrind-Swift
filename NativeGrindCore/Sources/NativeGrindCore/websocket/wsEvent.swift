@@ -102,6 +102,14 @@ public extension wsEvent {
         return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message.send.response")
     }
 
+    static var onTap: wsEvent<emptyResponse> {
+        return wsEvent<emptyResponse>(domain: .main, eventName: "tap.v1.tap_sent")
+    }
+
+    static var onNewView: wsEvent<emptyResponse> {
+        return wsEvent<emptyResponse>(domain: .main, eventName: "viewed_me.v1.new_view_received")
+    }
+
     static var onChatMessage: wsEvent<chatMessage> {
         return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message_sent")
     }

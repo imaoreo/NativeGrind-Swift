@@ -189,6 +189,17 @@ struct contentView: View {
                         Label("Inbox", systemImage: "bubble.left.and.bubble.right")
                     }
                     .tag(protectedRoute.inbox)
+
+                    NavigationStack(path: $router.protectedPath) {
+                        protectedRoute.interest
+                            .navigationDestination(for: protectedRoute.self) { route in
+                                route
+                            }
+                    }
+                    .tabItem {
+                        Label("Interest", systemImage: "eye")
+                    }
+                    .tag(protectedRoute.interest)
                     
                     #if !os(macOS)
                     NavigationStack(path: $router.protectedPath) {

@@ -195,9 +195,10 @@ public enum HIVStatus: Int, Codable, Sendable {
 }
 
 public enum tapType: Int, Codable, Sendable {
-    case friendly = 0
-    case hot = 1
-    case looking = 2
+    case friendly = 0 // 👋
+    case hot = 1 // 🔥
+    case looking = 2 // 😈
+    case none = 3
 }
 
 public enum sexualHealth: Int, Codable, Sendable, CaseIterable {
