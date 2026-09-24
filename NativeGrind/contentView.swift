@@ -15,6 +15,16 @@ import AppKit
 typealias PlatformImage = NSImage
 #endif
 
+extension Image {
+    init(platformImage: PlatformImage) {
+        #if canImport(UIKit)
+        self.init(uiImage: platformImage)
+        #else
+        self.init(nsImage: platformImage)
+        #endif
+    }
+}
+
 #if os(iOS)
 final class appDelegate: NSObject, UIApplicationDelegate {
     func application(

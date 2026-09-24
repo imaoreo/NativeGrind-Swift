@@ -42,7 +42,7 @@ struct chatRemoteImage: View {
                 failed = true
                 return
             }
-            image = PlatformImage(uiImage: platformImage)
+            image = Image(platformImage: platformImage)
         }
     }
 }

@@ -90,6 +90,6 @@ struct chatExpiringImage: View {
 
     private func show(_ data: Data) {
         guard let platformImage = PlatformImage(data: data) else { return }
-        image = platformImage
+        image = Image(platformImage: platformImage)
     }
 }
