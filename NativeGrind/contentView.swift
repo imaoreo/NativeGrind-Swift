@@ -173,12 +173,7 @@ struct contentView: View {
                     }
                     .tag(protectedRoute.browse)
                     
-                    NavigationStack(path: $router.protectedPath) {
-                        protectedRoute.inbox
-                            .navigationDestination(for: protectedRoute.self) { route in
-                                route
-                            }
-                    }
+                    inboxTab(path: $router.protectedPath)
                     .tabItem {
                         Label("Inbox", systemImage: "bubble.left.and.bubble.right")
                     }

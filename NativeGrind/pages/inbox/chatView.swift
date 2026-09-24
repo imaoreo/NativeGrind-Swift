@@ -8,9 +8,15 @@
 import SwiftUI
 import NativeGrindCore
 
+enum chatPresentation {
+    case pushed // inside the inbox navigation stack on iPhone
+    case sheet // opened from a profile, has its own header
+    case split // detail pane of the inbox split view on macOS / iPad landscape
+}
+
 struct chatView: View {
     let title: String
-    let isSheet: Bool
+    let presentation: chatPresentation
 
     @State private var store: chatStore
     @State private var draft = ""
@@ -24,9 +30,9 @@ struct chatView: View {
     @ObservedObject private var sockets = wsController.shared
     @Environment(\.dismiss) private var dismiss
 
-    init(conversationId: String, otherProfileId: Int, title: String, isSheet: Bool = false) {
+    init(conversationId: String, otherProfileId: Int, title: String, presentation: chatPresentation = .pushed) {
         self.title = title
-        self.isSheet = isSheet
+        self.presentation = presentation
         self._store = State(initialValue: chatStore(conversationId: conversationId, otherProfileId: otherProfileId))
     }
 
@@ -46,7 +52,7 @@ struct chatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if isSheet {
+            if presentation == .sheet {
                 chatHeader(title: displayName, mediaHash: store.otherProfile?.mediaHash, onShowProfile: showOtherProfile, onClose: { dismiss() })
                 Divider()
             }
@@ -63,10 +69,11 @@ struct chatView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
+        // The split view keeps the tab bar, only a pushed chat takes over the screen
+        .toolbar(presentation == .pushed ? .hidden : .automatic, for: .tabBar)
         #endif
         .toolbar {
-            if !isSheet {
+            if presentation != .sheet {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: showOtherProfile) {
                         Image(systemName: "person.crop.circle")

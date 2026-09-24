@@ -20,48 +20,48 @@ struct inboxItem: Identifiable {
     }
 }
 
+/// What the split view needs to open a chat in the detail pane
+struct inboxSelection: Hashable {
+    let conversationId: String
+    let otherProfileId: Int
+    let title: String
+}
+
 struct inboxView: View {
+    /// When set the rows select into this for a split view instead of pushing the chat
+    let selection: Binding<inboxSelection?>?
+
     @State private var items: [inboxItem] = []
     @State private var isLoading = false
-    
+
+    init(selection: Binding<inboxSelection?>? = nil) {
+        self.selection = selection
+    }
+
+    /// Sidebar of the split view on macOS / iPad landscape
+    private var isSplit: Bool {
+        selection != nil
+    }
+
+    private var showsRefreshButton: Bool {
+        #if os(macOS)
+        return true
+        #elseif os(iOS)
+        return isSplit // iPhone has pull to refresh and no navigation bar
+        #else
+        return false
+        #endif
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             #if os(iOS)
-            List {
-                Text("Inbox")
-                    .font(.largeTitle.bold())
-                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                
-                if isLoading && items.isEmpty {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                            .padding(.top, 20)
-                        Spacer()
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
-                else if items.isEmpty {
-                    VStack {
-                        Spacer()
-                        Text("No conversations")
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                        Spacer()
-                    }
-                    .frame(minHeight: 300)
-                    .listRowInsets(EdgeInsets())
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
-                else {
-                    ForEach(items) { item in
-                        conversationLink(for: item)
-                            .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
-                    }
+            // Only bind selection in the split view, a selection binding on the push list gets in the way of the links
+            Group {
+                if let selection {
+                    List(selection: selection) { iOSListContent }
+                } else {
+                    List { iOSListContent }
                 }
             }
             .listStyle(.plain)
@@ -77,9 +77,12 @@ struct inboxView: View {
                     .foregroundColor(.secondary)
                 Spacer()
             } else {
-                List(items) { item in
-                    conversationLink(for: item)
-                        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
+                Group {
+                    if let selection {
+                        List(items, selection: selection) { item in listRow(for: item) }
+                    } else {
+                        List(items) { item in listRow(for: item) }
+                    }
                 }
                 .listStyle(.plain)
                 .refreshable {
@@ -88,27 +91,25 @@ struct inboxView: View {
             }
             #endif
         }
+        .navigationTitle("Inbox")
         #if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
+        // iPhone draws its own large title in the list, the split sidebar uses the standard bar like macOS
+        .toolbar(isSplit ? .visible : .hidden, for: .navigationBar)
         .refreshable {
             await loadInboxData()
         }
-        #else
-        .navigationTitle("Inbox")
         #endif
-        #if !os(iOS) && !os(watchOS) && !os(tvOS)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: {
-                    Task {
-                        await loadInboxData()
+            if showsRefreshButton {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task { await loadInboxData() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
-                }) {
-                    Image(systemName: "arrow.clockwise")
                 }
             }
         }
-        #endif
         .task {
             await loadInboxData()
         }
@@ -124,11 +125,65 @@ struct inboxView: View {
         }
     }
 
+    private func listRow(for item: inboxItem) -> some View {
+        conversationLink(for: item)
+            .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
+    }
+
+    #if os(iOS)
     @ViewBuilder
-    private func conversationLink(for item: inboxItem) -> some View {
+    private var iOSListContent: some View {
+        if !isSplit {
+            Text("Inbox")
+                .font(.largeTitle.bold())
+                .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+        }
+        
+        if isLoading && items.isEmpty {
+            HStack {
+                Spacer()
+                ProgressView()
+                    .padding(.top, 20)
+                Spacer()
+            }
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+        else if items.isEmpty {
+            VStack {
+                Spacer()
+                Text("No conversations")
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Spacer()
+            }
+            .frame(minHeight: 300)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+        else {
+            ForEach(items) { item in
+                listRow(for: item)
+            }
+        }
+    }
+    #endif
+
+    @ViewBuilder
+    private func openableRow(for item: inboxItem, otherProfileId: Int) -> some View {
         let row = inboxRow(conversation: item.conversation, profile: item.profile)
 
-        if let otherProfileId = item.conversation.participants.first?.profileId {
+        if selection != nil {
+            // Must be the non-optional type to match List(selection: Binding<inboxSelection?>)
+            row.tag(inboxSelection(
+                conversationId: item.conversation.conversationId,
+                otherProfileId: otherProfileId,
+                title: item.conversation.name
+            ))
+        } else {
             NavigationLink {
                 chatView(
                     conversationId: item.conversation.conversationId,
@@ -138,6 +193,13 @@ struct inboxView: View {
             } label: {
                 row
             }
+        }
+    }
+
+    @ViewBuilder
+    private func conversationLink(for item: inboxItem) -> some View {
+        if let otherProfileId = item.conversation.participants.first?.profileId {
+            openableRow(for: item, otherProfileId: otherProfileId)
             #if !os(tvOS)
             .swipeActions(edge: .leading) {
                 Button {
@@ -168,7 +230,7 @@ struct inboxView: View {
                 }
             }
         } else {
-            row
+            inboxRow(conversation: item.conversation, profile: item.profile)
         }
     }
 
@@ -181,6 +243,9 @@ struct inboxView: View {
     private func deleteConversation(_ item: inboxItem) async {
         if await conversationController.shared.deleteConversation(conversationId: item.id) {
             items.removeAll { $0.id == item.id }
+            if selection?.wrappedValue?.conversationId == item.id {
+                selection?.wrappedValue = nil
+            }
         }
     }
 

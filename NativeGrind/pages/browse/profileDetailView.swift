@@ -489,7 +489,7 @@ private struct chatSheet: View {
     let target: chatSheetTarget
 
     var body: some View {
-        chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title, isSheet: true)
+        chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title, presentation: .sheet)
             #if os(macOS)
             .frame(minWidth: 460, idealWidth: 520, minHeight: 600, idealHeight: 700)
             #endif
