@@ -255,6 +255,22 @@ final class chatStore {
         }
     }
 
+    func playableURL(for message: chatMessage) async -> URL? {
+        let latest = messages.first { $0.id == message.id } ?? message
+        let expiresAt = latest.body?.expiresAt.map { TimeInterval($0) / 1000 } ?? 0
+        let isExpired = expiresAt > 0 && expiresAt < Date().timeIntervalSince1970 + 30
+
+        if latest.body?.url == nil || isExpired {
+            guard let fresh = await conversationController.shared.fetchMessage(conversationId: conversationId, messageId: message.id) else {
+                return nil
+            }
+            replace(fresh)
+            return fresh.body?.url.flatMap(URL.init(string:))
+        }
+
+        return latest.body?.url.flatMap(URL.init(string:))
+    }
+
     private func refetch(_ message: chatMessage) async {
         if let updated = await conversationController.shared.fetchMessage(conversationId: conversationId, messageId: message.id) {
             replace(updated)

@@ -40,6 +40,9 @@ struct chatBubbleContent: View {
                     Text("GIF")
                 }
 
+            case .audio:
+                chatAudioBubble(message: message, isMine: isMine)
+
             case .location:
                 if let lat = body?.lat, let lon = body?.lon {
                     chatLocationBubble(latitude: lat, longitude: lon)

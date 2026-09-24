@@ -15,6 +15,7 @@ struct chatView: View {
     @State private var draft = ""
     @State private var showProfile: identifiableId? = nil
     @State private var confirmSendLocation = false
+    @State private var audioPlayer = chatAudioPlayer()
     #if !os(tvOS)
     @State private var recorder = chatAudioRecorder()
     #endif
@@ -94,11 +95,18 @@ struct chatView: View {
             guard wasEmpty != isEmpty else { return }
             Task { await store.setTyping(!isEmpty) }
         }
-        #if !os(tvOS)
-        .onDisappear {
-            recorder.cancel()
+        .environment(audioPlayer)
+        .onAppear {
+            audioPlayer.resolveURL = { [store] message in
+                await store.playableURL(for: message)
+            }
         }
-        #endif
+        .onDisappear {
+            audioPlayer.stop()
+            #if !os(tvOS)
+            recorder.cancel()
+            #endif
+        }
     }
 
     private var recordingStartedAt: Date? {
