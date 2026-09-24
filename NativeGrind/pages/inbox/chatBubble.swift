@@ -11,6 +11,7 @@ import NativeGrindCore
 struct chatBubble: View {
     let message: chatMessage
     let isMine: Bool
+    var showTime: Bool = true
     let showRead: Bool
     var isHighlighted: Bool = false
     var replyAuthor: String = ""
@@ -47,16 +48,23 @@ struct chatBubble: View {
                         }
                     }
 
-                HStack(spacing: 4) {
-                    Text(message.date, style: .time)
-                    if showRead {
-                        Text("· Read")
+                if showTime || showRead {
+                    HStack(spacing: 4) {
+                        if showTime {
+                            Text(message.date, style: .time)
+                        }
+                        if showRead {
+                            Text(showTime ? "· Read" : "Read")
+                        }
                     }
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
+                    .padding(.top, hasReactions ? 8 : 0)
+                } else if hasReactions {
+                    // Room for the reaction badge that hangs off the bubble
+                    Spacer().frame(height: 8)
                 }
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 4)
-                .padding(.top, hasReactions ? 8 : 0)
             }
 
             if !isMine { Spacer(minLength: 48) }

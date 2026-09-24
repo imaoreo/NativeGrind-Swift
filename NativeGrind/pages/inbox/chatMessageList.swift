@@ -35,10 +35,20 @@ struct chatMessageList: View {
                             .padding(.top, 40)
                     }
 
-                    ForEach(store.messages) { message in
+                    let messages = store.messages
+                    ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                        let previous = index > 0 ? messages[index - 1] : nil
+                        let next = index + 1 < messages.count ? messages[index + 1] : nil
+
+                        if startsNewDay(message, after: previous) {
+                            chatDateSeparator(date: message.date)
+                                .id("date-\(message.id)")
+                        }
+
                         chatBubble(
                             message: message,
                             isMine: store.isMine(message),
+                            showTime: showsTime(message, before: next),
                             showRead: message.id == store.lastReadOwnMessageId,
                             isHighlighted: message.id == store.highlightedMessageId,
                             replyAuthor: replyAuthor(for: message),
@@ -92,6 +102,19 @@ struct chatMessageList: View {
                 }
             }
         }
+    }
+
+    private static let timeGroupingMs: Int64 = 15 * 60 * 1000
+
+    private func startsNewDay(_ message: chatMessage, after previous: chatMessage?) -> Bool {
+        guard let previous else { return true }
+        return !Calendar.current.isDate(message.date, inSameDayAs: previous.date)
+    }
+
+    /// Messages within 15 minutes of the next one only show the newest time
+    private func showsTime(_ message: chatMessage, before next: chatMessage?) -> Bool {
+        guard let next else { return true }
+        return next.timestamp - message.timestamp > Self.timeGroupingMs || startsNewDay(next, after: message)
     }
 
     private func replyAuthor(for message: chatMessage) -> String {
