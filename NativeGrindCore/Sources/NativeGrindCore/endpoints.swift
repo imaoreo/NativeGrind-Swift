@@ -12,6 +12,9 @@ public struct endpoint<Response: Decodable> {
     public let method: HTTPMethod
     public let queryItems: [String: String]?
     public let body: [String: Any]?
+    public let rawBody: Data?
+    public let contentType: String?
+    public let headers: [String: String]
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
     public let shouldRetryOn401: Bool
@@ -26,6 +29,9 @@ public struct endpoint<Response: Decodable> {
         method: HTTPMethod,
         queryItems: [String: String]? = nil,
         body: [String: Any]? = nil,
+        rawBody: Data? = nil,
+        contentType: String? = nil,
+        headers: [String: String] = [:],
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
         shouldRetryOn401: Bool = true,
@@ -35,6 +41,9 @@ public struct endpoint<Response: Decodable> {
         self.method = method
         self.queryItems = queryItems
         self.body = body
+        self.rawBody = rawBody
+        self.contentType = contentType
+        self.headers = headers
         self.isAuthedRoute = isAuthedRoute
         self.networkHandlers = networkHandlers
         self.shouldRetryOn401 = shouldRetryOn401
@@ -215,19 +224,29 @@ public extension endpoint {
     }
 
     static func sendTextMessage(targetProfileId: Int, text: String) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .text, body: ["text": text])
+    }
+
+    static func sendLocationMessage(targetProfileId: Int, latitude: Double, longitude: Double) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .location, body: ["lat": latitude, "lon": longitude])
+    }
+
+    static func sendAudioMessage(targetProfileId: Int, mediaId: Int64) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .audio, body: ["mediaId": mediaId])
+    }
+
+    static func sendMessage(targetProfileId: Int, type: messageType, body: [String: Any]) -> endpoint<chatMessage> {
         return endpoint<chatMessage>(
             path: "/v4/chat/message/send",
             method: .post,
             queryItems: nil,
             body: [
-                "type": messageType.text,
+                "type": type,
                 "target": [
                     "type": messageTargetType.direct,
                     "targetId": targetProfileId
                 ],
-                "body": [
-                    "text": text
-                ]
+                "body": body
             ],
             isAuthedRoute: true,
             networkHandlers: [
@@ -325,6 +344,47 @@ public extension endpoint {
             method: .delete,
             queryItems: nil,
             body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    // Media
+
+    static func getDeviceKeyChallenge() -> endpoint<deviceKeyChallengeResponse> {
+        return endpoint<deviceKeyChallengeResponse>(
+            path: "/v1/verification/device-keys/challenge",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func registerDeviceKey(publicKey: String, keyId: String, registrationSignature: String) -> endpoint<registerDeviceKeyResponse> {
+        return endpoint<registerDeviceKeyResponse>(
+            path: "/v1/verification/device-keys",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "publicKey": publicKey,
+                "keyId": keyId,
+                "registrationSignature": registrationSignature
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func uploadChatMediaSigned(data: Data, contentType: String, signatureHeaders: [String: String]) -> endpoint<mediaUploadResponse> {
+        return endpoint<mediaUploadResponse>(
+            path: "/v6/chat/media/upload",
+            method: .post,
+            queryItems: nil,
+            rawBody: data,
+            contentType: contentType,
+            headers: signatureHeaders,
             isAuthedRoute: true,
             networkHandlers: []
         )

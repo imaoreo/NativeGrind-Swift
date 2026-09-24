@@ -272,6 +272,8 @@ public final class sessionManager: ObservableObject {
         keychain.deleteToken(type: .isEmail)
         keychain.deleteToken(type: .data)
         keychain.deleteToken(type: .profileId)
+        keychain.deleteToken(type: .uploadSigningKey)
+        keychain.deleteToken(type: .uploadSigningKeyId)
 
         self.isAuthenticated = false
     }

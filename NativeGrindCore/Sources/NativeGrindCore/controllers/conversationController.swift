@@ -70,6 +70,17 @@ public actor conversationController {
         return await run(.sendTextMessage(targetProfileId: profileId, text: trimmed), "send message")
     }
 
+    public func sendLocation(latitude: Double, longitude: Double, to profileId: Int) async -> chatMessage? {
+        await run(.sendLocationMessage(targetProfileId: profileId, latitude: latitude, longitude: longitude), "send location")
+    }
+
+    public func sendAudio(_ data: Data, contentType: String, to profileId: Int) async -> chatMessage? {
+        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType) else {
+            return nil
+        }
+        return await run(.sendAudioMessage(targetProfileId: profileId, mediaId: upload.mediaId), "send audio")
+    }
+
     public func sendReply(_ text: String, to profileId: Int, replyingTo messageId: String) async -> chatMessage? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
