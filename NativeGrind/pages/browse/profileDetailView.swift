@@ -11,6 +11,8 @@ struct profileDetailView: View {
     let allowsMessaging: Bool
     @State private var profileId: String
     @State private var chatTarget: chatSheetTarget? = nil
+    @State private var sharedAlbums: [albumSummary] = []
+    @State private var openedAlbum: albumTarget? = nil
     
     @State private var fullProfile: profile? = nil
     @State private var isLoading = true
@@ -35,6 +37,7 @@ struct profileDetailView: View {
                 } else if let profile = fullProfile {
                     VStack(alignment: .leading, spacing: 24) {
                         aboutMeSection(profile: profile)
+                        albumsSection
                         tagsSection(profile: profile)
                         statsSection(profile: profile)
                     }
@@ -78,6 +81,12 @@ struct profileDetailView: View {
         #endif
         .task(id: profileId) {
             await fetchFullProfile()
+        }
+        .task(id: profileId) {
+            sharedAlbums = await albumController.shared.sharedAlbums(profileId: profileId)
+        }
+        .sheet(item: $openedAlbum) { target in
+            albumView(target: target)
         }
         .sheetWithToast(item: $chatTarget) { target in
             chatSheet(target: target)
@@ -239,7 +248,27 @@ struct profileDetailView: View {
                 .padding(.top, 16)
             }
         }
-    
+
+    @ViewBuilder
+    private var albumsSection: some View {
+        if !sharedAlbums.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Shared Albums")
+                    .font(.headline)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(sharedAlbums) { album in
+                            profileAlbumCard(album: album) {
+                                openedAlbum = albumTarget(albumId: album.albumId, ownerProfileId: album.profileId ?? profileId)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private func aboutMeSection(profile: profile) -> some View {
         if let about = profile.aboutMe?.trimmingCharacters(in: .whitespacesAndNewlines), !about.isEmpty {

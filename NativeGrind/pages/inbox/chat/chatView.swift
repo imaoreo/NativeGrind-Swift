@@ -24,6 +24,7 @@ struct chatView: View {
     @State private var confirmSendLocation = false
     @State private var audioPlayer = chatAudioPlayer()
     @State private var viewingPhoto: chatMessage? = nil
+    @State private var openedAlbum: albumTarget? = nil
     #if !os(tvOS)
     @State private var recorder = chatAudioRecorder()
     #endif
@@ -128,6 +129,12 @@ struct chatView: View {
         .environment(audioPlayer)
         .environment(\.openChatPhoto) { message in
             viewingPhoto = message
+        }
+        .environment(\.openAlbum) { target in
+            openedAlbum = target
+        }
+        .sheet(item: $openedAlbum) { target in
+            albumView(target: target)
         }
         .environment(\.loadChatImage) { [store] message in
             await store.imageData(for: message)

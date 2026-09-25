@@ -107,3 +107,15 @@ public actor chatMediaController {
         }
     }
 }
+
+public extension chatMessage {
+    var photoCacheKey: String? {
+        if let hash = body?.imageHash, chatMediaController.isValidHash(hash) {
+            return hash
+        }
+        if let mediaId = body?.mediaId {
+            return "media-\(Int64(mediaId))"
+        }
+        return nil
+    }
+}

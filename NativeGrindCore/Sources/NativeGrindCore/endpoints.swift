@@ -349,6 +349,55 @@ public extension endpoint {
         )
     }
 
+    // Albums
+
+    static func getAlbum(albumId: String) -> endpoint<albumDetails> {
+        return endpoint<albumDetails>(
+            path: "/v2/albums/\(albumId)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func getAlbumsShared(byProfileId profileId: String) -> endpoint<albumsSharedResponse> {
+        return endpoint<albumsSharedResponse>(
+            path: "/v2/albums/shares/\(profileId)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func recordAlbumContentView(albumId: String, contentId: String) -> endpoint<recordContentViewResponse> {
+        return endpoint<recordContentViewResponse>(
+            path: "/v1/albums/\(albumId)/view/content/\(contentId)",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    /// NativeServer Album Backups
+    static func getNativeServerAlbum(albumId: String) -> endpoint<nsAlbumBackup> {
+        return endpoint<nsAlbumBackup>(
+            path: "/public/cache/albums/\(albumId)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
     // Media
 
     static func getDeviceKeyChallenge() -> endpoint<deviceKeyChallengeResponse> {
