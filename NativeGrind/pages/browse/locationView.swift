@@ -34,7 +34,6 @@ struct locationView: View {
                             }
                         }
                         .frame(height: 250)
-                        .cornerRadius(12)
                         .onTapGesture { position in
                             if let coordinate = proxy.convert(position, from: .local) {
                                 selectedPlaceName = nil
@@ -45,6 +44,7 @@ struct locationView: View {
                             }
                         }
                     }
+                    .listRowInsets(EdgeInsets())
                 }
                 
                 Button("Use Current Location") {
@@ -209,7 +209,7 @@ struct locationView: View {
             return
         }
         
-        let (lat, lon) = geohashEncoder.decode(currentGeohash)!
+        guard let (lat, lon) = geohashEncoder.decode(currentGeohash) else { return }
         
         let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         selectedCoordinate = coord
