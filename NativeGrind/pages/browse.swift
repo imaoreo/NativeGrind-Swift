@@ -182,7 +182,7 @@ struct browseView: View {
                     }
                 )
                 #if os(macOS)
-                .frame(width: 450, height: 350)
+                .frame(width: 520, height: 640)
                 #endif
             }
             #endif

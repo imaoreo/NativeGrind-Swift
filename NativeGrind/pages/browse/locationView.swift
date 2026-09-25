@@ -23,121 +23,152 @@ struct locationView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                searchSection
-
-                Section("Select Location on Map") {
-                    MapReader { proxy in
-                        Map(position: $cameraPosition) {
-                            if let coordinate = selectedCoordinate {
-                                Marker(selectedPlaceName ?? "Selected Location", coordinate: coordinate)
-                            }
-                        }
-                        .frame(height: 250)
-                        .onTapGesture { position in
-                            if let coordinate = proxy.convert(position, from: .local) {
-                                selectedPlaceName = nil
-                                selectedCoordinate = coordinate
-                                currentGeohash = geohashEncoder.encode(latitude: coordinate.latitude, longitude: coordinate.longitude)
-                                latitudeString = String(format: "%.6f", coordinate.latitude)
-                                longitudeString = String(format: "%.6f", coordinate.longitude)
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets())
-                }
-                
-                Button("Use Current Location") {
-                    Task {
-                        if let location = try? await locationManager.getCurrentLocation() {
-                            latitudeString = String(location.coordinate.latitude)
-                            longitudeString = String(location.coordinate.longitude)
-                            updateFromCoordinates()
-                        }
-                    }
-
-                }
-                
-                Section("Preset Locations") {
-                    Button("San Francisco, CA") {
-                        latitudeString = "37.7749"
-                        longitudeString = "-122.4194"
-                        updateFromCoordinates()
-                    }
-                    Button("London, UK") {
-                        latitudeString = "51.5074"
-                        longitudeString = "-0.1278"
-                        updateFromCoordinates()
-                    }
-                }
-                
-                Section("Manual Input") {
-                    TextField("Latitude", text: $latitudeString)
-                        #if os(iOS)
-                        .keyboardType(.numbersAndPunctuation)
-                        #endif
-                        .onChange(of: latitudeString) {
-                            updateFromCoordinates()
-                        }
-                    
-                    TextField("Longitude", text: $longitudeString)
-                        #if os(iOS)
-                        .keyboardType(.numbersAndPunctuation)
-                        #endif
-                        .onChange(of: longitudeString) {
-                            updateFromCoordinates()
-                        }
-                    
-                    TextField("Geohash", text: $currentGeohash, onEditingChanged: { isEditing in
-                        if !isEditing {
-                            updateFromGeohash()
-                        }
-                    })
-                }
+            #if os(macOS)
+            VStack(spacing: 0) {
+                map
+                Divider()
+                form
             }
             .navigationTitle("Location")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #elseif os(macOS)
-            .formStyle(.grouped)
-            .toggleStyle(.checkbox)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Apply") {
-                        Task {
-                            await locationController.shared.updateGeohash(currentGeohash)
-                            onApply()
-                        }
-                    }
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(currentGeohash.isEmpty)
-                }
-                 
-                #if os(macOS)
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        onCancel()
-                    }
-                    .keyboardShortcut(.cancelAction)
-                }
+            .toolbar { toolbarContent }
+            .task { await loadCurrentLocation() }
+            #else
+            form
+                .navigationTitle("Location")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
                 #endif
+                .toolbar { toolbarContent }
+                .task { await loadCurrentLocation() }
+            #endif
+        }
+    }
+
+    private var map: some View {
+        MapReader { proxy in
+            Map(position: $cameraPosition) {
+                if let coordinate = selectedCoordinate {
+                    Marker(selectedPlaceName ?? "Selected Location", coordinate: coordinate)
+                }
             }
-            .task {
-                if let geohash = await locationController.shared.currentGeohash {
-                    currentGeohash = geohash
-                    if let coords = geohashEncoder.decode(geohash) {
-                        let coord2d = CLLocationCoordinate2D(latitude: coords.latitude, longitude: coords.longitude)
-                        selectedCoordinate = coord2d
-                        cameraPosition = .region(MKCoordinateRegion(center: coord2d, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
-                        latitudeString = String(format: "%.6f", coords.latitude)
-                        longitudeString = String(format: "%.6f", coords.longitude)
-                    }
+            #if os(macOS)
+            .frame(height: 220)
+            #else
+            .frame(height: 250)
+            #endif
+            .onTapGesture { position in
+                if let coordinate = proxy.convert(position, from: .local) {
+                    selectedPlaceName = nil
+                    selectedCoordinate = coordinate
+                    currentGeohash = geohashEncoder.encode(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                    latitudeString = String(format: "%.6f", coordinate.latitude)
+                    longitudeString = String(format: "%.6f", coordinate.longitude)
                 }
             }
         }
     }
-    
+
+    private var form: some View {
+        Form {
+            searchSection
+
+            #if !os(macOS)
+            Section("Select Location on Map") {
+                map
+                    .listRowInsets(EdgeInsets())
+            }
+            #endif
+                
+            Button("Use Current Location") {
+                Task {
+                    if let location = try? await locationManager.getCurrentLocation() {
+                        latitudeString = String(location.coordinate.latitude)
+                        longitudeString = String(location.coordinate.longitude)
+                        updateFromCoordinates()
+                    }
+                }
+
+            }
+                
+            Section("Preset Locations") {
+                Button("San Francisco, CA") {
+                    latitudeString = "37.7749"
+                    longitudeString = "-122.4194"
+                    updateFromCoordinates()
+                }
+                Button("London, UK") {
+                    latitudeString = "51.5074"
+                    longitudeString = "-0.1278"
+                    updateFromCoordinates()
+                }
+            }
+                
+            Section("Manual Input") {
+                TextField("Latitude", text: $latitudeString)
+                    #if os(iOS)
+                    .keyboardType(.numbersAndPunctuation)
+                    #endif
+                    .onChange(of: latitudeString) {
+                        updateFromCoordinates()
+                    }
+                    
+                TextField("Longitude", text: $longitudeString)
+                    #if os(iOS)
+                    .keyboardType(.numbersAndPunctuation)
+                    #endif
+                    .onChange(of: longitudeString) {
+                        updateFromCoordinates()
+                    }
+                    
+                TextField("Geohash", text: $currentGeohash, onEditingChanged: { isEditing in
+                    if !isEditing {
+                        updateFromGeohash()
+                    }
+                })
+            }
+        }
+        #if os(macOS)
+        .formStyle(.grouped)
+        .toggleStyle(.checkbox)
+        #endif
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button("Apply") {
+                Task {
+                    await locationController.shared.updateGeohash(currentGeohash)
+                    onApply()
+                }
+            }
+            .keyboardShortcut(.defaultAction)
+            .disabled(currentGeohash.isEmpty)
+        }
+
+        #if os(macOS)
+        ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel") {
+                onCancel()
+            }
+            .keyboardShortcut(.cancelAction)
+        }
+        #endif
+    }
+
+    private func loadCurrentLocation() async {
+        if let geohash = await locationController.shared.currentGeohash {
+            currentGeohash = geohash
+            if let coords = geohashEncoder.decode(geohash) {
+                let coord2d = CLLocationCoordinate2D(latitude: coords.latitude, longitude: coords.longitude)
+                selectedCoordinate = coord2d
+                cameraPosition = .region(MKCoordinateRegion(center: coord2d, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
+                latitudeString = String(format: "%.6f", coords.latitude)
+                longitudeString = String(format: "%.6f", coords.longitude)
+            }
+        }
+    }
+
     private var searchSection: some View {
         Section("Search") {
             HStack {
