@@ -235,6 +235,17 @@ public extension endpoint {
         return sendMessage(targetProfileId: targetProfileId, type: .audio, body: ["mediaId": mediaId])
     }
 
+    static func sendImageMessage(targetProfileId: Int, mediaId: Int64, expiring: Bool) -> endpoint<chatMessage> {
+        if expiring {
+            return sendMessage(targetProfileId: targetProfileId, type: .expiringImage, body: ["mediaId": mediaId, "expiring": true])
+        }
+        return sendMessage(targetProfileId: targetProfileId, type: .image, body: ["mediaId": mediaId])
+    }
+
+    static func sendVideoMessage(targetProfileId: Int, mediaId: Int64, looping: Bool = false) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .video, body: ["mediaId": mediaId, "looping": looping])
+    }
+
     static func sendMessage(targetProfileId: Int, type: messageType, body: [String: Any]) -> endpoint<chatMessage> {
         return endpoint<chatMessage>(
             path: "/v4/chat/message/send",

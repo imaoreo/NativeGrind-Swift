@@ -12,6 +12,8 @@ struct chatComposerActions {
     var send: () -> Void
     var cancelReply: () -> Void
     var sendLocation: () -> Void
+    var pickMedia: (() -> Void)?
+    var chooseFile: (() -> Void)?
     var startRecording: (() -> Void)?
     var cancelRecording: () -> Void
     var finishRecording: () -> Void
@@ -85,6 +87,16 @@ struct chatComposer: View {
     private var inputRow: some View {
         HStack(alignment: .bottom, spacing: 8) {
             Menu {
+                if let pickMedia = actions.pickMedia {
+                    Button(action: pickMedia) {
+                        Label("Photo or Video", systemImage: "photo.on.rectangle")
+                    }
+                }
+                if let chooseFile = actions.chooseFile {
+                    Button(action: chooseFile) {
+                        Label("Choose File…", systemImage: "folder")
+                    }
+                }
                 Button(action: actions.sendLocation) {
                     Label("Send Location", systemImage: "location.fill")
                 }

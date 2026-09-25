@@ -254,6 +254,26 @@ final class chatStore {
         }
     }
 
+    func sendMedia(_ media: chatOutgoingMedia, viewOnce: Bool) async {
+        guard !isSending else { return }
+        isSending = true
+        defer {
+            isSending = false
+            media.removeTemporaryFile()
+        }
+
+        let sent: chatMessage?
+        switch media.kind {
+        case .photo:
+            sent = await conversationController.shared.sendImage(media.data, contentType: media.contentType, expiring: viewOnce, to: otherProfileId)
+        case .video(_, let lengthMs):
+            sent = await conversationController.shared.sendVideo(media.data, contentType: media.contentType, lengthMs: lengthMs, to: otherProfileId)
+        }
+        if let sent {
+            merge([sent])
+        }
+    }
+
     func setTyping(_ typing: Bool) async {
         await conversationController.shared.setTyping(conversationId: conversationId, typing ? .typing : .cleared)
     }

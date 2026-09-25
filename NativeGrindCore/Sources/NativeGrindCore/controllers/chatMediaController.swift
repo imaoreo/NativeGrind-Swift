@@ -56,6 +56,12 @@ public actor chatMediaController {
         return await download.value
     }
 
+    public func keep(_ data: Data, key: String, isVideo: Bool) async {
+        guard Self.isValidHash(key) else { return }
+        save(data, to: localURL(for: key, fileExtension: isVideo ? "mp4" : nil))
+        Task { await self.backUp(hash: key, data: data) }
+    }
+
     private func fetch(hash: String, from url: URL?, to file: URL?) async -> Data? {
         if let url, let data = await download(url) {
             save(data, to: file)

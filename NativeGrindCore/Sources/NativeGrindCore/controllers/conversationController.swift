@@ -81,6 +81,29 @@ public actor conversationController {
         return await run(.sendAudioMessage(targetProfileId: profileId, mediaId: upload.mediaId), "send audio")
     }
 
+    public func sendImage(_ data: Data, contentType: String, expiring: Bool, to profileId: Int) async -> chatMessage? {
+        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType) else {
+            return nil
+        }
+        let sent = await run(.sendImageMessage(targetProfileId: profileId, mediaId: upload.mediaId, expiring: expiring), "send photo")
+        await keepSentMedia(data, message: sent, isVideo: false)
+        return sent
+    }
+
+    public func sendVideo(_ data: Data, contentType: String, lengthMs: Int64, to profileId: Int) async -> chatMessage? {
+        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType, lengthMs: lengthMs) else {
+            return nil
+        }
+        let sent = await run(.sendVideoMessage(targetProfileId: profileId, mediaId: upload.mediaId), "send video")
+        await keepSentMedia(data, message: sent, isVideo: true)
+        return sent
+    }
+
+    private func keepSentMedia(_ data: Data, message: chatMessage?, isVideo: Bool) async {
+        guard let key = message?.mediaCacheKey else { return }
+        await chatMediaController.shared.keep(data, key: key, isVideo: isVideo)
+    }
+
     public func sendReply(_ text: String, to profileId: Int, replyingTo messageId: String) async -> chatMessage? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }

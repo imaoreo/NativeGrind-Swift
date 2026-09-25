@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import PhotosUI
 import NativeGrindCore
 
 enum chatPresentation {
     case pushed // inside the inbox navigation stack on iPhone
     case sheet // opened from a profile, has its own header
     case split // detail pane of the inbox split view on macOS / iPad landscape
+}
+
+enum chatViewSheet: Identifiable {
+    case sendMedia(chatOutgoingMedia)
+
+    var id: String {
+        switch self {
+        case .sendMedia(let media): "media-\(media.id)"
+        }
+    }
 }
 
 struct chatView: View {
@@ -26,6 +37,13 @@ struct chatView: View {
     @State private var viewingPhoto: chatMessage? = nil
     @State private var openedAlbum: albumTarget? = nil
     @State private var viewingVideo: chatMessage? = nil
+    @State private var activeSheet: chatViewSheet? = nil
+    @State private var isPreparingMedia = false
+    #if !os(tvOS)
+    @State private var showMediaPicker = false
+    @State private var pickedItem: PhotosPickerItem? = nil
+    @State private var showFileImporter = false
+    #endif
     #if !os(tvOS)
     @State private var recorder = chatAudioRecorder()
     #endif
@@ -64,7 +82,7 @@ struct chatView: View {
             chatMessageList(store: store, canReply: canReply, otherName: displayName)
             chatComposer(
                 draft: $draft,
-                isSending: store.isSending,
+                isSending: store.isSending || isPreparingMedia,
                 replyingTo: store.replyingTo,
                 recordingStartedAt: recordingStartedAt,
                 actions: composerActions
@@ -94,6 +112,26 @@ struct chatView: View {
         } message: {
             Text("They'll see a pin where you are right now.")
         }
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .sendMedia(let media):
+                chatMediaSendSheet(media: media) { viewOnce in
+                    Task { await store.sendMedia(media, viewOnce: viewOnce) }
+                }
+            }
+        }
+        #if !os(tvOS)
+        .photosPicker(isPresented: $showMediaPicker, selection: $pickedItem, matching: .any(of: [.images, .videos]))
+        .onChange(of: pickedItem) { _, item in
+            guard let item else { return }
+            pickedItem = nil
+            Task { await prepare(item) }
+        }
+        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.image, .movie]) { result in
+            guard case .success(let file) = result else { return }
+            Task { await prepare(file) }
+        }
+        #endif
         .sheetWithToast(item: $showProfile) { item in
             profileDetailView(profileId: item.id, allowsMessaging: false)
         }
@@ -177,6 +215,28 @@ struct chatView: View {
         }
     }
 
+    #if !os(tvOS)
+    private func prepare(_ item: PhotosPickerItem) async {
+        isPreparingMedia = true
+        defer { isPreparingMedia = false }
+        present(await chatOutgoingMedia.load(from: item))
+    }
+
+    private func prepare(_ file: URL) async {
+        isPreparingMedia = true
+        defer { isPreparingMedia = false }
+        present(await chatOutgoingMedia.loadPicked(file: file))
+    }
+
+    private func present(_ media: chatOutgoingMedia?) {
+        guard let media else {
+            toastManager.shared.show(style: .error, header: "Media", message: "Couldn't read that photo or video")
+            return
+        }
+        activeSheet = .sendMedia(media)
+    }
+    #endif
+
     private func showOtherProfile() {
         showProfile = identifiableId(id: String(store.otherProfileId))
     }
@@ -200,12 +260,16 @@ struct chatView: View {
             },
             cancelReply: store.cancelReply,
             sendLocation: { confirmSendLocation = true },
+            pickMedia: nil,
+            chooseFile: nil,
             startRecording: nil,
             cancelRecording: {},
             finishRecording: {}
         )
 
         #if !os(tvOS)
+        actions.pickMedia = { showMediaPicker = true }
+        actions.chooseFile = { showFileImporter = true }
         actions.startRecording = {
             Task { await recorder.start() }
         }
