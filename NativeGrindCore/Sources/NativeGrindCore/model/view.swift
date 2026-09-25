@@ -45,9 +45,9 @@ public struct profileViewsResponseV7: Decodable, Sendable, Identifiable {
     public let showAge: Bool
     public let distance: Double?
     public let showDistance: Bool
-    public let lastViewed: Int64? // ms
-    public let seen: Int64? // ms
-    public let onlineUntil: Int64? // ms
+    public let lastViewed: Int64?
+    public let seen: Int64?
+    public let onlineUntil: Int64?
     public let isFavorite: Bool
     public let isNew: Bool
     public let isSecretAdmirer: Bool
@@ -68,10 +68,10 @@ public struct profileViewsResponseV7: Decodable, Sendable, Identifiable {
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        profileId = try c.decode(flexibleId.self, forKey: .profileId).value // can be a number or a string
+        profileId = try c.decode(flexibleId.self, forKey: .profileId).value
         displayName = c.lenient(.displayName)
         profileImageMediaHash = c.lenient(.profileImageMediaHash)
-        age = c.lenient(.age).flatMap { $0 > 0 ? $0 : nil } // 0 means hidden
+        age = c.lenient(.age).flatMap { $0 > 0 ? $0 : nil }
         showAge = c.lenient(.showAge) ?? false
         distance = c.lenient(.distance)
         showDistance = c.lenient(.showDistance) ?? false

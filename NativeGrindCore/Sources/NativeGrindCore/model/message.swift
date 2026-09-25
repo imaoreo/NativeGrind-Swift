@@ -157,7 +157,6 @@ public enum typingStatus: String, Codable, Sendable {
     case sent = "Sent"
 }
 
-// Profile ids come through as either strings or numbers depending on the event
 public struct flexibleId: Codable, Sendable, Equatable {
     public let value: String
 
