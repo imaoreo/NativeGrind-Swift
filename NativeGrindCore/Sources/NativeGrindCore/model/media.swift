@@ -13,13 +13,12 @@ public struct mediaUploadResponse: Codable, Sendable {
     public let mediaHash: String?
 }
 
-// expiresAt is left out on purpose, the docs say ISO-8601 but it isn't needed and may not be a string
 public struct deviceKeyChallengeResponse: Codable, Sendable {
     public let challenge: String
 }
 
 public struct registerDeviceKeyResponse: Codable, Sendable {
-    public let keyId: String? // echoed back, may be missing or the body may be empty
+    public let keyId: String?
 }
 
 struct uploadSigningErrorResponse: Decodable {
