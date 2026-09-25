@@ -47,7 +47,7 @@ struct albumView: View {
         .frame(minWidth: 560, idealWidth: 760, minHeight: 520, idealHeight: 720)
         .task { await load() }
         .sheet(item: $selectedItem) { item in
-            albumItemViewer(item: item, albumId: target.albumId)
+            albumItemViewer(items: snapshot?.items ?? [item], startId: item.id)
         }
         #else
         NavigationStack {
@@ -64,7 +64,7 @@ struct albumView: View {
         }
         .task { await load() }
         .fullScreenCover(item: $selectedItem) { item in
-            albumItemViewer(item: item, albumId: target.albumId)
+            albumItemViewer(items: snapshot?.items ?? [item], startId: item.id)
         }
         #endif
     }
