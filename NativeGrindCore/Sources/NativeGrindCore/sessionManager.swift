@@ -258,6 +258,7 @@ public final class sessionManager: ObservableObject {
     
     public func logout(isSwitching: Bool = false) async {
         let currentData = keychain.getToken(type: .data)
+        let currentProfileId = profileId
         
         if !isSwitching, let data = currentData {
             await accountController.shared.removeAccount(sessionId: data)
@@ -268,8 +269,9 @@ public final class sessionManager: ObservableObject {
         keychain.deleteToken(type: .isEmail)
         keychain.deleteToken(type: .data)
         keychain.deleteToken(type: .profileId)
-        keychain.deleteToken(type: .uploadSigningKey)
-        keychain.deleteToken(type: .uploadSigningKeyId)
+        if !isSwitching, let profileId = currentProfileId {
+            await mediaUploadController.shared.forgetKey(profileId: profileId)
+        }
 
         await conversationCache.shared.clearAll()
         await localStore.shared.clearSyncCursors()

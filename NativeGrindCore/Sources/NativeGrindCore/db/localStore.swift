@@ -13,6 +13,7 @@ public enum storeCollection: String, Codable, Sendable, CaseIterable {
     case conversations
     case grindrAccounts
     case deviceLocation
+    case uploadSigningKeys
 }
 
 public struct storeChange: Codable, Sendable, Hashable {

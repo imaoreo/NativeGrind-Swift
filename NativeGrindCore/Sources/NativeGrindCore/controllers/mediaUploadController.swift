@@ -12,6 +12,7 @@ public actor mediaUploadController {
     public static let shared = mediaUploadController()
 
     private var clockOffsetMs: Int64 = 0
+    private var checkedSyncForKey = Set<String>()
 
     private static let maxAttempts = 3
 
@@ -69,7 +70,7 @@ public actor mediaUploadController {
             let isKeyProblem = response.statusCode == 403 || errorType.contains("key") || errorType.contains("signature") || detail.contains("key") || detail.contains("signature")
             if isKeyProblem && !hasReregistered {
                 hasReregistered = true
-                resetKey()
+                await resetKey(profileId: identity.userId)
                 continue
             }
 
@@ -116,11 +117,18 @@ public actor mediaUploadController {
         }
 
         let userId = String(profileId)
-        let key = loadOrCreateKey()
+
+        if storedKeys()[userId] == nil, !checkedSyncForKey.contains(userId) {
+            checkedSyncForKey.insert(userId)
+            await syncController.shared.syncNow()
+        }
+
+        let stored = loadOrCreateKey(profileId: userId)
+        let key = stored.key
         let publicKey = key.publicKey.derRepresentation.base64URLEncoded // SPKI DER
         let keyId = Data(SHA256.hash(data: key.publicKey.derRepresentation)).base64URLEncoded
 
-        if keychainManager.shared.getToken(type: .uploadSigningKeyId) == keyId {
+        if stored.keyId == keyId {
             return identity(key: key, keyId: keyId, userId: userId, androidId: androidId)
         }
 
@@ -148,7 +156,7 @@ public actor mediaUploadController {
             await errorManager.shared.warn("mediaUploadController", "Server echoed a different keyId: \(acceptedKeyId)")
         }
 
-        keychainManager.shared.saveToken(acceptedKeyId, type: .uploadSigningKeyId)
+        await save(storedSigningKey(key: key, keyId: acceptedKeyId), profileId: userId)
         return identity(key: key, keyId: acceptedKeyId, userId: userId, androidId: androidId)
     }
 
@@ -177,21 +185,67 @@ public actor mediaUploadController {
         return nil
     }
 
-    private func loadOrCreateKey() -> P256.Signing.PrivateKey {
-        if let stored = keychainManager.shared.getData(type: .uploadSigningKey),
-           let key = try? P256.Signing.PrivateKey(rawRepresentation: stored) {
-            return key
+    private struct storedSigningKey: Codable {
+        let privateKey: Data 
+        let keyId: String?
+        init(key: P256.Signing.PrivateKey, keyId: String?) {
+            self.privateKey = key.rawRepresentation
+            self.keyId = keyId
         }
 
-        let key = P256.Signing.PrivateKey()
-        _ = keychainManager.shared.saveData(key.rawRepresentation, type: .uploadSigningKey)
-        keychainManager.shared.deleteToken(type: .uploadSigningKeyId)
-        return key
+        var key: P256.Signing.PrivateKey? {
+            try? P256.Signing.PrivateKey(rawRepresentation: privateKey)
+        }
     }
 
-    private func resetKey() {
-        keychainManager.shared.deleteToken(type: .uploadSigningKey)
-        keychainManager.shared.deleteToken(type: .uploadSigningKeyId)
+    private func storedKeys() -> [String: storedSigningKey] {
+        guard let json = keychainManager.shared.getToken(type: .uploadSigningKeys),
+              let keys = try? JSONDecoder().decode([String: storedSigningKey].self, from: Data(json.utf8)) else {
+            return [:]
+        }
+        return keys
+    }
+
+    private func saveKeys(_ keys: [String: storedSigningKey]) {
+        guard let data = try? JSONEncoder().encode(keys) else { return }
+        keychainManager.shared.saveToken(String(decoding: data, as: UTF8.self), type: .uploadSigningKeys)
+    }
+
+    private func loadOrCreateKey(profileId: String) -> (key: P256.Signing.PrivateKey, keyId: String?) {
+        if let stored = storedKeys()[profileId], let key = stored.key {
+            return (key, stored.keyId)
+        }
+
+        return (P256.Signing.PrivateKey(), nil)
+    }
+
+    private func save(_ stored: storedSigningKey?, profileId: String, sync: Bool = true) async {
+        var keys = storedKeys()
+        keys[profileId] = stored
+        saveKeys(keys)
+
+        guard sync else { return }
+        await localStore.shared.noteChange(collection: .uploadSigningKeys, key: profileId, kind: stored == nil ? .delete : .upsert)
+        Task { await syncController.shared.syncNow() }
+    }
+
+    private func resetKey(profileId: String) async {
+        await save(nil, profileId: profileId)
+    }
+
+    public func forgetKey(profileId: Int) async {
+        await save(nil, profileId: String(profileId), sync: false)
+    }
+
+    func exportForSync(profileId: String) -> Data? {
+        guard let stored = storedKeys()[profileId], stored.keyId != nil else { return nil }
+        return try? JSONEncoder().encode(stored)
+    }
+
+    func importFromSync(profileId: String, value: Data?) async {
+        let stored = value.flatMap { try? JSONDecoder().decode(storedSigningKey.self, from: $0) }
+        guard value == nil || stored?.key != nil else { return }
+        await save(stored, profileId: profileId, sync: false)
     }
 
     private func syncClock(serverTime: String?) {

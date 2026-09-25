@@ -79,6 +79,19 @@ struct deviceLocationSyncSource: syncSource {
     }
 }
 
+struct uploadSigningKeySyncSource: syncSource {
+    let collection = storeCollection.uploadSigningKeys
+    let scope = syncScope.profile
+
+    func exportRecord(key: String) async -> Data? {
+        await mediaUploadController.shared.exportForSync(profileId: key)
+    }
+
+    func importRecord(key: String, value: Data?, changedAt: Date) async {
+        await mediaUploadController.shared.importFromSync(profileId: key, value: value)
+    }
+}
+
 struct profileSyncSource: syncSource {
     let collection = storeCollection.profiles
     let scope = syncScope.profile

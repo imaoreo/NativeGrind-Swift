@@ -23,6 +23,7 @@ public actor syncController {
         conversationSyncSource(),
         grindrAccountSyncSource(),
         deviceLocationSyncSource(),
+        uploadSigningKeySyncSource(),
         profileSyncSource(),
         profileHistorySyncSource()
     ] as [any syncSource]).map { ($0.collection, $0) })
