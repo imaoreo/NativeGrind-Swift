@@ -107,7 +107,7 @@ struct chatVideoBubble: View {
         return await chatMediaController.shared.localVideo(key: key)
     }
 
-    private static func firstFrame(of file: URL) async -> Image? {
+    static func firstFrame(of file: URL) async -> Image? {
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: file))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 600, height: 600)
