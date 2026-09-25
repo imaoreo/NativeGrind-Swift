@@ -35,7 +35,7 @@ public actor chatMediaController {
         return await fetch(hash: hash, from: url, to: localURL(for: hash))
     }
 
-    private func localVideo(key: String) -> URL? {
+    public func localVideo(key: String) -> URL? {
         guard let file = localURL(for: key, fileExtension: "mp4"),
               FileManager.default.fileExists(atPath: file.path) else { return nil }
         return file
@@ -156,6 +156,18 @@ public actor chatMediaController {
 }
 
 public extension chatMessage {
+    static let unlimitedViews = Int(Int32.max)
+
+    var isVideo: Bool {
+        type == .video || type == .privateVideo || type == .nonExpiringVideo
+    }
+
+    /// A video that can only be watched a set number of times, so it must never be downloaded without asking
+    var isViewLimitedVideo: Bool {
+        guard isVideo, let maxViews = body?.maxViews else { return false }
+        return maxViews < Self.unlimitedViews
+    }
+
     var mediaCacheKey: String? {
         if let hash = body?.imageHash ?? body?.mediaHash, chatMediaController.isValidHash(hash) {
             return hash

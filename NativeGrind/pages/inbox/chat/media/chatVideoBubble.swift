@@ -22,6 +22,14 @@ struct chatVideoBubble: View {
     @Environment(\.loadChatVideo) private var loadVideo
 
     @State private var thumbnail: Image? = nil
+    @State private var isSaved = false
+    @State private var confirmViewOnce = false
+
+    private var isLimited: Bool { message.isViewLimitedVideo }
+
+    private var isUsedUp: Bool {
+        isLimited && !isSaved && (message.body?.viewsRemaining ?? 1) <= 0
+    }
 
     private var duration: String? {
         guard let length = message.body?.length, length > 0 else { return nil }
@@ -39,15 +47,27 @@ struct chatVideoBubble: View {
                     .aspectRatio(contentMode: .fill)
             }
 
-            Image(systemName: "play.circle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(.white, .black.opacity(0.4))
+            if isUsedUp {
+                VStack(spacing: 4) {
+                    Image(systemName: "eye.slash")
+                        .font(.title2)
+                    Text("Video Expired")
+                        .font(.caption.weight(.semibold))
+                }
+                .foregroundColor(.white.opacity(0.8))
+            } else {
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.white, .black.opacity(0.4))
+            }
         }
         .frame(width: size.width, height: size.height)
         .overlay(alignment: .bottomLeading) {
             HStack(spacing: 4) {
-                Image(systemName: message.type == .privateVideo ? "eye" : "video.fill")
-                if let duration {
+                Image(systemName: isLimited || message.type == .privateVideo ? "eye" : "video.fill")
+                if isLimited && !isSaved {
+                    Text(message.body?.maxViews == 1 ? "View Once" : "Limited Views")
+                } else if let duration {
                     Text(duration).monospacedDigit()
                 }
             }
@@ -60,11 +80,31 @@ struct chatVideoBubble: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .contentShape(RoundedRectangle(cornerRadius: 10))
-        .onTapGesture { openVideo(message) }
+        .onTapGesture {
+            if isUsedUp { return }
+            if isLimited && !isSaved {
+                confirmViewOnce = true
+            } else {
+                openVideo(message)
+            }
+        }
+        .confirmationDialog("Watch this video?", isPresented: $confirmViewOnce, titleVisibility: .visible) {
+            Button("Watch Video") { openVideo(message) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("It can only be watched a limited number of times. Once it opens it's saved on this device.")
+        }
         .task(id: message.id) {
-            guard thumbnail == nil, let file = await loadVideo(message), file.isFileURL else { return }
+            guard thumbnail == nil, let file = await savedOrLoadedVideo(), file.isFileURL else { return }
+            isSaved = true
             thumbnail = await Self.firstFrame(of: file)
         }
+    }
+
+    private func savedOrLoadedVideo() async -> URL? {
+        guard isLimited else { return await loadVideo(message) }
+        guard let key = message.mediaCacheKey else { return nil }
+        return await chatMediaController.shared.localVideo(key: key)
     }
 
     private static func firstFrame(of file: URL) async -> Image? {

@@ -86,6 +86,7 @@ public struct messageBody: Codable, Sendable {
     public let height: Int?
     public let takenOnGrindr: Bool?
     public let viewsRemaining: Double?
+    public let maxViews: Int?
     public let contentType: String?
     public let length: Double? // ms for audio
     public let expiresAt: Int64?
@@ -129,6 +130,7 @@ public struct messageBody: Codable, Sendable {
         height = c.lenient(.height)
         takenOnGrindr = c.lenient(.takenOnGrindr)
         viewsRemaining = c.lenient(.viewsRemaining)
+        maxViews = c.lenient(.maxViews)
         contentType = c.lenient(.contentType)
         length = c.lenient(.length)
         expiresAt = c.lenient(.expiresAt)

@@ -96,6 +96,22 @@ struct chatCacheTests {
         #expect(chatMediaController.isValidHash(hash) == isValid)
     }
 
+    @Test("Videos Grindr limits to a number of views are recognised")
+    func viewLimitedVideos() throws {
+        func video(_ body: String) throws -> chatMessage {
+            try JSONDecoder().decode(chatMessage.self, from: Data("""
+            { "messageId": "1:a", "conversationId": "1:2", "senderId": 1, "timestamp": 1, "type": "Video", "body": \(body) }
+            """.utf8))
+        }
+
+        let usedUp = try video(#"{ "mediaId": null, "url": null, "contentType": null, "length": 0, "viewsRemaining": 0, "expiresAt": null, "maxViews": 1, "looping": false }"#)
+        #expect(usedUp.isViewLimitedVideo)
+        #expect(usedUp.body?.viewsRemaining == 0)
+
+        #expect(try video(#"{ "mediaId": 5, "maxViews": 2147483647, "looping": false }"#).isViewLimitedVideo == false)
+        #expect(try video(#"{ "mediaId": 5 }"#).isViewLimitedVideo == false)
+    }
+
     @Test("Photos are cached by imageHash, falling back to the media id when there's no hash")
     func testPhotoCacheKey() throws {
         func message(_ body: String) throws -> chatMessage {

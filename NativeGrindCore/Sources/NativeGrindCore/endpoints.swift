@@ -242,8 +242,9 @@ public extension endpoint {
         return sendMessage(targetProfileId: targetProfileId, type: .image, body: ["mediaId": mediaId])
     }
 
-    static func sendVideoMessage(targetProfileId: Int, mediaId: Int64, looping: Bool = false) -> endpoint<chatMessage> {
-        return sendMessage(targetProfileId: targetProfileId, type: .video, body: ["mediaId": mediaId, "looping": looping])
+    // Grindr makes a video view once if maxViews is left out
+    static func sendVideoMessage(targetProfileId: Int, mediaId: Int64, looping: Bool = false, maxViews: Int = chatMessage.unlimitedViews) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .video, body: ["mediaId": mediaId, "looping": looping, "maxViews": maxViews])
     }
 
     static func sendMessage(targetProfileId: Int, type: messageType, body: [String: Any]) -> endpoint<chatMessage> {
