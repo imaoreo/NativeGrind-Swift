@@ -38,6 +38,14 @@ final class chatStore {
         self.otherProfileId = otherProfileId
     }
 
+    private static let sharedMediaTypes: Set<messageType> = [.image, .expiringImage, .video, .privateVideo, .nonExpiringVideo]
+
+    var sharedMedia: [chatMessage] {
+        messages
+            .filter { $0.unsent != true && Self.sharedMediaTypes.contains($0.type) }
+            .reversed()
+    }
+
     func isMine(_ message: chatMessage) -> Bool {
         message.senderId != otherProfileId
     }

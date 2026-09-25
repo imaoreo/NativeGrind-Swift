@@ -18,11 +18,13 @@ enum chatPresentation {
 enum chatViewSheet: Identifiable {
     case sendMedia(chatOutgoingMedia)
     case drawer
+    case sharedMedia
 
     var id: String {
         switch self {
         case .sendMedia(let media): "media-\(media.id)"
         case .drawer: "drawer"
+        case .sharedMedia: "sharedMedia"
         }
     }
 }
@@ -98,6 +100,16 @@ struct chatView: View {
         .toolbar(presentation == .pushed ? .hidden : .automatic, for: .tabBar)
         #endif
         .toolbar {
+            if !store.sharedMedia.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        activeSheet = .sharedMedia
+                    } label: {
+                        Image(systemName: "photo.on.rectangle")
+                    }
+                    .help("Shared Media")
+                }
+            }
             if presentation != .sheet {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: showOtherProfile) {
@@ -122,6 +134,8 @@ struct chatView: View {
                 }
             case .drawer:
                 chatMediaDrawer(store: store)
+            case .sharedMedia:
+                chatSharedMedia(store: store)
             }
         }
         #if !os(tvOS)
