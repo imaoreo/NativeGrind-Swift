@@ -85,7 +85,11 @@ struct profileDetailView: View {
             await fetchFullProfile()
         }
         .task(id: profileId) {
-            sharedAlbums = await albumController.shared.sharedAlbums(profileId: profileId)
+            let requestedId = profileId
+            sharedAlbums = []
+            let albums = await albumController.shared.sharedAlbums(profileId: requestedId)
+            guard !Task.isCancelled, requestedId == profileId else { return }
+            sharedAlbums = albums
         }
         .sheet(item: $openedAlbum) { target in
             albumView(target: target)
@@ -442,22 +446,24 @@ struct profileDetailView: View {
     }
     
     private func fetchFullProfile() async {
+        let requestedId = profileId
+        func isStale() -> Bool { Task.isCancelled || requestedId != profileId }
+
         isLoading = true
         self.fullProfile = nil
         self.heroImage = nil
-        
-        if let profile = await profileController.shared.fetchProfile(profileId: profileId) {
-            self.fullProfile = profile
-            
-            if let profileImage = profile.profileImageMediaHash {
-                if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: profileImage),
-                   let platformImage = PlatformImage(data: data) {
-                    
-                    self.heroImage = Image(platformImage: platformImage)
-                }
-            }
+
+        let profile = await profileController.shared.fetchProfile(profileId: requestedId)
+        guard !isStale() else { return }
+        self.fullProfile = profile
+
+        if let profileImage = profile?.profileImageMediaHash,
+           let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: profileImage),
+           let platformImage = PlatformImage(data: data) {
+            guard !isStale() else { return }
+            self.heroImage = Image(platformImage: platformImage)
         }
-        
+
         isLoading = false
     }
     
