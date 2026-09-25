@@ -13,6 +13,7 @@ struct profileDetailView: View {
     @State private var chatTarget: chatSheetTarget? = nil
     @State private var sharedAlbums: [albumSummary] = []
     @State private var openedAlbum: albumTarget? = nil
+    @State private var viewingPhotos: profilePhotoGallery? = nil
     
     @State private var fullProfile: profile? = nil
     @State private var isLoading = true
@@ -94,6 +95,15 @@ struct profileDetailView: View {
         .sheet(item: $openedAlbum) { target in
             albumView(target: target)
         }
+        #if os(macOS)
+        .sheet(item: $viewingPhotos) { gallery in
+            profilePhotoViewer(gallery: gallery)
+        }
+        #else
+        .fullScreenCover(item: $viewingPhotos) { gallery in
+            profilePhotoViewer(gallery: gallery)
+        }
+        #endif
         .sheetWithToast(item: $chatTarget) { target in
             chatSheet(target: target)
         }
@@ -137,6 +147,11 @@ struct profileDetailView: View {
                         .scaledToFill()
                         .frame(maxHeight: 400)
                         .clipped()
+                        .contentShape(Rectangle())
+                        .onTapGesture { openPhotos(at: 0) }
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityLabel("Profile photo")
+                        .accessibilityHint("Opens all photos")
                 } else {
                     Rectangle()
                         .fill(Color.gray.opacity(0.15))
@@ -155,6 +170,7 @@ struct profileDetailView: View {
                     endPoint: .bottom
                 )
                 .frame(height: 400)
+                .allowsHitTesting(false)
                  
                 // Text Info
                 VStack(alignment: .leading, spacing: 6) {
@@ -182,6 +198,19 @@ struct profileDetailView: View {
                     }
                 }
                 .padding()
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if let count = fullProfile?.photoHashes.count, count > 1 {
+                    Label("\(count)", systemImage: "photo.stack")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.black.opacity(0.45), in: Capsule())
+                        .padding()
+                        .allowsHitTesting(false)
+                        .accessibilityLabel("\(count) photos")
+                }
             }
             .overlay(alignment: .top) {
                 HStack {
@@ -241,6 +270,11 @@ struct profileDetailView: View {
                 .padding(.top, 16)
             }
         }
+
+    private func openPhotos(at index: Int) {
+        guard let hashes = fullProfile?.photoHashes, !hashes.isEmpty else { return }
+        viewingPhotos = profilePhotoGallery(hashes: hashes, startIndex: index)
+    }
 
     @ViewBuilder
     private var albumsSection: some View {

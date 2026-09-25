@@ -112,6 +112,16 @@ public struct socialNetwork: Codable, Sendable {
     public let site: String?
 }
 
+public extension profile {
+    var photoHashes: [String] {
+        var hashes: [String] = []
+        for hash in [profileImageMediaHash].compactMap({ $0 }) + medias.map(\.mediaHash) where !hash.isEmpty && !hashes.contains(hash) {
+            hashes.append(hash)
+        }
+        return hashes
+    }
+}
+
 public struct profileMedia: Codable, Sendable {
     public let mediaHash: String
     public let type: Int
