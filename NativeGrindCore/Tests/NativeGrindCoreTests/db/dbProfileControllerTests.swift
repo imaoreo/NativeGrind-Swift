@@ -6,7 +6,6 @@
 //
 
 import Testing
-import SwiftData
 import Foundation
 @testable import NativeGrindCore
 
@@ -15,12 +14,8 @@ struct dbProfileControllerTests {
     
     // make a TestController
     private func makeTestController() throws -> dbProfileController {
-        let schema = Schema([dbProfile.self, dbProfileDiff.self])
-        
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        
-        let container = try ModelContainer(for: schema, configurations: [config])
-        return dbProfileController(modelContainer: container)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("profileStoreTests-\(UUID().uuidString)", isDirectory: true)
+        return dbProfileController(store: localStore(root: root))
     }
 
     @Test("Verifies fetching a non-existent profile returns nil safely")

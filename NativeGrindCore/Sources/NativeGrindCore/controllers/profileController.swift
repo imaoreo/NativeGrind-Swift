@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 public enum profileSource {
     case profile(profile)
@@ -17,13 +16,7 @@ public actor profileController {
     private var missingMediaHashesOnServer = Set<String>()
     
     private init() {
-        do {
-            let config = ModelConfiguration("profile", isStoredInMemoryOnly: appEnvironment.isTesting)
-            let container = try ModelContainer(for: dbProfile.self, dbProfileDiff.self, configurations: config)
-            self.dbController = dbProfileController(modelContainer: container)
-        } catch {
-            fatalError("Container failed: \(error)")
-        }
+        self.dbController = dbProfileController()
     }
     
     public func proactiveSyncMissingMedias(_ hashes: [String]) async {
@@ -46,6 +39,8 @@ public actor profileController {
             if await wsController.shared.isServerAuthorized {
                 let geohash = await locationController.shared.currentGeohash
                 await wsController.shared.send(request: .syncSeenProfile(profile: profile, geohash: geohash))
+                await localStore.shared.markSynced(collection: .profiles, key: profileId)
+                await localStore.shared.markSynced(collection: .profileHistory, key: profileId)
             }
         } catch {
             let isNetworkError = (error as? requestError) == .networkError
@@ -150,10 +145,14 @@ public actor profileController {
 
                 }
                 if data == nil {
-                    data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash))
+                    data = try await APIClient.shared.request(.getProfileImage(size: .size1024, mediaHash: mediaHash), shouldErrorMessage: false)
                 }
             } else {
-                data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash))
+                data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash), shouldErrorMessage: false)
+            }
+
+            if data == nil {
+                data = try? await APIClient.shared.request(.getNativeServerProfileImage(mediaHash: mediaHash), shouldErrorMessage: false)
             }
             
             if let data {

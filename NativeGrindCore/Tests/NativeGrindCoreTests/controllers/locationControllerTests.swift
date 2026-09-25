@@ -54,14 +54,16 @@ struct locationControllerTests {
     
     @Test("Verifies locationController updates currentGeohash")
     func testLocationControllerUpdates() async {
-        let controller = locationController.shared
-        await controller.updateGeohash("s00000000000")
-        let hash = await controller.currentGeohash
-        #expect(hash == "s00000000000")
+        await TestSerializer.shared.run {
+            let controller = locationController.shared
+            await controller.updateGeohash("s00000000000")
+            let hash = await controller.currentGeohash
+            #expect(hash == "s00000000000")
         
-        await controller.updateGeohash(latitude: 37.7749, longitude: -122.4194)
-        let newHash = await controller.currentGeohash
-        #expect(newHash != nil)
-        #expect(newHash?.starts(with: "9q8yy") == true)
+            await controller.updateGeohash(latitude: 37.7749, longitude: -122.4194)
+            let newHash = await controller.currentGeohash
+            #expect(newHash != nil)
+            #expect(newHash?.starts(with: "9q8yy") == true)
+        }
     }
 }

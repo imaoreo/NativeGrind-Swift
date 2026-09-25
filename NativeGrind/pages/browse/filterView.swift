@@ -1,3 +1,8 @@
+//
+//  filterView.swift
+//  NativeGrind
+//
+
 import SwiftUI
 import NativeGrindCore
 
@@ -77,7 +82,9 @@ struct filterView: View {
                     Button("Apply") {
                         onApply(draftFilters)
                     }
+                    #if os(macOS)
                     .keyboardShortcut(.defaultAction)
+                    #endif
                 }
                 
                 #if os(macOS)

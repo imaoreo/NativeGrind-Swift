@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 import NativeGrindCore
 
 struct browseView: View {
@@ -24,10 +25,15 @@ struct browseView: View {
     @State private var nextPageNumber: Int? = nil
     @State private var activeTaskID = UUID()
     @State private var isLocationRequired = false
+    @State private var loadedGeohash: String? = nil
     
-    #if os(macOS)
+    #if os(tvOS)
     private let columns = [
-        GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 12)
+        GridItem(.adaptive(minimum: 240, maximum: 360), spacing: 24)
+    ]
+    #elseif os(macOS)
+    private let columns = [
+        GridItem(.adaptive(minimum: 160, maximum: 240), spacing: 16)
     ]
     #else
     private let columns = [
@@ -116,6 +122,7 @@ struct browseView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            #if !os(tvOS)
             .navigationTitle("Browse")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -165,7 +172,7 @@ struct browseView: View {
                 #endif
             }
             .sheetWithToast(isPresented: $showLocation) {
-                LocationView(
+                locationView(
                     onApply: {
                         showLocation = false
                         applyFilters()
@@ -178,6 +185,7 @@ struct browseView: View {
                 .frame(width: 450, height: 350)
                 #endif
             }
+            #endif
             .sheetWithToast(item: $selectedProfile) { item in
                 profileDetailView(profileId: String(item.profileId), profiles: profiles)
             }
@@ -205,6 +213,13 @@ struct browseView: View {
             .task {
                 if profiles == nil {
                     await loadGrid()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .locationDidChange).receive(on: RunLoop.main)) { _ in
+                Task {
+                    if await locationController.shared.currentGeohash != loadedGeohash {
+                        await loadGrid()
+                    }
                 }
             }
         }
@@ -239,6 +254,9 @@ struct browseView: View {
         }
         
         isLocationRequired = false
+        if !isPagination {
+            loadedGeohash = geohash
+        }
         var queryFilters = filters
         if isPagination {
             queryFilters.pageNumber = nextPageNumber

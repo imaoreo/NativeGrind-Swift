@@ -121,7 +121,9 @@ public final class wsController: ObservableObject {
             
             do {
                 let data = try request.encode()
-                let message = URLSessionWebSocketTask.Message.data(data)
+                let message: URLSessionWebSocketTask.Message = domain == .main
+                    ? .string(String(decoding: data, as: UTF8.self))
+                    : .data(data)
                 try await task.send(message)
             } catch {
                 Task { @MainActor in
@@ -212,12 +214,22 @@ public final class wsController: ObservableObject {
         return incomingDataPublisher
             .filter { $0.domain == event.domain }
             .compactMap { tuple -> T? in
-                guard let raw = try? decoder.decode(wsRawEnvelope.self, from: tuple.data),
-                      raw.event == event.eventName else {
-                    return nil
+                if event.domain == .main {
+                    guard let raw = try? decoder.decode(wsRawNotificationEnvelope.self, from: tuple.data),
+                          raw.type == event.eventName else {
+                        return nil
+                    }
+
+                    let decoded = try? decoder.decode(wsNotificationEnvelope<T>.self, from: tuple.data)
+                    return decoded?.payload
+                } else {
+                    guard let raw = try? decoder.decode(wsRawNSNotificationEnvelope.self, from: tuple.data),
+                        raw.event == event.eventName else {
+                        return nil
+                    }
+                    let decoded = try? decoder.decode(wsNSNotificationEnvelope<T>.self, from: tuple.data)
+                    return decoded?.payload
                 }
-                let decoded = try? decoder.decode(wsMessageEnvelope<T>.self, from: tuple.data)
-                return decoded?.payload
             }
             .eraseToAnyPublisher()
     }

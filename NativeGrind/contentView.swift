@@ -15,6 +15,16 @@ import AppKit
 typealias PlatformImage = NSImage
 #endif
 
+extension Image {
+    init(platformImage: PlatformImage) {
+        #if canImport(UIKit)
+        self.init(uiImage: platformImage)
+        #else
+        self.init(nsImage: platformImage)
+        #endif
+    }
+}
+
 #if os(iOS)
 final class appDelegate: NSObject, UIApplicationDelegate {
     func application(
@@ -66,6 +76,7 @@ struct myApp: App {
         Task { @MainActor in
             #if INCLUDE_SERVER
                 wsController.shared.connect(to: .nativeServer)
+                Task { await syncController.shared.start() }
             #endif
             
             for await isAuthenticated in sessionManager.shared.$isAuthenticated.values {
@@ -173,16 +184,22 @@ struct contentView: View {
                     }
                     .tag(protectedRoute.browse)
                     
+                    inboxTab(path: $router.protectedPath)
+                    .tabItem {
+                        Label("Inbox", systemImage: "bubble.left.and.bubble.right")
+                    }
+                    .tag(protectedRoute.inbox)
+
                     NavigationStack(path: $router.protectedPath) {
-                        protectedRoute.inbox
+                        protectedRoute.interest
                             .navigationDestination(for: protectedRoute.self) { route in
                                 route
                             }
                     }
                     .tabItem {
-                        Label("Inbox", systemImage: "bubble.left.and.bubble.right")
+                        Label("Interest", systemImage: "eye")
                     }
-                    .tag(protectedRoute.inbox)
+                    .tag(protectedRoute.interest)
                     
                     #if !os(macOS)
                     NavigationStack(path: $router.protectedPath) {

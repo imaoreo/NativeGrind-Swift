@@ -5,7 +5,7 @@
 //  Created by Jay Brammeld on 09/07/2026.
 //
 
-public struct wsMessageEnvelope<T> {
+public struct wsNSNotificationEnvelope<T> {
     public let event: String
     public let payload: T?
     public let clientTime: Int64?
@@ -23,11 +23,11 @@ public struct wsMessageEnvelope<T> {
     }
 }
 
-struct wsRawEnvelope: Decodable {
+struct wsRawNSNotificationEnvelope: Decodable {
     let event: String
 }
 
-extension wsMessageEnvelope: Decodable where T: Decodable {
+extension wsNSNotificationEnvelope: Decodable where T: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.event = try container.decode(String.self, forKey: .event)
@@ -36,11 +36,28 @@ extension wsMessageEnvelope: Decodable where T: Decodable {
     }
 }
 
-extension wsMessageEnvelope: Encodable where T: Encodable {
+extension wsNSNotificationEnvelope: Encodable where T: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(event, forKey: .event)
         try container.encodeIfPresent(payload, forKey: .payload)
         try container.encodeIfPresent(clientTime, forKey: .clientTime)
     }
+}
+
+struct wsRawNotificationEnvelope: Decodable {
+    let type: String
+}
+
+public struct wsNotificationEnvelope<T: Decodable>: Decodable {
+    public let type: String
+    public let notificationId: String?
+    public let payload: T?
+}
+
+struct wsCommandEnvelope<T: Encodable>: Encodable {
+    let type: String
+    let ref: String
+    let token: String
+    let payload: T?
 }

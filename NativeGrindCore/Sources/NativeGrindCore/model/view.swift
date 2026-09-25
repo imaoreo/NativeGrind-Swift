@@ -8,71 +8,110 @@
 import Foundation
 
 public struct viewResponseV6: Codable, Sendable {
-    public let viewCount: Int
-    public let mostRecent: mostRecentViewV6
+    public let viewedCount: Int
+    public let mostRecent: mostRecentViewV6?
 }
 
 public struct mostRecentViewV6: Codable, Sendable {
-    public let profileId: String
-    public let photoHash: String
-    public let timestamp: Date
+    public let profileId: String?
+    public let photoHash: String?
+    public let timestamp: Int64?
+
+    public var date: Date? { timestamp.map(Date.init(milliseconds:)) }
 }
 
-public struct viewsResponseV7: Codable, Sendable {
+public struct viewsResponseV7: Decodable, Sendable {
     public let totalViewers: Int
     public let profiles: [profileViewsResponseV7]
+    public let previews: [previewProfileViewsResponseV7]
+
+    private enum CodingKeys: String, CodingKey {
+        case totalViewers, profiles, previews
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        totalViewers = c.lenient(.totalViewers) ?? 0
+        profiles = c.lossyArray(.profiles)
+        previews = c.lossyArray(.previews)
+    }
 }
 
-public struct profileViewsResponseV7: Codable, Sendable {
+public struct profileViewsResponseV7: Decodable, Sendable, Identifiable {
     public let profileId: String
-    public let seen: Date?
-    public let onlineUntil: Date?
-    public let isFavorite: Bool
     public let displayName: String?
     public let profileImageMediaHash: String?
     public let age: Int?
     public let showAge: Bool
-    public let showDistance: Bool
     public let distance: Double?
-    public let approximateDistance: Bool
-    public let lastChatTimestamp: Int?
+    public let showDistance: Bool
+    public let lastViewed: Int64?
+    public let seen: Int64?
+    public let onlineUntil: Int64?
+    public let isFavorite: Bool
     public let isNew: Bool
-    public let hasFaceRecognition: Bool
-    public let lastViewed: Date?
-    public let isIncognito: Bool
-    public let isInBadNeighborhood: Bool
-    public let medias: [profileMedia]
-    public let lastUpdatedTime: Int?
-    public let boosting: Bool
-    public let profileTags: [String]
     public let isSecretAdmirer: Bool
-    public let isViewedMeFreshFace: Bool
-    public let sexualPosition: [sexualPosition]?
-    public let foundVia: String?
-    public let rightNow: rightNowType
-    public let rightNowStatus: rightNowStatus
-    public let receivedDuringBoost: Bool
-    public let showUnlockReward: Bool
-    public let viewedCount: viewedCount
+    public let isIncognito: Bool
+    public let foundVia: String? // DISCOVER / FOR_YOU / UNKNOWN
+    public let viewedCount: viewedCount?
     public let unreadMessageCount: Int
     public let hasChatted: Bool
+
+    public var id: String { profileId }
+    public var lastViewedDate: Date? { lastViewed.map(Date.init(milliseconds:)) }
+    public var isOnline: Bool { onlineUntil.map { Date(milliseconds: $0) > Date() } ?? false }
+
+    private enum CodingKeys: String, CodingKey {
+        case profileId, displayName, profileImageMediaHash, age, showAge, distance, showDistance, lastViewed, seen,
+             onlineUntil, isFavorite, isNew, isSecretAdmirer, isIncognito, foundVia, viewedCount, unreadMessageCount, hasChatted
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        profileId = try c.decode(flexibleId.self, forKey: .profileId).value
+        displayName = c.lenient(.displayName)
+        profileImageMediaHash = c.lenient(.profileImageMediaHash)
+        age = c.lenient(.age).flatMap { $0 > 0 ? $0 : nil }
+        showAge = c.lenient(.showAge) ?? false
+        distance = c.lenient(.distance)
+        showDistance = c.lenient(.showDistance) ?? false
+        lastViewed = c.lenientTimestamp(.lastViewed)
+        seen = c.lenientTimestamp(.seen)
+        onlineUntil = c.lenientTimestamp(.onlineUntil)
+        isFavorite = c.lenient(.isFavorite) ?? false
+        isNew = c.lenient(.isNew) ?? false
+        isSecretAdmirer = c.lenient(.isSecretAdmirer) ?? false
+        isIncognito = c.lenient(.isIncognito) ?? false
+        foundVia = c.lenient(.foundVia)
+        viewedCount = c.lenient(.viewedCount)
+        unreadMessageCount = c.lenient(.unreadMessageCount) ?? 0
+        hasChatted = c.lenient(.hasChatted) ?? false
+    }
 }
 
-public struct previewProfileViewsResponseV7: Codable, Sendable {
-    public let distance: Double?
-    public let lastViewed: Date?
+public struct previewProfileViewsResponseV7: Decodable, Sendable {
     public let profileImageMediaHash: String?
-    public let isInBadNeighborhood: Bool
-    public let isViewedMeFreshFace: Bool
+    public let distance: Double?
+    public let lastViewed: Int64? // ms
     public let isSecretAdmirer: Bool
     public let isFavorite: Bool
-    public let seen: Date?
-    public let sexualPosition: [sexualPosition]?
-    public let foundVia: String?
-    public let rightNow: rightNowType
-    public let rightNowStatus: rightNowStatus
-    public let receivedDuringBoost: Bool
-    public let viewedCount: viewedCount
+    public let viewedCount: viewedCount?
+
+    public var lastViewedDate: Date? { lastViewed.map(Date.init(milliseconds:)) }
+
+    private enum CodingKeys: String, CodingKey {
+        case profileImageMediaHash, distance, lastViewed, isSecretAdmirer, isFavorite, viewedCount
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        profileImageMediaHash = c.lenient(.profileImageMediaHash)
+        distance = c.lenient(.distance)
+        lastViewed = c.lenientTimestamp(.lastViewed)
+        isSecretAdmirer = c.lenient(.isSecretAdmirer) ?? false
+        isFavorite = c.lenient(.isFavorite) ?? false
+        viewedCount = c.lenient(.viewedCount)
+    }
 }
 
 public struct viewedCount: Codable, Sendable {

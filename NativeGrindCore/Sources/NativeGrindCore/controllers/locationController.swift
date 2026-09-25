@@ -1,5 +1,9 @@
 import Foundation
 
+public extension Notification.Name {
+    static let locationDidChange = Notification.Name("nativegrind.locationDidChange")
+}
+
 public actor locationController {
     public static let shared = locationController()
     
@@ -21,43 +25,43 @@ public actor locationController {
         }
     }
     
-    public func updateGeohash(_ geohash: String?) {
+    public func updateGeohash(_ geohash: String?) async {
+        save(geohash)
+        await queueForSync()
+        Task { await syncController.shared.syncNow() }
+    }
+
+    public func updateGeohash(latitude: Double, longitude: Double) async {
+        await updateGeohash(geohashEncoder.encode(latitude: latitude, longitude: longitude))
+    }
+
+    private func save(_ geohash: String?) {
+        let changed = geohash != currentGeohash
         self._currentGeohash = geohash
-        if let geohash = geohash {
+        if let geohash {
             UserDefaults.standard.set(geohash, forKey: "saved_geohash")
-            Task {
-                if await wsController.shared.isServerAuthorized {
-                    _ = try? await nsStorageController.shared.saveData(location: .location, data: geohash)
-                }
-            }
         } else {
             UserDefaults.standard.removeObject(forKey: "saved_geohash")
-            Task {
-                if await wsController.shared.isServerAuthorized {
-                    _ = try? await nsStorageController.shared.saveData(location: .location, data: "")
-                }
-            }
+        }
+
+        if changed {
+            NotificationCenter.default.post(name: .locationDidChange, object: nil)
         }
     }
-    
-    public func updateGeohash(latitude: Double, longitude: Double) {
-        let geohash = geohashEncoder.encode(latitude: latitude, longitude: longitude)
-        self.updateGeohash(geohash)
+
+    private static let syncKey = "current"
+
+    public func queueForSync() async {
+        await localStore.shared.noteChange(collection: .deviceLocation, key: Self.syncKey, kind: currentGeohash == nil ? .delete : .upsert)
     }
-    
-    public func syncWithServer() async {
-        guard await wsController.shared.isServerAuthorized else { return }
-        do {
-            let serverGeohash = try await nsStorageController.shared.getData(location: .location)
-            if !serverGeohash.isEmpty {
-                self._currentGeohash = serverGeohash
-                UserDefaults.standard.set(serverGeohash, forKey: "saved_geohash")
-            }
-        } catch {
-            if let local = _currentGeohash {
-                _ = try? await nsStorageController.shared.saveData(location: .location, data: local)
-            }
-        }
+
+    func exportForSync() -> Data? {
+        currentGeohash.flatMap { try? JSONEncoder().encode($0) }
+    }
+
+    /// Set on another device, saved without queueing it to sync back
+    func importFromSync(_ value: Data?) {
+        save(value.flatMap { try? JSONDecoder().decode(String.self, from: $0) })
     }
 }
 

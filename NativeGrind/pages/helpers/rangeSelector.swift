@@ -38,7 +38,9 @@ struct RangeInputRow<V, F: ParseableFormatStyle>: View where F.FormatInput == V,
             #if os(iOS)
             .keyboardType(.decimalPad)
             #endif
+            #if !os(tvOS)
             .textFieldStyle(.roundedBorder)
+            #endif
             .frame(maxWidth: 150)
         }
     }

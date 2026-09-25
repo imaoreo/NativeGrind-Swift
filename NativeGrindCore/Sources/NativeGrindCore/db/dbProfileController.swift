@@ -6,132 +6,64 @@
 //
 
 import Foundation
-import SwiftData
 
-@ModelActor
+public struct profileHistoryEntry: Codable, Sendable {
+    public let createdAt: Date
+    public let diff: String
+}
+
 public actor dbProfileController {
-    
-    // fetch a profile from the db
-    public func fetchProfile(profileId: String) throws -> profile? {
-        let context = modelContext
-        
-        // Setup the db requrest
-        let predicate = #Predicate<dbProfile> { $0.profileId == profileId }
-        var descriptor = FetchDescriptor<dbProfile>(predicate: predicate)
-        descriptor.fetchLimit = 1
-        
-        // fetch db, return nil if none
-        guard let cachedRecord = try context.fetch(descriptor).first else {
-            return nil
-        }
-        
-        return try dbControllerHelper.decodeRecord(
-            cachedRecord.json,
-            as: profile.self,
-            domain: "dbProfileControllerError"
-        )
+    private let store: localStore
+
+    public init(store: localStore = .shared) {
+        self.store = store
     }
-    
-    // fetch profiles
-    public func fetchProfiles() throws -> [profile]? {
-        let context = modelContext
-        
-        // Setup the db requrest
-        let descriptor = FetchDescriptor<dbProfile>()
-        let cachedRecords = try context.fetch(descriptor)
-        
-        // If database is empty return []
-        guard !cachedRecords.isEmpty else {
+
+    public func fetchProfile(profileId: String) async throws -> profile? {
+        return await store.read(profile.self, from: .profiles, key: profileId)
+    }
+
+    public func fetchProfiles() async throws -> [profile]? {
+        return await store.readAll(profile.self, from: .profiles)
+    }
+
+    public func fetchProfileDiffs(profileId: String) async throws -> [profile] {
+        guard let currentProfile = try await fetchProfile(profileId: profileId) else {
             return []
         }
-        
-        // Map through the records and decode each individual profile
-        let decodedProfiles = cachedRecords.compactMap { record in
-            try? dbControllerHelper.decodeRecord(
-                record.json,
-                as: profile.self,
-                domain: "dbProfileControllerError"
-            )
-        }
-        
-        return decodedProfiles
-    }
-    
-    // fetch all snapshots of a profile
-    public func fetchProfileDiffs(profileId: String) throws -> [profile] {
-        let context = modelContext
-        
-        // get current profile
-        guard let currentProfile = try fetchProfile(profileId: profileId) else {
-            return []
-        }
-        
-        // fetch all changes newest to oldest
-        let predicate = #Predicate<dbProfileDiff> { $0.profileId == profileId }
-        let descriptor = FetchDescriptor<dbProfileDiff>(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        let diffRecords = try context.fetch(descriptor)
-        
-        // Map the diffRecors into types
-        let rawDiffs = diffRecords.map { (createdAt: $0.createdAt, jsonStr: $0.diffJson) }
-        
-        // Rebuild the history using the shared timeline processor
+
+        let entries = await store.read([profileHistoryEntry].self, from: .profileHistory, key: profileId) ?? []
+        let newestFirst = entries
+            .sorted { $0.createdAt > $1.createdAt }
+            .map { (createdAt: $0.createdAt, jsonStr: $0.diff) }
+
         return dbControllerHelper.rebuildHistory(
             currentModel: currentProfile,
-            diffStrings: rawDiffs
+            diffStrings: newestFirst
         ) { historicProfile, timestamp in
             historicProfile.dbCreatedAt = timestamp
         }
     }
-    
-    // updates a profile in the Cache
-    public func updateProfile(profileId: String, profile: profile) throws {
-        let context = modelContext
-        
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        
-        let newJsonData = try encoder.encode(profile)
-        let newJsonString = String(data: newJsonData, encoding: .utf8) ?? ""
-        
-        // fetch existing cachedProfile, based on if the profileId matches
-        let predicate = #Predicate<dbProfile> { $0.profileId == profileId }
-        var descriptor = FetchDescriptor<dbProfile>(predicate: predicate)
-        descriptor.fetchLimit = 1
-        
-        // Makes the request to database
-        let existingProfile = try context.fetch(descriptor).first
-        
-        if let existingProfile {
-            // Create a diff
-            if let oldData = existingProfile.json.data(using: .utf8),
-               let diff = dbControllerHelper.generateDiff(from: oldData, to: newJsonData) {
-                
-                // Save Changes to a diff log
-                let diffRecord = dbProfileDiff(profileId: profileId, diffJson: diff)
-                diffRecord.createdAt = Date()
-                context.insert(diffRecord)
-            }
-            
-            // update the main record
-            existingProfile.json = newJsonString
-            existingProfile.lastUpdatedAt = Date()
-        } else {
-            // create fresh master log
-            let newProfile = dbProfile(profileId: profileId, json: newJsonString)
-            context.insert(newProfile)
+
+    // updates a profile
+    public func updateProfile(profileId: String, profile: profile) async throws {
+
+        let newJsonData = try dbControllerHelper.encoder.encode(profile)
+
+        if let existingProfile = await store.read(NativeGrindCore.profile.self, from: .profiles, key: profileId),
+           let oldData = try? dbControllerHelper.encoder.encode(existingProfile),
+           let diff = dbControllerHelper.generateDiff(from: oldData, to: newJsonData) {
+
+            var history = await store.read([profileHistoryEntry].self, from: .profileHistory, key: profileId) ?? []
+            history.append(profileHistoryEntry(createdAt: Date(), diff: diff))
+            try await store.write(history, to: .profileHistory, key: profileId)
         }
-        
-        // commit changes
-        try context.save()
+
+        try await store.write(profile, to: .profiles, key: profileId)
     }
-    
-    func clearDatabase() throws {
-        let context = modelContext
-        try context.delete(model: dbProfile.self)
-        try context.delete(model: dbProfileDiff.self)
-        try context.save()
+
+    func clearDatabase() async throws {
+        await store.clear(.profiles)
+        await store.clear(.profileHistory)
     }
 }

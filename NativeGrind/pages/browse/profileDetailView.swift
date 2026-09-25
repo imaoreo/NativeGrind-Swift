@@ -8,7 +8,9 @@ import NativeGrindCore
 
 struct profileDetailView: View {
     let profiles: [CascadeResponseProfile]?
+    let allowsMessaging: Bool
     @State private var profileId: String
+    @State private var chatTarget: chatSheetTarget? = nil
     
     @State private var fullProfile: profile? = nil
     @State private var isLoading = true
@@ -16,8 +18,9 @@ struct profileDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    init(profileId: String, profiles: [CascadeResponseProfile]? = nil) {
+    init(profileId: String, profiles: [CascadeResponseProfile]? = nil, allowsMessaging: Bool = true) {
         self.profiles = profiles
+        self.allowsMessaging = allowsMessaging
         self._profileId = State(initialValue: profileId)
     }
     
@@ -41,6 +44,7 @@ struct profileDetailView: View {
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(.container, edges: .top)
+        #if !os(tvOS)
         .gesture(
             DragGesture(minimumDistance: 25, coordinateSpace: .local)
                 .onEnded { value in
@@ -55,10 +59,42 @@ struct profileDetailView: View {
                         navigateProfile(forward: false)
                     }
                 }
+            
         )
+        #else
+        .focusable()
+        .onMoveCommand { direction in
+            switch direction {
+            case .left:
+                navigateProfile(forward: true)
+            case .right:
+                navigateProfile(forward: false)
+            case .up, .down:
+                break
+            @unknown default:
+                break
+            }
+        }
+        #endif
         .task(id: profileId) {
             await fetchFullProfile()
         }
+        .sheetWithToast(item: $chatTarget) { target in
+            chatSheet(target: target)
+        }
+    }
+
+    private func openChat() {
+        guard let ownProfileId = sessionManager.shared.profileId, let otherProfileId = Int(profileId) else {
+            toastManager.shared.show(style: .error, header: "Chat Error", message: "Couldn't find your profile id, try logging in again")
+            return
+        }
+
+        chatTarget = chatSheetTarget(
+            id: conversationController.conversationId(between: ownProfileId, and: otherProfileId),
+            otherProfileId: otherProfileId,
+            title: fullProfile?.displayName ?? ""
+        )
     }
     
     private func navigateProfile(forward: Bool) {
@@ -150,15 +186,26 @@ struct profileDetailView: View {
                     Spacer()
                      
                     HStack(spacing: 12) {
+                        if allowsMessaging {
+                            Button(action: openChat) {
+                                Image(systemName: "bubble.left.fill")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .padding(8)
+                                    .background(.black.opacity(0.4))
+                                    .foregroundColor(.white)
+                                    .clipShape(Circle())
+                            }
+                        }
+
                         Button {
                             if !(fullProfile?.isFavorite ?? false) {
                                 Task {
-                                    try? await APIClient.shared.request(.addFavorite(profileId: profileId))
+                                    _ = try? await APIClient.shared.request(.addFavorite(profileId: profileId))
                                     await fetchFullProfile()
                                 }
                             } else {
                                 Task {
-                                    try? await APIClient.shared.request(.removeFavorite(profileId: profileId))
+                                    _ = try? await APIClient.shared.request(.removeFavorite(profileId: profileId))
                                     await fetchFullProfile()
                                 }
                             }
@@ -173,7 +220,7 @@ struct profileDetailView: View {
                         
                         Button {
                             Task {
-                                try await APIClient.shared.request(.tap(profileId: profileId, tapType: .hot))
+                                _ = try await APIClient.shared.request(.tap(profileId: profileId, tapType: .hot))
                                 await fetchFullProfile()
                             }
                         } label: {
@@ -187,6 +234,7 @@ struct profileDetailView: View {
                         .disabled(fullProfile?.tapped ?? false)
                     }
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
             }
@@ -387,11 +435,7 @@ struct profileDetailView: View {
                 if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: profileImage),
                    let platformImage = PlatformImage(data: data) {
                     
-                    #if canImport(UIKit)
-                    self.heroImage = Image(uiImage: platformImage)
-                    #elseif canImport(AppKit)
-                    self.heroImage = Image(nsImage: platformImage)
-                    #endif
+                    self.heroImage = Image(platformImage: platformImage)
                 }
             }
         }
@@ -420,8 +464,30 @@ struct profileDetailView: View {
     }
     
     private func formatDistance(_ distance: Double, approximate: Bool) -> String {
-        let km = distance / 1000.0
         let prefix = approximate ? "~" : ""
-        return String(format: "%@%.1f km away", prefix, km)
+        
+        if distance < 1000.0 {
+            return String(format: "%@%.0fm away", prefix, distance)
+        } else {
+            let km = distance / 1000.0
+            return String(format: "%@%.1f km away", prefix, km)
+        }
+    }
+}
+
+struct chatSheetTarget: Identifiable {
+    let id: String // conversation id
+    let otherProfileId: Int
+    let title: String
+}
+
+private struct chatSheet: View {
+    let target: chatSheetTarget
+
+    var body: some View {
+        chatView(conversationId: target.id, otherProfileId: target.otherProfileId, title: target.title, presentation: .sheet)
+            #if os(macOS)
+            .frame(minWidth: 460, idealWidth: 520, minHeight: 600, idealHeight: 700)
+            #endif
     }
 }

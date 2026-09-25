@@ -30,6 +30,7 @@ struct MultiSelectPicker<T: Hashable & CaseIterable>: View {
                                     .foregroundColor(.accentColor)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }

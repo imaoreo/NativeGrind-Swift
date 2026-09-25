@@ -7,10 +7,6 @@
 
 import Foundation
 
-public struct nsStorageLocation<T: Codable> {
-    public let path: String
-}
-
 public struct nsCloudAccount: Codable, Sendable {
     public var authToken: String
     public var isEmail: String
@@ -24,16 +20,6 @@ public struct nsCloudAccount: Codable, Sendable {
     
     public func toAccount(sessionId: String = "") -> nsAccount {
         return nsAccount(authToken: authToken, sessionId: sessionId, isEmail: isEmail, data: data)
-    }
-}
-
-public extension nsStorageLocation {
-    static var accounts: nsStorageLocation<[nsCloudAccount]> {
-        return nsStorageLocation<[nsCloudAccount]>(path: "grindr_accounts")
-    }
-    
-    static var location: nsStorageLocation<String> {
-        return nsStorageLocation<String>(path: "device_location")
     }
 }
 

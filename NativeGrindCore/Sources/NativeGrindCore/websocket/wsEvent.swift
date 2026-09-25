@@ -66,12 +66,16 @@ public extension wsEvent {
         return wsEvent<nsDevicePublicKeyResponse>(domain: .nativeServer, eventName: "link_device_public_key")
     }
     
-    static var onDataSaved: wsEvent<nsSaveDataResponse> {
-        return wsEvent<nsSaveDataResponse>(domain: .nativeServer, eventName: "save_data")
+    static var onSyncPushed: wsEvent<nsSyncPushResponse> {
+        return wsEvent<nsSyncPushResponse>(domain: .nativeServer, eventName: "sync_push")
     }
-    
-    static var onDataGet: wsEvent<nsGetDataResponse> {
-        return wsEvent<nsGetDataResponse>(domain: .nativeServer, eventName: "get_data")
+
+    static var onSyncPulled: wsEvent<nsSyncPullResponse> {
+        return wsEvent<nsSyncPullResponse>(domain: .nativeServer, eventName: "sync_pull")
+    }
+
+    static var onSyncChanged: wsEvent<nsResponse> {
+        return wsEvent<nsResponse>(domain: .nativeServer, eventName: "sync_changed")
     }
 
     static var onProfileSynced: wsEvent<nsSyncProfileResponse> {
@@ -86,7 +90,44 @@ public extension wsEvent {
         return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_media")
     }
 
+    static var onChatMediaUploaded: wsEvent<nsResponse> {
+        return wsEvent<nsResponse>(domain: .nativeServer, eventName: "upload_chat_media")
+    }
+
     static var onProfileByImage: wsEvent<nsGetProfileByImageResponse> {
         return wsEvent<nsGetProfileByImageResponse>(domain: .nativeServer, eventName: "get_profile_by_image")
+    }
+
+    static var onTextMessageSent: wsEvent<chatMessage> {
+        return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message.send.response")
+    }
+
+    static var onTap: wsEvent<emptyResponse> {
+        return wsEvent<emptyResponse>(domain: .main, eventName: "tap.v1.tap_sent")
+    }
+
+    static var onNewView: wsEvent<emptyResponse> {
+        return wsEvent<emptyResponse>(domain: .main, eventName: "viewed_me.v1.new_view_received")
+    }
+
+    static var onChatMessage: wsEvent<chatMessage> {
+        return wsEvent<chatMessage>(domain: .main, eventName: "chat.v1.message_sent")
+    }
+
+    static var onConversationRead: wsEvent<conversationReadEvent> {
+        return wsEvent<conversationReadEvent>(domain: .main, eventName: "chat.v1.conversation_read")
+    }
+
+    static var onTypingStatus: wsEvent<typingStatusEvent> {
+        return wsEvent<typingStatusEvent>(domain: .main, eventName: "chat.v1.typing_status")
+    }
+
+    /// Can be used to detect blocks
+    static var onConversationsDeleted: wsEvent<conversationIdsEvent> {
+        return wsEvent<conversationIdsEvent>(domain: .main, eventName: "chat.v1.conversation.delete")
+    }
+
+    static var onConversationsUpdated: wsEvent<conversationIdsEvent> {
+        return wsEvent<conversationIdsEvent>(domain: .main, eventName: "chat.v1.conversation.update")
     }
 }

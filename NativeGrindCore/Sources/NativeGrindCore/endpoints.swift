@@ -12,6 +12,9 @@ public struct endpoint<Response: Decodable> {
     public let method: HTTPMethod
     public let queryItems: [String: String]?
     public let body: [String: Any]?
+    public let rawBody: Data?
+    public let contentType: String?
+    public let headers: [String: String]
     public let isAuthedRoute: Bool
     public let networkHandlers: [networkHandler]
     public let shouldRetryOn401: Bool
@@ -26,6 +29,9 @@ public struct endpoint<Response: Decodable> {
         method: HTTPMethod,
         queryItems: [String: String]? = nil,
         body: [String: Any]? = nil,
+        rawBody: Data? = nil,
+        contentType: String? = nil,
+        headers: [String: String] = [:],
         isAuthedRoute: Bool,
         networkHandlers: [networkHandler],
         shouldRetryOn401: Bool = true,
@@ -35,6 +41,9 @@ public struct endpoint<Response: Decodable> {
         self.method = method
         self.queryItems = queryItems
         self.body = body
+        self.rawBody = rawBody
+        self.contentType = contentType
+        self.headers = headers
         self.isAuthedRoute = isAuthedRoute
         self.networkHandlers = networkHandlers
         self.shouldRetryOn401 = shouldRetryOn401
@@ -180,6 +189,207 @@ public extension endpoint {
         )
     }
     
+    // Conversations
+
+    static func getMessages(conversationId: String, pageKey: String? = nil, includeProfile: Bool = false) -> endpoint<conversationMessagesResponse> {
+        var queryItems: [String: String] = [:]
+        if let pageKey {
+            queryItems["pageKey"] = pageKey
+        }
+        if includeProfile {
+            queryItems["profile"] = "true"
+        }
+
+        return endpoint<conversationMessagesResponse>(
+            path: "/v5/chat/conversation/\(conversationId)/message",
+            method: .get,
+            queryItems: queryItems.isEmpty ? nil : queryItems,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: nil, jsonLocationValue: nil, message: "This conversation is no longer available", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func getMessage(conversationId: String, messageId: String) -> endpoint<singleMessageResponse> {
+        return endpoint<singleMessageResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/message/\(messageId)",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func sendTextMessage(targetProfileId: Int, text: String) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .text, body: ["text": text])
+    }
+
+    static func sendLocationMessage(targetProfileId: Int, latitude: Double, longitude: Double) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .location, body: ["lat": latitude, "lon": longitude])
+    }
+
+    static func sendAudioMessage(targetProfileId: Int, mediaId: Int64) -> endpoint<chatMessage> {
+        return sendMessage(targetProfileId: targetProfileId, type: .audio, body: ["mediaId": mediaId])
+    }
+
+    static func sendMessage(targetProfileId: Int, type: messageType, body: [String: Any]) -> endpoint<chatMessage> {
+        return endpoint<chatMessage>(
+            path: "/v4/chat/message/send",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "type": type,
+                "target": [
+                    "type": messageTargetType.direct,
+                    "targetId": targetProfileId
+                ],
+                "body": body
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 403, jsonLocation: nil, jsonLocationValue: nil, message: "You can't message this profile", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func markConversationRead(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/read/\(messageId)",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func unsendMessage(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/unsend",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 500, jsonLocation: nil, jsonLocationValue: nil, message: "Message could not be unsent", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func deleteMessage(conversationId: String, messageId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/delete",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId
+            ],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 500, jsonLocation: nil, jsonLocationValue: nil, message: "Message could not be deleted", header: "Chat Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
+    static func reactToMessage(conversationId: String, messageId: String, reactionType: Int = 1) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/message/reaction",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "messageId": messageId,
+                "reactionType": reactionType
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func sendTypingStatus(conversationId: String, status: typingStatus) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chatstatus/typing",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "conversationId": conversationId,
+                "status": status
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func pinConversation(conversationId: String, pinned: Bool) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)/\(pinned ? "pin" : "unpin")",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func deleteConversation(conversationId: String) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/conversation/\(conversationId)",
+            method: .delete,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    // Media
+
+    static func getDeviceKeyChallenge() -> endpoint<deviceKeyChallengeResponse> {
+        return endpoint<deviceKeyChallengeResponse>(
+            path: "/v1/verification/device-keys/challenge",
+            method: .post,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func registerDeviceKey(publicKey: String, keyId: String, registrationSignature: String) -> endpoint<registerDeviceKeyResponse> {
+        return endpoint<registerDeviceKeyResponse>(
+            path: "/v1/verification/device-keys",
+            method: .post,
+            queryItems: nil,
+            body: [
+                "publicKey": publicKey,
+                "keyId": keyId,
+                "registrationSignature": registrationSignature
+            ],
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func uploadChatMediaSigned(data: Data, contentType: String, lengthMs: Int64? = nil, signatureHeaders: [String: String]) -> endpoint<mediaUploadResponse> {
+        return endpoint<mediaUploadResponse>(
+            path: "/v6/chat/media/upload",
+            method: .post,
+            queryItems: lengthMs.map { ["length": String($0)] },
+            rawBody: data,
+            contentType: contentType,
+            headers: signatureHeaders,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
     // Profiles
 
     static func getGrid(
@@ -358,7 +568,33 @@ public extension endpoint {
     }
     
     // Images
-    
+
+    static func getNativeServerProfileImage(mediaHash: String) -> endpoint<Data> {
+        return endpoint<Data>(
+            path: "/public/cache/pfp/\(mediaHash).jpg",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
+    static func getNativeServerChatMedia(mediaHash: String, method: HTTPMethod = .get) -> endpoint<Data> {
+        return endpoint<Data>(
+            path: "/public/cache/chat/\(mediaHash)",
+            method: method,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
     static func getProfileImage(size: imageSizes, mediaHash: String) -> endpoint<Data> {
         return endpoint<Data>(
             path: "/images/profile/\(size.rawValue)/\(mediaHash)",

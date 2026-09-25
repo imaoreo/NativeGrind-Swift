@@ -16,6 +16,11 @@ public final class sessionManager: ObservableObject {
     @Published public private(set) var isLoading: Bool = false
     
     private let keychain = keychainManager.shared
+
+    public var profileId: Int? {
+        keychain.getToken(type: .profileId).flatMap { Int($0) }
+    }
+
     private var activeRefreshTask: Task<Void, Never>? = nil
     
     private func registerCurrentAccount() async {
@@ -24,11 +29,7 @@ public final class sessionManager: ObservableObject {
            let isEmail = keychain.getToken(type: .isEmail),
            let data = keychain.getToken(type: .data) {
             let account = nsAccount(authToken: authToken, sessionId: sessionId, isEmail: isEmail, data: data)
-            do {
-                try await accountController.shared.addAccount(account)
-            } catch {
-                errorManager.shared.error("SessionManager", "Failed to add account to accountController: \(error.localizedDescription)")
-            }
+            await accountController.shared.addAccount(account)
         }
     }
 
@@ -77,6 +78,7 @@ public final class sessionManager: ObservableObject {
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
         
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -100,7 +102,8 @@ public final class sessionManager: ObservableObject {
         let sessionId = response.authenticationResponse.sessionId
         let authToken = response.authenticationResponse.authToken
         let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
-        
+
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -122,7 +125,8 @@ public final class sessionManager: ObservableObject {
         
         let sessionId = response.sessionId
         let authToken = response.authToken
-        
+
+        keychainManager.shared.saveToken(response.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
@@ -144,7 +148,8 @@ public final class sessionManager: ObservableObject {
             
         let sessionId = response.sessionId
         let authToken = response.authToken
-        
+
+        keychainManager.shared.saveToken(response.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("true", type: .isEmail)
@@ -166,7 +171,8 @@ public final class sessionManager: ObservableObject {
         
         let sessionId = response.authenticationResponse.sessionId
         let authToken = response.authenticationResponse.authToken
-        
+
+        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
         keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
         keychainManager.shared.saveToken(authToken, type: .authToken)
         keychainManager.shared.saveToken("false", type: .isEmail)
@@ -204,7 +210,8 @@ public final class sessionManager: ObservableObject {
                 
                 let sessionId = response.sessionId
                 let authToken = response.authToken
-                
+
+                keychainManager.shared.saveToken(response.profileId, type: .profileId)
                 keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
                 keychainManager.shared.saveToken(authToken, type: .authToken)
                 
@@ -220,7 +227,8 @@ public final class sessionManager: ObservableObject {
             
             let sessionId = response.authenticationResponse.sessionId
             let responseAuthToken = response.authenticationResponse.authToken
-            
+
+            keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
             keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
             keychainManager.shared.saveToken(responseAuthToken, type: .authToken)
         } catch requestError.networkError  {
@@ -252,13 +260,20 @@ public final class sessionManager: ObservableObject {
         let currentData = keychain.getToken(type: .data)
         
         if !isSwitching, let data = currentData {
-            try? await accountController.shared.removeAccount(sessionId: data)
+            await accountController.shared.removeAccount(sessionId: data)
         }
         
         keychain.deleteToken(type: .authToken)
         keychain.deleteToken(type: .sessionId)
         keychain.deleteToken(type: .isEmail)
         keychain.deleteToken(type: .data)
+        keychain.deleteToken(type: .profileId)
+        keychain.deleteToken(type: .uploadSigningKey)
+        keychain.deleteToken(type: .uploadSigningKeyId)
+
+        await conversationCache.shared.clearAll()
+        await localStore.shared.clearSyncCursors()
+        await chatMediaController.shared.clearAll()
 
         self.isAuthenticated = false
     }

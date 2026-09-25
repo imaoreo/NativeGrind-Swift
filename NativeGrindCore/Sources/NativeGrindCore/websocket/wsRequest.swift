@@ -19,13 +19,37 @@ public struct wsRequest<Payload: Codable> {
     }
     
     public func encode() throws -> Data {
+        if domain == .main {
+            let token = keychainManager.shared.getToken(type: .sessionId) ?? ""
+            let envelope = wsCommandEnvelope(type: eventName, ref: UUID().uuidString, token: token, payload: payload)
+
+            return try JSONEncoder().encode(envelope)
+        }
+
         let currentMillis = Int64(Date().timeIntervalSince1970 * 1000)
-        let envelope = wsMessageEnvelope(event: eventName, payload: payload, clientTime: currentMillis)
+        let envelope = wsNSNotificationEnvelope(event: eventName, payload: payload, clientTime: currentMillis)
         return try JSONEncoder().encode(envelope)
     }
 }
 
 public extension wsRequest {
+
+    // Grindr
+
+    static func sendTextMessage(targetProfileId: Int, text: String, replyToMessageId: String? = nil) -> wsRequest<sendTextMessageCommand> {
+        return wsRequest<sendTextMessageCommand>(
+            domain: .main,
+            eventName: "chat.v1.message.send",
+            payload: sendTextMessageCommand(
+                type: .text,
+                target: messageTarget(type: .direct, targetId: targetProfileId),
+                body: textMessageBody(text: text),
+                replyToMessageId: replyToMessageId
+            )
+        )
+    }
+
+    // NativeServer
 
     // authorizes the current users device
     static func authorizeDevice(deviceId: String, deviceName: String?, publicKey: String, signature: String, challenge: String) -> wsRequest<nsAuthentication> {
@@ -113,24 +137,19 @@ public extension wsRequest {
         )
     }
     
-    static func saveData(location: String, encryptedData: String) -> wsRequest<nsSaveData> {
-        return wsRequest<nsSaveData>(
+    static func syncPush(items: [nsSyncItem]) -> wsRequest<nsSyncPushRequest> {
+        return wsRequest<nsSyncPushRequest>(
             domain: .nativeServer,
-            eventName: "save_data",
-            payload: nsSaveData(
-                location: location,
-                encryptedPayload: encryptedData
-            )
+            eventName: "sync_push",
+            payload: nsSyncPushRequest(items: items)
         )
     }
-    
-    static func getData(location: String) -> wsRequest<nsGetData> {
-        return wsRequest<nsGetData>(
+
+    static func syncPull(prefix: String, cursor: nsSyncCursor?) -> wsRequest<nsSyncPullRequest> {
+        return wsRequest<nsSyncPullRequest>(
             domain: .nativeServer,
-            eventName: "get_data",
-            payload: nsGetData(
-                location: location
-            )
+            eventName: "sync_pull",
+            payload: nsSyncPullRequest(prefix: prefix, cursor: cursor)
         )
     }
 
@@ -154,6 +173,14 @@ public extension wsRequest {
         return wsRequest<nsUploadMedia>(
             domain: .nativeServer,
             eventName: "upload_media",
+            payload: nsUploadMedia(mediaHash: mediaHash, base64Data: base64Data)
+        )
+    }
+
+    static func uploadChatMedia(mediaHash: String, base64Data: String) -> wsRequest<nsUploadMedia> {
+        return wsRequest<nsUploadMedia>(
+            domain: .nativeServer,
+            eventName: "upload_chat_media",
             payload: nsUploadMedia(mediaHash: mediaHash, base64Data: base64Data)
         )
     }

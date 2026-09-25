@@ -17,6 +17,9 @@ public enum keyType: String, Decodable, Sendable {
     case deviceKeyPointer = "deviceKeyPointer"
     case accountKey = "accountKey"
     case accountsList = "accountsList"
+    case profileId = "profileId"
+    case uploadSigningKey = "uploadSigningKey" // P-256 private key for signed media uploads
+    case uploadSigningKeyId = "uploadSigningKeyId" // keyId once the server has accepted it
 }
 
 public final class keychainManager: @unchecked Sendable {

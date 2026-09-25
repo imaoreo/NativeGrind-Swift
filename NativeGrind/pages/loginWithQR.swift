@@ -49,19 +49,11 @@ struct loginWithQRView: View {
             if let activeCode = code, !activeCode.isEmpty {
                 let qrImage = generateQRCode(from: "nativegrind:/login?code=\(activeCode)")
                 
-                #if canImport(UIKit)
-                    Image(uiImage: qrImage)
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
-                #elseif canImport(AppKit)
-                    Image(nsImage: qrImage)
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
-                #endif
+                Image(platformImage: qrImage)
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
                 
                 Text(activeCode)
                     .font(.title2.monospaced())

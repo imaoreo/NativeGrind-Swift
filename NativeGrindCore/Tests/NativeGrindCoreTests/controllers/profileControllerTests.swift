@@ -7,7 +7,6 @@
 
 import Testing
 import Foundation
-import SwiftData
 @testable import NativeGrindCore
 
 @Suite("Profile Controller Tests", .serialized)
@@ -19,12 +18,6 @@ struct profileControllerTests {
     private func setupTestState() async {
         errorManager.shared.clearLogs()
         MockURLProtocol.shared.handler = nil
-        do {
-            try await inboxController.shared.dbController.clearDatabase()
-        } catch {
-            Issue.record("Failed to clear inbox database: \(error)")
-        }
-
         do {
             try await profileController.shared.dbController.clearDatabase()
         } catch {

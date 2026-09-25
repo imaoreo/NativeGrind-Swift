@@ -36,7 +36,6 @@ public struct conversationData: Codable, Sendable {
     public let translatable: Bool
     public let rightNow: rightNowType
     public let hasUnreadThrob: Bool
-    public var dbCreatedAt: Date?
 }
 
 public struct conversationParticipant: Codable, Sendable {
@@ -56,19 +55,55 @@ public struct conversationPreview: Codable, Sendable {
     public let chat1MessageId: String // UUIDv4
     public let senderId: Int
     public let type: messageType
-    public let chat1Type: chat1MessageType
+    public let chat1Type: chat1MessageType?
     public let text: String?
     public let url: String?
-    public let lat: String?
-    public let lon: String?
+    public let lat: flexibleDouble?
+    public let lon: flexibleDouble?
     public let albumId: Int?
-    public let albumContentId: String?
+    public let albumContentId: Int?
     public let albumContentReply: String?
-    public let duration: String?
+    public let duration: flexibleDouble?
     public let imageHash: String?
     public let photoContentReply: String?
 }
 
 public struct conversationIdObject: Codable, Sendable {
     public let value: String
+
+    public init(value: String) {
+        self.value = value
+    }
+
+    public init(from decoder: Decoder) throws {
+        if let string = try? decoder.singleValueContainer().decode(String.self) {
+            self.value = string
+        } else {
+            self.value = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .value)
+        }
+    }
+}
+
+public struct flexibleDouble: Codable, Sendable {
+    public let value: Double
+
+    public init(_ value: Double) {
+        self.value = value
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let number = try? container.decode(Double.self) {
+            self.value = number
+        } else if let string = try? container.decode(String.self), let number = Double(string) {
+            self.value = number
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Expected a number or numeric string")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
 }

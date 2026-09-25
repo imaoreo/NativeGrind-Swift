@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to show users near you.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -32,8 +30,12 @@
 			</array>
 		</dict>
 	</array>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<false/>
 	<key>FacebookAppID</key>
 	<string>1273378622718674</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<false/>
 	<key>FacebookClientToken</key>
 	<string>5E7F55711E7D210666590F7E11617E720C7A5200131046707714752A750F4B70</string>
 	<key>FacebookDisplayName</key>
@@ -44,9 +46,5 @@
 	<array>
 		<string>fbapi</string>
 	</array>
-	<key>FacebookAdvertiserIDCollectionEnabled</key>
-	<false/>
-	<key>FacebookAutoLogAppEventsEnabled</key>
-	<false/>
 </dict>
 </plist>

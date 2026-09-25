@@ -1,3 +1,8 @@
+//
+//  gridCell.swift
+//  NativeGrind
+//
+
 import SwiftUI
 import NativeGrindCore
 
@@ -91,11 +96,7 @@ struct gridCell: View {
                 
                 if let data = await profileController.shared.fetchProfileImage(size: .size2048, mediaHash: mediaHash) {
                     if let platformImage = PlatformImage(data: data) {
-                        #if canImport(UIKit)
-                            self.image = Image(uiImage: platformImage)
-                        #elseif canImport(AppKit)
-                            self.image = Image(nsImage: platformImage)
-                        #endif
+                        self.image = Image(platformImage: platformImage)
                     }
                 }
                 hasLoaded = true

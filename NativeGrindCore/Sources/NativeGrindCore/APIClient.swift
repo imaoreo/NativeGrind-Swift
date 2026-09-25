@@ -13,6 +13,7 @@ public enum HTTPMethod: String, Sendable, Codable {
     case put = "PUT"
     case delete = "DELETE"
     case patch = "PATCH"
+    case head = "HEAD"
 }
 
 func changeENUMSToRawValues(_ value: Any) -> Any {
@@ -38,6 +39,11 @@ public actor APIClient {
     init() {}
     
     var session: URLSession? = nil
+    var deviceId: String? = nil
+
+    public func getDeviceId() -> String? {
+        deviceId
+    }
     
     func buildAcceptLanguageHeader(for languageCode: String) -> String {
         // Split into components (e.g., "en-GB" -> ["en", "GB"])
@@ -58,6 +64,8 @@ public actor APIClient {
     ///  - timezone: The timezone of the use in the format "Continent/City" e.g., ("Europe/Madrid")
     ///  - language: The language of the user in the format "en-US"
     public func setup(timezone: String, language: String, deviceId: String) {
+        self.deviceId = deviceId
+
         // Convert "en-US" to "en_US"
         let locale = language.replacingOccurrences(of: "-", with: "_")
             
@@ -103,6 +111,9 @@ public actor APIClient {
         url: String,
         queryItems: [String: String]? = nil,
         body: [String: Any]? = nil,
+        rawBody: Data? = nil,
+        contentType: String? = nil,
+        headers: [String: String] = [:],
         isAuthed: Bool = true
     ) async throws -> (Data, HTTPURLResponse) {
         
@@ -134,6 +145,15 @@ public actor APIClient {
         // Content-Type if there is a body
         if body != nil {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+
+        if let rawBody {
+            request.setValue(contentType ?? "application/octet-stream", forHTTPHeaderField: "Content-Type")
+            request.httpBody = rawBody
+        }
+
+        for (field, value) in headers {
+            request.setValue(value, forHTTPHeaderField: field)
         }
         
         if isAuthed {
@@ -176,6 +196,23 @@ public actor APIClient {
         return (data, httpResponse)
     }
     
+    public func rawRequest<T>(_ endpoint: endpoint<T>) async throws -> (Data, HTTPURLResponse) {
+        do {
+            return try await sendRequest(
+                method: endpoint.method,
+                url: endpoint.fullURLString,
+                queryItems: endpoint.queryItems,
+                body: endpoint.body,
+                rawBody: endpoint.rawBody,
+                contentType: endpoint.contentType,
+                headers: endpoint.headers,
+                isAuthed: endpoint.isAuthedRoute
+            )
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw requestError.networkError
+        }
+    }
+
     public func request<T: Decodable & Sendable>(_ endpoint: endpoint<T>, isRetry: Bool = false, shouldErrorMessage: Bool = true) async throws -> T? {
         do {
             let (data, response) = try await sendRequest(
@@ -183,6 +220,9 @@ public actor APIClient {
                 url: endpoint.fullURLString,
                 queryItems: endpoint.queryItems,
                 body: endpoint.body,
+                rawBody: endpoint.rawBody,
+                contentType: endpoint.contentType,
+                headers: endpoint.headers,
                 isAuthed: endpoint.isAuthedRoute
             )
             
@@ -190,6 +230,11 @@ public actor APIClient {
                 if T.self == Data.self {
                     return data as? T
                 }
+
+                if T.self == emptyResponse.self && data.isEmpty {
+                    return emptyResponse() as? T
+                }
+                
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .secondsSince1970
                 return try decoder.decode(T.self, from: data)

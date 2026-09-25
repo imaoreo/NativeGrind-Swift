@@ -7,7 +7,6 @@
 
 import Testing
 import Foundation
-import SwiftData
 @testable import NativeGrindCore
 
 @Suite("Inbox Controller Tests", .serialized)
@@ -20,63 +19,9 @@ struct inboxControllerTests {
         errorManager.shared.clearLogs()
         MockURLProtocol.shared.handler = nil
         do {
-            try await inboxController.shared.dbController.clearDatabase()
-        } catch {
-            Issue.record("Failed to clear inbox database: \(error)")
-        }
-
-        do {
             try await profileController.shared.dbController.clearDatabase()
         } catch {
             Issue.record("Failed to clear profile database: \(error)")
-        }
-    }
-    
-    @Test("Verifies getHistoryForInbox with .inbox source bypasses network and fetches local diffs")
-    func testGetHistoryFromLocalInbox() async throws {
-        try await TestSerializer.shared.run {
-            await setupTestState()
-            let controller = inboxController.shared
-            let testId = "local-history-\(UUID().uuidString)"
-            
-            let mockData = mockConversation(id: testId)
-            try await controller.dbController.updateInbox(inbox: mockData)
-            
-            let history = await controller.getHistoryForInbox(source: .inbox(mockData))
-            
-            #expect(history != nil)
-            #expect(history?.isEmpty == false)
-            #expect(history?.first?.conversationId == testId)
-        }
-    }
-    
-    @Test("Verifies getHistoryForInbox with .id source triggers network fetch before returning history")
-    func testGetHistoryFromIdTriggersNetwork() async throws {
-        await TestSerializer.shared.run {
-            await setupTestState()
-            let controller = inboxController.shared
-            let testId = "net-history-\(UUID().uuidString)"
-            
-            let config = URLSessionConfiguration.ephemeral
-            config.protocolClasses = [MockURLProtocol.self]
-            await APIClient.shared.setMockSession(URLSession(configuration: config))
-            
-            MockURLProtocol.shared.handler = { request in
-                #expect(request.url?.absoluteString.contains("page=1") == true)
-                
-                // Return Empty
-                let mockJSON = "{\"entries\": []}".data(using: .utf8)!
-                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-                return (response, mockJSON)
-            }
-            
-            defer { MockURLProtocol.shared.handler = nil }
-            
-            // Request Id
-            let history = await controller.getHistoryForInbox(source: .id(testId))
-            
-            // will fall back to db but that is also empty
-            #expect(history?.isEmpty == true)
         }
     }
     
