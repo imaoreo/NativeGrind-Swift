@@ -10,7 +10,9 @@ import Foundation
 public actor chatMediaController {
     public static let shared = chatMediaController()
 
+    public static let maxBackupBytes = 50 * 1024 * 1024
     private var knownOnServer = Set<String>()
+    private var videoDownloads: [String: Task<URL?, Never>] = [:]
 
     public static func isValidHash(_ hash: String) -> Bool {
         hash.wholeMatch(of: /^[A-Za-z0-9_-]{8,128}$/) != nil
@@ -30,16 +32,40 @@ public actor chatMediaController {
         if let local = localImage(hash: hash) {
             return local
         }
+        return await fetch(hash: hash, from: url, to: localURL(for: hash))
+    }
 
+    private func localVideo(key: String) -> URL? {
+        guard let file = localURL(for: key, fileExtension: "mp4"),
+              FileManager.default.fileExists(atPath: file.path) else { return nil }
+        return file
+    }
+
+    public func loadVideo(key: String, from url: URL?) async -> URL? {
+        if let local = localVideo(key: key) {
+            return local
+        }
+        guard let file = localURL(for: key, fileExtension: "mp4") else { return nil }
+
+        if let pending = videoDownloads[key] {
+            return await pending.value
+        }
+        let download = Task { await self.fetch(hash: key, from: url, to: file) != nil ? file : nil }
+        videoDownloads[key] = download
+        defer { videoDownloads[key] = nil }
+        return await download.value
+    }
+
+    private func fetch(hash: String, from url: URL?, to file: URL?) async -> Data? {
         if let url, let data = await download(url) {
-            saveLocally(hash: hash, data: data)
-            await backUp(hash: hash, data: data)
+            save(data, to: file)
+            Task { await self.backUp(hash: hash, data: data) }
             return data
         }
 
         if let data = await downloadFromNativeServer(hash: hash) {
             knownOnServer.insert(hash)
-            saveLocally(hash: hash, data: data)
+            save(data, to: file)
             return data
         }
 
@@ -79,8 +105,21 @@ public actor chatMediaController {
             return
         }
 
+        guard data.count <= Self.maxBackupBytes else {
+            await errorManager.shared.warn("chatMediaController", "Chat media \(hash) not backed up, too large (\(data.count / 1_000_000) MB, max \(Self.maxBackupBytes / 1_000_000) MB)")
+            return
+        }
+
         knownOnServer.insert(hash)
-        await wsController.shared.send(request: .uploadChatMedia(mediaHash: hash, base64Data: data.base64EncodedString()))
+        let response = await wsController.shared.sendAndWait(
+            request: .uploadChatMedia(mediaHash: hash, base64Data: data.base64EncodedString()),
+            expectedEvent: .onChatMediaUploaded,
+            timeout: 10 + Double(data.count) / 1_000_000
+        )
+        if response?.status != .success {
+            knownOnServer.remove(hash)
+            await errorManager.shared.warn("chatMediaController", "Chat media \(hash) backup failed, \(response?.message ?? "no response from NativeServer")")
+        }
     }
 
     private var directory: URL? {
@@ -90,14 +129,16 @@ public actor chatMediaController {
         return directory
     }
 
-    private func localURL(for hash: String) -> URL? {
+    private func localURL(for hash: String, fileExtension: String? = nil) -> URL? {
         guard Self.isValidHash(hash) else { return nil }
-        return directory?.appendingPathComponent(hash)
+        let file = directory?.appendingPathComponent(hash)
+        guard let fileExtension else { return file }
+        return file?.appendingPathExtension(fileExtension)
     }
 
-    private func saveLocally(hash: String, data: Data) {
-        guard !appEnvironment.isTesting, let url = localURL(for: hash) else { return }
-        try? data.write(to: url, options: .atomic)
+    private func save(_ data: Data, to file: URL?) {
+        guard !appEnvironment.isTesting, let file else { return }
+        try? data.write(to: file, options: .atomic)
     }
 
     public func clearAll() {
@@ -109,8 +150,8 @@ public actor chatMediaController {
 }
 
 public extension chatMessage {
-    var photoCacheKey: String? {
-        if let hash = body?.imageHash, chatMediaController.isValidHash(hash) {
+    var mediaCacheKey: String? {
+        if let hash = body?.imageHash ?? body?.mediaHash, chatMediaController.isValidHash(hash) {
             return hash
         }
         if let mediaId = body?.mediaId {

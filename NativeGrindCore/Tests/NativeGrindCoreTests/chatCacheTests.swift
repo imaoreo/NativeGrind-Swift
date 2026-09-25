@@ -104,10 +104,11 @@ struct chatCacheTests {
             """.utf8))
         }
 
-        #expect(try message(#"{ "imageHash": "a1b2c3d4e5f6", "mediaId": 42 }"#).photoCacheKey == "a1b2c3d4e5f6")
-        #expect(try message(#"{ "mediaId": 987654321, "url": null, "viewsRemaining": 1 }"#).photoCacheKey == "media-987654321")
-        #expect(try message(#"{ "imageHash": "../bad", "mediaId": 7 }"#).photoCacheKey == "media-7")
-        #expect(try message("null").photoCacheKey == nil)
+        #expect(try message(#"{ "imageHash": "a1b2c3d4e5f6", "mediaId": 42 }"#).mediaCacheKey == "a1b2c3d4e5f6")
+        #expect(try message(#"{ "mediaId": 987654321, "url": null, "viewsRemaining": 1 }"#).mediaCacheKey == "media-987654321")
+        #expect(try message(#"{ "imageHash": "../bad", "mediaId": 7 }"#).mediaCacheKey == "media-7")
+        #expect(try message(#"{ "mediaHash": "v1d3ohash99", "mediaId": 5, "contentType": "video/mp4" }"#).mediaCacheKey == "v1d3ohash99")
+        #expect(try message("null").mediaCacheKey == nil)
 
         #expect(chatMediaController.isValidHash("media-7") == false)
         #expect(chatMediaController.isValidHash("media-987654321"))

@@ -25,6 +25,7 @@ struct chatView: View {
     @State private var audioPlayer = chatAudioPlayer()
     @State private var viewingPhoto: chatMessage? = nil
     @State private var openedAlbum: albumTarget? = nil
+    @State private var viewingVideo: chatMessage? = nil
     #if !os(tvOS)
     @State private var recorder = chatAudioRecorder()
     #endif
@@ -133,6 +134,12 @@ struct chatView: View {
         .environment(\.openAlbum) { target in
             openedAlbum = target
         }
+        .environment(\.openChatVideo) { message in
+            viewingVideo = message
+        }
+        .environment(\.loadChatVideo) { [store] message in
+            await store.videoFile(for: message)
+        }
         .sheet(item: $openedAlbum) { target in
             albumView(target: target)
         }
@@ -146,9 +153,15 @@ struct chatView: View {
         .sheet(item: $viewingPhoto) { message in
             chatPhotoViewer(message: message, loadImage: store.imageData)
         }
+        .sheet(item: $viewingVideo) { message in
+            chatVideoViewer(message: message, loadVideo: store.videoFile)
+        }
         #else
         .fullScreenCover(item: $viewingPhoto) { message in
             chatPhotoViewer(message: message, loadImage: store.imageData)
+        }
+        .fullScreenCover(item: $viewingVideo) { message in
+            chatVideoViewer(message: message, loadVideo: store.videoFile)
         }
         #endif
         .onAppear {

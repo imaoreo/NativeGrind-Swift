@@ -33,7 +33,6 @@ public struct albumSnapshot: Sendable {
 public actor albumController {
     public static let shared = albumController()
 
-    private static let maxBackupBytes = 50 * 1024 * 1024
     private var backingUp = Set<String>() // "albumId/contentId" currently being uploaded
 
     public func sharedAlbums(profileId: String) async -> [albumSummary] {
@@ -136,8 +135,8 @@ public actor albumController {
                 failures.append("\(kind) \(content.contentId): download failed")
                 continue
             }
-            guard data.count <= Self.maxBackupBytes else {
-                failures.append("\(kind) \(content.contentId): too large (\(data.count / 1_000_000) MB, max \(Self.maxBackupBytes / 1_000_000) MB)")
+            guard data.count <= chatMediaController.maxBackupBytes else {
+                failures.append("\(kind) \(content.contentId): too large (\(data.count / 1_000_000) MB, max \(chatMediaController.maxBackupBytes / 1_000_000) MB)")
                 continue
             }
 

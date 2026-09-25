@@ -279,7 +279,7 @@ final class chatStore {
 
     func imageData(for message: chatMessage) async -> Data? {
         let isPhoto = message.type == .image || message.type == .expiringImage
-        if isPhoto, let hash = message.photoCacheKey {
+        if isPhoto, let hash = message.mediaCacheKey {
             if let local = await chatMediaController.shared.localImage(hash: hash) {
                 return local
             }
@@ -309,11 +309,17 @@ final class chatStore {
         }
         replace(fresh)
 
-        // The fetched copy may carry the hash / media id even if the original didn't
-        guard let key = fresh.photoCacheKey ?? message.photoCacheKey else {
+        guard let key = fresh.mediaCacheKey ?? message.mediaCacheKey else {
             return await chatMediaController.shared.download(url)
         }
         return await chatMediaController.shared.loadImage(hash: key, from: url)
+    }
+
+    func videoFile(for message: chatMessage) async -> URL? {
+        guard let key = message.mediaCacheKey else {
+            return await mediaURL(for: message)
+        }
+        return await chatMediaController.shared.loadVideo(key: key, from: await mediaURL(for: message))
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {

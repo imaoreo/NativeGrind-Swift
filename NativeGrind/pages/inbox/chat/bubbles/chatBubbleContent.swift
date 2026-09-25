@@ -50,6 +50,9 @@ struct chatBubbleContent: View {
             case .audio:
                 chatAudioBubble(message: message, isMine: isMine)
 
+            case .video, .privateVideo, .nonExpiringVideo:
+                chatVideoBubble(message: message, size: imageSize(width: body?.width, height: body?.height))
+
             case .album, .expiringAlbum, .expiringAlbumV2:
                 if body?.albumId != nil {
                     chatAlbumBubble(message: message)
@@ -86,7 +89,7 @@ struct chatBubbleContent: View {
     }
 
     private static func hasViewableImage(_ message: chatMessage) -> Bool {
-        message.body?.url != nil || message.photoCacheKey != nil
+        message.body?.url != nil || message.mediaCacheKey != nil
     }
 
     static func isBareMedia(_ message: chatMessage) -> Bool {
@@ -96,7 +99,7 @@ struct chatBubbleContent: View {
         switch message.type {
         case .image:
             return hasViewableImage(message)
-        case .expiringImage:
+        case .expiringImage, .video, .privateVideo, .nonExpiringVideo:
             return true
         case .giphy:
             return body?.urlPath != nil || body?.stillPath != nil
