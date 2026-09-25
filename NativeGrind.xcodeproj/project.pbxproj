@@ -396,6 +396,7 @@
 				INFOPLIST_FILE = NativeGrind/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need your camera to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show users near you.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to record voice messages.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -469,6 +470,7 @@
 				INFOPLIST_FILE = NativeGrind/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need your camera to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show users near you.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to record voice messages.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -604,6 +606,7 @@
 				INFOPLIST_FILE = NativeGrind/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need your camera to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show users near you.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to record voice messages.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -787,6 +790,7 @@
 				INFOPLIST_FILE = NativeGrind/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Native Grind";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need your camera to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show users near you.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to record voice messages.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

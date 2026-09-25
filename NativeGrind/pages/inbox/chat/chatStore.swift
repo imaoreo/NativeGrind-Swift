@@ -274,6 +274,16 @@ final class chatStore {
         }
     }
 
+    func sendFromDrawer(_ media: drawerMedia, expiring: Bool) async {
+        guard !isSending else { return }
+        isSending = true
+        defer { isSending = false }
+
+        if let sent = await conversationController.shared.sendFromDrawer(media, expiring: expiring, to: otherProfileId) {
+            merge([sent])
+        }
+    }
+
     func shareAlbum(_ album: myAlbum, expiration: albumExpiration) async {
         guard !isSending else { return }
         isSending = true

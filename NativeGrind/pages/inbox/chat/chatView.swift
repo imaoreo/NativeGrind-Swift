@@ -17,10 +17,12 @@ enum chatPresentation {
 
 enum chatViewSheet: Identifiable {
     case sendMedia(chatOutgoingMedia)
+    case drawer
 
     var id: String {
         switch self {
         case .sendMedia(let media): "media-\(media.id)"
+        case .drawer: "drawer"
         }
     }
 }
@@ -118,6 +120,8 @@ struct chatView: View {
                 chatMediaSendSheet(media: media) { viewOnce in
                     Task { await store.sendMedia(media, viewOnce: viewOnce) }
                 }
+            case .drawer:
+                chatMediaDrawer(store: store)
             }
         }
         #if !os(tvOS)
@@ -262,6 +266,7 @@ struct chatView: View {
             sendLocation: { confirmSendLocation = true },
             pickMedia: nil,
             chooseFile: nil,
+            openDrawer: { activeSheet = .drawer },
             startRecording: nil,
             cancelRecording: {},
             finishRecording: {}

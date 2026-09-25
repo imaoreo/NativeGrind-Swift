@@ -14,6 +14,7 @@ struct chatComposerActions {
     var sendLocation: () -> Void
     var pickMedia: (() -> Void)?
     var chooseFile: (() -> Void)?
+    var openDrawer: () -> Void
     var startRecording: (() -> Void)?
     var cancelRecording: () -> Void
     var finishRecording: () -> Void
@@ -97,6 +98,11 @@ struct chatComposer: View {
                         Label("Choose File…", systemImage: "folder")
                     }
                 }
+                #if !os(macOS)
+                Button(action: actions.openDrawer) {
+                    Label("Drawer", systemImage: "tray.full")
+                }
+                #endif
                 Button(action: actions.sendLocation) {
                     Label("Send Location", systemImage: "location.fill")
                 }
@@ -112,6 +118,19 @@ struct chatComposer: View {
             .buttonStyle(.plain)
             .fixedSize()
             .disabled(isSending)
+
+            #if os(macOS)
+            Button(action: actions.openDrawer) {
+                Image(systemName: "tray.full")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .frame(width: iconSize, height: iconSize)
+                    .background(Color.gray.opacity(0.18), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .disabled(isSending)
+            .help("Media Drawer")
+            #endif
 
             TextField("Message", text: $draft, axis: .vertical)
                 .lineLimit(1...5)

@@ -408,6 +408,39 @@ public extension endpoint {
         )
     }
 
+    static func getDrawer(conversationId: String? = nil) -> endpoint<[drawerMedia]> {
+        return endpoint<[drawerMedia]>(
+            path: "/v4/chat/media/drawer" + (conversationId.map { "/\($0)" } ?? ""),
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func addToDrawer(mediaId: Int64) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/media/drawer/\(mediaId)",
+            method: .put,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func removeFromDrawer(mediaId: Int64) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/chat/media/drawer/\(mediaId)",
+            method: .delete,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
     /// NativeServer Album Backups
     static func getNativeServerAlbum(albumId: String) -> endpoint<nsAlbumBackup> {
         return endpoint<nsAlbumBackup>(

@@ -85,6 +85,9 @@ public actor conversationController {
         guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType) else {
             return nil
         }
+        if !expiring {
+            await addToDrawer(mediaId: upload.mediaId)
+        }
         let sent = await run(.sendImageMessage(targetProfileId: profileId, mediaId: upload.mediaId, expiring: expiring), "send photo")
         await keepSentMedia(data, message: sent, isVideo: false)
         return sent
@@ -94,14 +97,42 @@ public actor conversationController {
         guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType, lengthMs: lengthMs) else {
             return nil
         }
+        await addToDrawer(mediaId: upload.mediaId)
         let sent = await run(.sendVideoMessage(targetProfileId: profileId, mediaId: upload.mediaId), "send video")
         await keepSentMedia(data, message: sent, isVideo: true)
         return sent
     }
 
+    public func sendFromDrawer(_ media: drawerMedia, expiring: Bool = false, to profileId: Int) async -> chatMessage? {
+        if media.isVideo {
+            return await run(.sendVideoMessage(targetProfileId: profileId, mediaId: media.id), "send video")
+        }
+        return await run(.sendImageMessage(targetProfileId: profileId, mediaId: media.id, expiring: expiring), "send photo")
+    }
+
     private func keepSentMedia(_ data: Data, message: chatMessage?, isVideo: Bool) async {
         guard let key = message?.mediaCacheKey else { return }
         await chatMediaController.shared.keep(data, key: key, isVideo: isVideo)
+    }
+
+    public func drawer(conversationId: String? = nil) async -> [drawerMedia] {
+        await run(.getDrawer(conversationId: conversationId), "load media drawer", shouldErrorMessage: false) ?? []
+    }
+
+    public func uploadToDrawer(_ data: Data, contentType: String, lengthMs: Int64? = nil) async -> Bool {
+        guard let upload = await mediaUploadController.shared.uploadChatMedia(data, contentType: contentType, lengthMs: lengthMs) else {
+            return false
+        }
+        return await run(.addToDrawer(mediaId: upload.mediaId), "add to media drawer") != nil
+    }
+
+    private func addToDrawer(mediaId: Int64) async {
+        _ = await run(.addToDrawer(mediaId: mediaId), "add to media drawer", shouldErrorMessage: false)
+    }
+
+    @discardableResult
+    public func removeFromDrawer(mediaId: Int64) async -> Bool {
+        await run(.removeFromDrawer(mediaId: mediaId), "remove from media drawer") != nil
     }
 
     public func sendReply(_ text: String, to profileId: Int, replyingTo messageId: String) async -> chatMessage? {
