@@ -200,7 +200,7 @@ struct inboxView: View {
     private func conversationLink(for item: inboxItem) -> some View {
         if let otherProfileId = item.conversation.participants.first?.profileId {
             openableRow(for: item, otherProfileId: otherProfileId)
-            #if !os(tvOS)
+            #if !os(tvOS) && !os(macOS)
             .swipeActions(edge: .leading) {
                 Button {
                     Task { await setPinned(item, pinned: !item.conversation.pinned) }
