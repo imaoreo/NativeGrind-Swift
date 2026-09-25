@@ -120,6 +120,3 @@ public struct nsUploadAlbumMedia: Codable, Sendable {
     public let base64Data: String
 }
 
-public struct recordContentViewResponse: Codable, Sendable {
-    public let remainingViews: Int?
-}

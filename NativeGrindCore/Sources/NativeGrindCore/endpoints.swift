@@ -373,17 +373,6 @@ public extension endpoint {
         )
     }
 
-    static func recordAlbumContentView(albumId: String, contentId: String) -> endpoint<recordContentViewResponse> {
-        return endpoint<recordContentViewResponse>(
-            path: "/v1/albums/\(albumId)/view/content/\(contentId)",
-            method: .post,
-            queryItems: nil,
-            body: nil,
-            isAuthedRoute: true,
-            networkHandlers: []
-        )
-    }
-
     /// NativeServer Album Backups
     static func getNativeServerAlbum(albumId: String) -> endpoint<nsAlbumBackup> {
         return endpoint<nsAlbumBackup>(

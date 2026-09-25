@@ -109,29 +109,71 @@ public actor albumController {
         try? await APIClient.shared.request(.getNativeServerAlbum(albumId: albumId), shouldErrorMessage: false)
     }
 
-    public func recordItemViewed(albumId: String, contentId: String) async -> Int? {
-        (try? await APIClient.shared.request(.recordAlbumContentView(albumId: albumId, contentId: contentId), shouldErrorMessage: false))?.remainingViews
-    }
-
     private func backUp(_ contents: [albumContent], albumId: String, ownerProfileId: String) async {
-        guard !appEnvironment.isTesting, await wsController.shared.isServerAuthorized else { return }
+        guard !appEnvironment.isTesting else { return }
+        guard await wsController.shared.isServerAuthorized else {
+            await errorManager.shared.warn("albumController", "Album \(albumId): NativeServer not connected, \(contents.count) item(s) not backed up")
+            return
+        }
 
-        for content in contents {
+        let ordered = contents.sorted { isLimited($0) && !isLimited($1) }
+        var saved = 0
+        var failures: [String] = []
+
+        for content in ordered {
             let key = "\(albumId)/\(content.contentId)"
-            guard !backingUp.contains(key), let url = content.url.flatMap(URL.init(string:)) else { continue }
+            guard !backingUp.contains(key) else { continue }
             backingUp.insert(key)
             defer { backingUp.remove(key) }
 
-            guard let data = await chatMediaController.shared.download(url), data.count <= Self.maxBackupBytes else { continue }
+            let kind = content.isVideo ? "video" : "photo"
 
-            await wsController.shared.send(request: .uploadAlbumMedia(
-                albumId: albumId,
-                contentId: content.contentId,
-                ownerProfileId: ownerProfileId,
-                base64Data: data.base64EncodedString()
-            ))
+            guard let url = content.url.flatMap(URL.init(string:)) else {
+                failures.append("\(kind) \(content.contentId): Grindr gave no link")
+                continue
+            }
+            guard let data = await chatMediaController.shared.download(url) else {
+                failures.append("\(kind) \(content.contentId): download failed")
+                continue
+            }
+            guard data.count <= Self.maxBackupBytes else {
+                failures.append("\(kind) \(content.contentId): too large (\(data.count / 1_000_000) MB, max \(Self.maxBackupBytes / 1_000_000) MB)")
+                continue
+            }
 
-            try? await Task.sleep(for: .milliseconds(200))
+            if let error = await upload(data, contentId: content.contentId, albumId: albumId, ownerProfileId: ownerProfileId) {
+                failures.append("\(kind) \(content.contentId) (\(data.count / 1_000_000) MB): \(error)")
+            } else {
+                saved += 1
+            }
         }
+
+        await errorManager.shared.log("albumController", "Album \(albumId): backed up \(saved)/\(ordered.count)")
+        for failure in failures {
+            await errorManager.shared.warn("albumController", "Album \(albumId) backup failed, \(failure)")
+        }
+    }
+
+    private func isLimited(_ content: albumContent) -> Bool {
+        (content.remainingViews ?? -1) > 0
+    }
+
+    private func upload(_ data: Data, contentId: String, albumId: String, ownerProfileId: String) async -> String? {
+        let base64 = data.base64EncodedString()
+        let timeout = 10 + Double(data.count) / 1_000_000
+        var lastError = "no response from NativeServer"
+
+        for _ in 0..<2 {
+            let response = await wsController.shared.sendAndWait(
+                request: .uploadAlbumMedia(albumId: albumId, contentId: contentId, ownerProfileId: ownerProfileId, base64Data: base64),
+                expectedEvent: .onAlbumMediaUploaded,
+                timeout: timeout
+            )
+            if response?.status == .success {
+                return nil
+            }
+            lastError = response?.message ?? "no response from NativeServer"
+        }
+        return lastError
     }
 }
