@@ -384,6 +384,30 @@ public extension endpoint {
         )
     }
 
+    static func getMyAlbums() -> endpoint<myAlbumsResponse> {
+        return endpoint<myAlbumsResponse>(
+            path: "/v1/albums",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: true,
+            networkHandlers: []
+        )
+    }
+
+    static func shareAlbum(albumId: String, profileId: Int, expiration: albumExpiration) -> endpoint<emptyResponse> {
+        return endpoint<emptyResponse>(
+            path: "/v4/albums/\(albumId)/shares",
+            method: .post,
+            queryItems: nil,
+            body: ["profiles": [["profileId": profileId, "expirationType": expiration.rawValue]]],
+            isAuthedRoute: true,
+            networkHandlers: [
+                networkHandler(code: 402, jsonLocation: nil, jsonLocationValue: nil, message: "You've reached the album sharing limit", header: "Album Error", level: .warn, match: .statusCodeOnly)
+            ]
+        )
+    }
+
     /// NativeServer Album Backups
     static func getNativeServerAlbum(albumId: String) -> endpoint<nsAlbumBackup> {
         return endpoint<nsAlbumBackup>(

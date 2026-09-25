@@ -274,6 +274,18 @@ final class chatStore {
         }
     }
 
+    func shareAlbum(_ album: myAlbum, expiration: albumExpiration) async {
+        guard !isSending else { return }
+        isSending = true
+        defer { isSending = false }
+
+        if await albumController.shared.share(albumId: album.albumId, with: otherProfileId, expiration: expiration) {
+            await refreshLatest()
+        } else {
+            toastManager.shared.show(style: .error, header: "Album", message: "Couldn't share the album")
+        }
+    }
+
     func setTyping(_ typing: Bool) async {
         await conversationController.shared.setTyping(conversationId: conversationId, typing ? .typing : .cleared)
     }

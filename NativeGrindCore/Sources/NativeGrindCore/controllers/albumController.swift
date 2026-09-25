@@ -39,6 +39,23 @@ public actor albumController {
         (try? await APIClient.shared.request(.getAlbumsShared(byProfileId: profileId), shouldErrorMessage: false))?.albums ?? []
     }
 
+    public func myAlbums() async -> [myAlbum] {
+        (try? await APIClient.shared.request(.getMyAlbums(), shouldErrorMessage: false))?.albums ?? []
+    }
+
+    public func share(albumId: String, with profileId: Int, expiration: albumExpiration) async -> Bool {
+        do {
+            _ = try await APIClient.shared.request(.shareAlbum(albumId: albumId, profileId: profileId, expiration: expiration))
+        } catch {
+            await errorManager.shared.warn("albumController", "Failed to share album \(albumId): \(error)")
+            return false
+        }
+
+        let owner = await sessionManager.shared.profileId.map(String.init)
+        Task { _ = await self.loadAlbum(albumId: albumId, ownerProfileId: owner) }
+        return true
+    }
+
     public func loadAlbum(albumId: String, ownerProfileId: String?) async -> albumSnapshot? {
         async let grindrAlbum = try? APIClient.shared.request(.getAlbum(albumId: albumId), shouldErrorMessage: false)
         async let backup = fetchBackup(albumId: albumId)

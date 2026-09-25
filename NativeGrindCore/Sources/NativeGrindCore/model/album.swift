@@ -100,6 +100,50 @@ public struct albumSummary: Decodable, Sendable, Identifiable {
     }
 }
 
+public enum albumExpiration: String, CaseIterable, Sendable {
+    case indefinite = "INDEFINITE"
+    case once = "ONCE"
+    case tenMinutes = "TEN_MINUTES"
+    case oneHour = "ONE_HOUR"
+    case oneDay = "ONE_DAY"
+}
+
+public struct myAlbumsResponse: Decodable, Sendable {
+    public let albums: [myAlbum]
+
+    private enum CodingKeys: String, CodingKey {
+        case albums
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        albums = c.lossyArray(.albums)
+    }
+}
+
+public struct myAlbum: Decodable, Sendable, Identifiable {
+    public let albumId: String
+    public let albumName: String?
+    public let content: [albumContent]
+    public let sharedCount: Int
+
+    public var id: String { albumId }
+    public var imageCount: Int { content.filter { !$0.isVideo }.count }
+    public var videoCount: Int { content.filter(\.isVideo).count }
+
+    private enum CodingKeys: String, CodingKey {
+        case albumId, albumName, content, sharedCount
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        albumId = try c.decode(flexibleId.self, forKey: .albumId).value
+        albumName = c.lenient(.albumName)
+        content = c.lossyArray(.content)
+        sharedCount = c.lenient(.sharedCount) ?? 0
+    }
+}
+
 public struct nsAlbumBackup: Codable, Sendable {
     public let albumId: String
     public let ownerProfileId: String
