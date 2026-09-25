@@ -21,6 +21,11 @@ struct chatRemoteImage: View {
 
     @State private var image: Image? = nil
     @State private var failed = false
+    @State private var loadedSize: CGSize? = nil
+
+    private var hasDimensions: Bool {
+        (message.body?.width ?? 0) > 0 && (message.body?.height ?? 0) > 0
+    }
 
     var body: some View {
         ZStack {
@@ -34,13 +39,16 @@ struct chatRemoteImage: View {
                 ProgressView()
             }
         }
-        .frame(width: size.width, height: size.height)
+        .frame(width: (loadedSize ?? size).width, height: (loadedSize ?? size).height)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .task(id: message.id) {
             guard image == nil else { return }
             guard let data = await loadImage(message), let platformImage = PlatformImage(data: data) else {
                 failed = true
                 return
+            }
+            if !hasDimensions {
+                loadedSize = chatImageSizes.remember(platformImage, for: message.id)
             }
             image = Image(platformImage: platformImage)
         }

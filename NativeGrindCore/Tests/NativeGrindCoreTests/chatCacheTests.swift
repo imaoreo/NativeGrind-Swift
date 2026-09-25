@@ -95,4 +95,22 @@ struct chatCacheTests {
     func testHashValidation(hash: String, isValid: Bool) {
         #expect(chatMediaController.isValidHash(hash) == isValid)
     }
+
+    @Test("Photos are cached by imageHash, falling back to the media id when there's no hash")
+    func testPhotoCacheKey() throws {
+        func message(_ body: String) throws -> chatMessage {
+            try JSONDecoder().decode(chatMessage.self, from: Data("""
+            { "messageId": "1:a", "conversationId": "1:2", "senderId": 1, "timestamp": 1, "type": "ExpiringImage", "body": \(body) }
+            """.utf8))
+        }
+
+        #expect(try message(#"{ "imageHash": "a1b2c3d4e5f6", "mediaId": 42 }"#).mediaCacheKey == "a1b2c3d4e5f6")
+        #expect(try message(#"{ "mediaId": 987654321, "url": null, "viewsRemaining": 1 }"#).mediaCacheKey == "media-987654321")
+        #expect(try message(#"{ "imageHash": "../bad", "mediaId": 7 }"#).mediaCacheKey == "media-7")
+        #expect(try message(#"{ "mediaHash": "v1d3ohash99", "mediaId": 5, "contentType": "video/mp4" }"#).mediaCacheKey == "v1d3ohash99")
+        #expect(try message("null").mediaCacheKey == nil)
+
+        #expect(chatMediaController.isValidHash("media-7") == false)
+        #expect(chatMediaController.isValidHash("media-987654321"))
+    }
 }

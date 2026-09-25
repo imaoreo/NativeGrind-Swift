@@ -177,6 +177,14 @@ public extension wsRequest {
         )
     }
 
+    static func uploadAlbumMedia(albumId: String, contentId: String, ownerProfileId: String, base64Data: String) -> wsRequest<nsUploadAlbumMedia> {
+        return wsRequest<nsUploadAlbumMedia>(
+            domain: .nativeServer,
+            eventName: "upload_album_media",
+            payload: nsUploadAlbumMedia(albumId: albumId, contentId: contentId, ownerProfileId: ownerProfileId, base64Data: base64Data)
+        )
+    }
+
     static func uploadChatMedia(mediaHash: String, base64Data: String) -> wsRequest<nsUploadMedia> {
         return wsRequest<nsUploadMedia>(
             domain: .nativeServer,

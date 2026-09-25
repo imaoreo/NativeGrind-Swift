@@ -279,7 +279,7 @@ final class chatStore {
 
     func imageData(for message: chatMessage) async -> Data? {
         let isPhoto = message.type == .image || message.type == .expiringImage
-        if isPhoto, let hash = message.body?.imageHash, chatMediaController.isValidHash(hash) {
+        if isPhoto, let hash = message.mediaCacheKey {
             if let local = await chatMediaController.shared.localImage(hash: hash) {
                 return local
             }
@@ -297,11 +297,7 @@ final class chatStore {
     }
 
     func revealExpiringImage(_ message: chatMessage) async -> Data? {
-        guard message.type == .expiringImage,
-              let hash = message.body?.imageHash,
-              chatMediaController.isValidHash(hash) else {
-            return nil
-        }
+        guard message.type == .expiringImage else { return nil }
 
         if let saved = await imageData(for: message) {
             return saved
@@ -313,7 +309,17 @@ final class chatStore {
         }
         replace(fresh)
 
-        return await chatMediaController.shared.loadImage(hash: hash, from: url)
+        guard let key = fresh.mediaCacheKey ?? message.mediaCacheKey else {
+            return await chatMediaController.shared.download(url)
+        }
+        return await chatMediaController.shared.loadImage(hash: key, from: url)
+    }
+
+    func videoFile(for message: chatMessage) async -> URL? {
+        guard let key = message.mediaCacheKey else {
+            return await mediaURL(for: message)
+        }
+        return await chatMediaController.shared.loadVideo(key: key, from: await mediaURL(for: message))
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {

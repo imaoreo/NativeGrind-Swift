@@ -17,6 +17,7 @@ struct chatExpiringImage: View {
     @Environment(\.openChatPhoto) private var openPhoto
 
     @State private var image: Image? = nil
+    @State private var loadedSize: CGSize? = nil
     @State private var isChecking = true
     @State private var isRevealing = false
     @State private var failed = false
@@ -28,7 +29,7 @@ struct chatExpiringImage: View {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: size.width, height: size.height)
+                    .frame(width: (loadedSize ?? size).width, height: (loadedSize ?? size).height)
                     .clipped()
                     .contentShape(Rectangle())
                     .onTapGesture { openPhoto(message) }
@@ -90,6 +91,7 @@ struct chatExpiringImage: View {
 
     private func show(_ data: Data) {
         guard let platformImage = PlatformImage(data: data) else { return }
+        loadedSize = chatImageSizes.remember(platformImage, for: message.id)
         image = Image(platformImage: platformImage)
     }
 }

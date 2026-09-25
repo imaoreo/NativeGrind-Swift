@@ -37,11 +37,7 @@ struct chatBubbleContent: View {
                 }
 
             case .expiringImage:
-                if Self.hasViewableImage(message) {
-                    chatExpiringImage(message: message, size: imageSize(width: body?.width, height: body?.height))
-                } else {
-                    Text("📷 Expiring Photo")
-                }
+                chatExpiringImage(message: message, size: imageSize(width: body?.width, height: body?.height))
 
             case .giphy:
                 if body?.urlPath != nil || body?.stillPath != nil {
@@ -53,6 +49,16 @@ struct chatBubbleContent: View {
 
             case .audio:
                 chatAudioBubble(message: message, isMine: isMine)
+
+            case .video, .privateVideo, .nonExpiringVideo:
+                chatVideoBubble(message: message, size: imageSize(width: body?.width, height: body?.height))
+
+            case .album, .expiringAlbum, .expiringAlbumV2:
+                if body?.albumId != nil {
+                    chatAlbumBubble(message: message)
+                } else {
+                    Text(message.summaryText)
+                }
 
             case .location:
                 if let lat = body?.lat, let lon = body?.lon {
@@ -72,15 +78,18 @@ struct chatBubbleContent: View {
 
     private func imageSize(width: Int?, height: Int?) -> CGSize {
         guard let width, let height, width > 0, height > 0 else {
-            return Self.fallbackImageSize
+            return chatImageSizes.known[message.id] ?? Self.fallbackImageSize
         }
-        let scale = min(Self.maxImageSize.width / CGFloat(width), Self.maxImageSize.height / CGFloat(height))
-        return CGSize(width: CGFloat(width) * scale, height: CGFloat(height) * scale)
+        return Self.fittedSize(CGSize(width: width, height: height))
+    }
+    static func fittedSize(_ natural: CGSize) -> CGSize {
+        guard natural.width > 0, natural.height > 0 else { return fallbackImageSize }
+        let scale = min(maxImageSize.width / natural.width, maxImageSize.height / natural.height)
+        return CGSize(width: natural.width * scale, height: natural.height * scale)
     }
 
     private static func hasViewableImage(_ message: chatMessage) -> Bool {
-        if message.body?.url != nil { return true }
-        return chatMediaController.isValidHash(message.body?.imageHash ?? "")
+        message.body?.url != nil || message.mediaCacheKey != nil
     }
 
     static func isBareMedia(_ message: chatMessage) -> Bool {
@@ -88,14 +97,29 @@ struct chatBubbleContent: View {
         let body = message.body
 
         switch message.type {
-        case .image, .expiringImage:
+        case .image:
             return hasViewableImage(message)
+        case .expiringImage, .video, .privateVideo, .nonExpiringVideo:
+            return true
         case .giphy:
             return body?.urlPath != nil || body?.stillPath != nil
         case .location:
             return body?.lat != nil && body?.lon != nil
+        case .album, .expiringAlbum, .expiringAlbumV2:
+            return body?.albumId != nil
         default:
             return false
         }
+    }
+}
+
+@MainActor
+enum chatImageSizes {
+    static var known: [String: CGSize] = [:]
+
+    static func remember(_ image: PlatformImage, for messageId: String) -> CGSize {
+        let fitted = chatBubbleContent.fittedSize(image.size)
+        known[messageId] = fitted
+        return fitted
     }
 }
