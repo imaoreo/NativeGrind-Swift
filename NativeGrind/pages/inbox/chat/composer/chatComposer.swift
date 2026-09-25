@@ -36,6 +36,13 @@ struct chatComposer: View {
     }
 
     private let iconSize: CGFloat = 30
+    private let fieldVerticalPadding: CGFloat = 7
+
+    @State private var singleLineHeight: CGFloat = 36
+
+    private var controlHeight: CGFloat {
+        max(iconSize, singleLineHeight)
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -117,6 +124,7 @@ struct chatComposer: View {
             .menuStyle(.button)
             .buttonStyle(.plain)
             .fixedSize()
+            .frame(height: controlHeight)
             .disabled(isSending)
 
             #if os(macOS)
@@ -128,6 +136,7 @@ struct chatComposer: View {
                     .background(Color.gray.opacity(0.18), in: Circle())
             }
             .buttonStyle(.plain)
+            .frame(height: controlHeight)
             .disabled(isSending)
             .help("Media Drawer")
             #endif
@@ -137,9 +146,16 @@ struct chatComposer: View {
                 #if !os(tvOS)
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 7)
+                .padding(.vertical, fieldVerticalPadding)
                 .background(Color.gray.opacity(0.15), in: RoundedRectangle(cornerRadius: 17))
                 #endif
+                .background {
+                    Text(verbatim: "M")
+                        .padding(.vertical, fieldVerticalPadding)
+                        .fixedSize()
+                        .hidden()
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { singleLineHeight = $0 }
+                }
                 #if os(macOS)
                 .focusEffectDisabled()
                 #endif
@@ -148,6 +164,7 @@ struct chatComposer: View {
                 }
 
             trailingButton
+                .frame(height: controlHeight)
         }
     }
 
