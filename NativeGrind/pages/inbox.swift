@@ -47,7 +47,7 @@ struct inboxView: View {
         #if os(macOS)
         return true
         #elseif os(iOS)
-        return isSplit // iPhone has pull to refresh and no navigation bar
+        return isSplit
         #else
         return false
         #endif
@@ -93,8 +93,7 @@ struct inboxView: View {
         }
         .navigationTitle("Inbox")
         #if os(iOS)
-        // iPhone draws its own large title in the list, the split sidebar uses the standard bar like macOS
-        .toolbar(isSplit ? .visible : .hidden, for: .navigationBar)
+        .navigationBarTitleDisplayMode(isSplit ? .inline : .large)
         .refreshable {
             await loadInboxData()
         }
@@ -133,14 +132,6 @@ struct inboxView: View {
     #if os(iOS)
     @ViewBuilder
     private var iOSListContent: some View {
-        if !isSplit {
-            Text("Inbox")
-                .font(.largeTitle.bold())
-                .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-        }
-        
         if isLoading && items.isEmpty {
             HStack {
                 Spacer()
