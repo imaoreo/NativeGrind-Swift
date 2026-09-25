@@ -21,8 +21,11 @@ struct chatMessageList: View {
                         ProgressView()
                             .padding(8)
                             .id("older-\(store.messages.first?.id ?? "")")
-                            .onAppear {
-                                Task { await store.loadOlder() }
+                            .task {
+                                while !Task.isCancelled, store.hasMoreOlder {
+                                    if await store.loadOlder() || !store.isLoadingOlder { break }
+                                    try? await Task.sleep(for: .milliseconds(200))
+                                }
                             }
                     }
 

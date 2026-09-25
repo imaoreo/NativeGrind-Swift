@@ -29,7 +29,7 @@ final class chatStore {
 
     private(set) var olderPageAnchorId: String? = nil
 
-    private var isLoadingOlder = false
+    private(set) var isLoadingOlder = false
     @ObservationIgnored private let locationManager = deviceLocationManager()
     private var lastMarkedReadId: String? = nil
 
@@ -155,7 +155,8 @@ final class chatStore {
 
         let known = Set(messages.map(\.id))
         let fresh = page.messages.filter { !known.contains($0.id) }
-        hasMoreOlder = !fresh.isEmpty
+        let oldest = messages.first?.timestamp ?? .max
+        hasMoreOlder = fresh.contains { $0.timestamp < oldest }
         if !fresh.isEmpty && keepPosition {
             olderPageAnchorId = pageKey
         }
