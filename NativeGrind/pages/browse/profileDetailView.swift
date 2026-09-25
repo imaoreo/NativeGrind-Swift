@@ -18,7 +18,6 @@ struct profileDetailView: View {
     @State private var isLoading = true
     @State private var heroImage: Image? = nil
     
-    @Environment(\.dismiss) private var dismiss
     
     init(profileId: String, profiles: [CascadeResponseProfile]? = nil, allowsMessaging: Bool = true) {
         self.profiles = profiles
@@ -47,6 +46,9 @@ struct profileDetailView: View {
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(.container, edges: .top)
+        #if os(iOS)
+        .presentationDragIndicator(.visible)
+        #endif
         #if !os(tvOS)
         .gesture(
             DragGesture(minimumDistance: 25, coordinateSpace: .local)
@@ -179,19 +181,6 @@ struct profileDetailView: View {
             }
             .overlay(alignment: .top) {
                 HStack {
-                    #if os(iOS)
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 24, weight: .bold))
-                            .padding(8)
-                            .background(.black.opacity(0.4))
-                            .foregroundColor(.white)
-                            .clipShape(Circle())
-                    }
-                    #endif
-                     
                     Spacer()
                      
                     HStack(spacing: 12) {
