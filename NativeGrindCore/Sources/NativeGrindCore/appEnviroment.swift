@@ -9,6 +9,12 @@ import Foundation
 
 public enum appEnvironment {
     public static var isTesting: Bool {
+        #if DEBUG
+        if demoMode.isEnabled {
+            return true
+        }
+        #endif
+
         if NSClassFromString("XCTestObservationCenter") != nil {
             return true
         }

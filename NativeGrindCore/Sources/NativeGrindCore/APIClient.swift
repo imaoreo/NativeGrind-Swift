@@ -89,6 +89,12 @@ public actor APIClient {
         
         configuration.httpAdditionalHeaders = headers
 
+        #if DEBUG
+        if demoMode.isEnabled {
+            configuration.protocolClasses = [demoURLProtocol.self]
+        }
+        #endif
+
         self.session = URLSession(configuration: configuration)
     }
 

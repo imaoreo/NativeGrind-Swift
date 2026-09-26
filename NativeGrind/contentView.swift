@@ -77,8 +77,15 @@ struct myApp: App {
         }
         
         Task { @MainActor in
+            #if DEBUG
+            if demoMode.isEnabled {
+                sessionManager.shared.startDemo()
+                await locationController.shared.setDemoLocation()
+                return
+            }
+            #endif
+
             #if INCLUDE_SERVER
-                // Nothing is sent to NativeServer until the current terms have been accepted
                 if !legalController.shared.needsAcceptance {
                     Self.startNativeServer()
                 }
@@ -136,21 +143,59 @@ struct myApp: App {
             }
     }
 
+    @ViewBuilder
+    private var root: some View {
+        #if DEBUG
+        if demoMode.isEnabled {
+            app
+                .onAppear { selectDemoTab() }
+        } else {
+            standardRoot
+        }
+        #else
+        standardRoot
+        #endif
+    }
+
+    #if DEBUG
+    private func selectDemoTab() {
+        switch demoMode.startTab {
+        case "inbox": router.selectedProtectedTab = .inbox
+        case "interest": router.selectedProtectedTab = .interest
+        case "settings": router.selectedProtectedTab = .settings
+        default: router.selectedProtectedTab = .browse
+        }
+    }
+    #endif
+
+    @ViewBuilder
+    private var standardRoot: some View {
+        #if INCLUDE_SERVER
+        Group {
+            if legal.needsAcceptance {
+                legalAcceptanceView(legal: legal) {
+                    Self.startNativeServer()
+                }
+            } else {
+                app
+            }
+        }
+        .task { await legal.refresh() }
+        #else
+        app
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
-            #if INCLUDE_SERVER
-            Group {
-                if legal.needsAcceptance {
-                    legalAcceptanceView(legal: legal) {
-                        Self.startNativeServer()
-                    }
-                } else {
-                    app
-                }
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-demoChat") {
+                demoChatView()
+            } else {
+                root
             }
-            .task { await legal.refresh() }
             #else
-            app
+            root
             #endif
         }
         #if os(macOS)

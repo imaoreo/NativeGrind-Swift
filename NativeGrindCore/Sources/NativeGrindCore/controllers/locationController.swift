@@ -25,6 +25,12 @@ public actor locationController {
         }
     }
     
+    #if DEBUG
+    public func setDemoLocation() {
+        _currentGeohash = demoMode.geohash
+    }
+    #endif
+
     public func updateGeohash(_ geohash: String?) async {
         save(geohash)
         await queueForSync()

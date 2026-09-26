@@ -60,6 +60,15 @@ public final class sessionManager: ObservableObject {
         }
     }
     
+    #if DEBUG
+    public func startDemo() {
+        keychain.saveToken("demo-session", type: .sessionId)
+        keychain.saveToken("demo-token", type: .authToken)
+        keychain.saveToken(String(demoMode.ownProfileId), type: .profileId)
+        isAuthenticated = true
+    }
+    #endif
+
     public init() {
         if !appEnvironment.isTesting {
             Task { await refreshToken(showError: false) }

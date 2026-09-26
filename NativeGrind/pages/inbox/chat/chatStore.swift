@@ -38,6 +38,17 @@ final class chatStore: ObservableObject {
         self.otherProfileId = otherProfileId
     }
 
+    #if DEBUG
+    static func demo(conversationId: String, otherProfileId: Int, messages: [chatMessage], lastReadTimestamp: Int64?) -> chatStore {
+        let store = chatStore(conversationId: conversationId, otherProfileId: otherProfileId)
+        store.messages = messages
+        store.lastReadTimestamp = lastReadTimestamp
+        store.hasLoaded = true
+        store.hasMoreOlder = false
+        return store
+    }
+    #endif
+
     private static let sharedMediaTypes: Set<messageType> = [.image, .expiringImage, .video, .privateVideo, .nonExpiringVideo]
 
     var sharedMedia: [chatMessage] {
