@@ -6,18 +6,17 @@
 //
 
 import Foundation
-import DeviceCheck
 import CryptoKit
 import Combine
 
 @MainActor
-public func registerWebSocketAppAttestHandler() {
-    webSocketAttestManager.shared.start()
+public func registerNativeServerAuthHandler() {
+    nsAuthManager.shared.start()
 }
 
 @MainActor
-public final class webSocketAttestManager {
-    public static let shared = webSocketAttestManager()
+public final class nsAuthManager {
+    public static let shared = nsAuthManager()
     private var cancellables = Set<AnyCancellable>()
     
     private init() {}

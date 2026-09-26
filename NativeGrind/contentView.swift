@@ -65,7 +65,7 @@ struct myApp: App {
     init() {
         #if INCLUDE_SERVER
             appEnvironment.isServerEnabled = true
-            registerWebSocketAppAttestHandler()
+            registerNativeServerAuthHandler()
         #endif
         
         Task {

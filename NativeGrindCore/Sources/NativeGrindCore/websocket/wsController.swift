@@ -11,7 +11,6 @@ import Combine
 @MainActor
 public final class wsController: ObservableObject {
     public static let shared = wsController()
-    public static var isAppAttestSupported = false
     
     private var webSocketTasks: [wsDomain: URLSessionWebSocketTask] = [:]
     private var session: URLSession
