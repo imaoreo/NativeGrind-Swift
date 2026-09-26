@@ -10,6 +10,7 @@ import Combine
 
 enum unprotectedRoute: Hashable {
     case login
+    case advancedLogin
     case loginWQR
 }
 
@@ -25,6 +26,8 @@ extension unprotectedRoute: View {
         switch self {
         case .login:
             loginView()
+        case .advancedLogin:
+            advancedLoginView()
         case .loginWQR:
             loginWithQRView()
         }

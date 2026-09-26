@@ -34,7 +34,7 @@ struct endpointTests {
     
     @Test("Verifies thirdPartyLogin configures correctly for Facebook")
     func testThirdPartyLoginFacebook() {
-        let testEndpoint: endpoint<thirdPartyAuthResponse> = .thirdPartyLogin(token: "fb-mock-token", isFacebook: true)
+        let testEndpoint: endpoint<thirdPartyAuthResponse> = .thirdPartyLogin(token: "fb-mock-token", vendor: .facebook)
         
         // Make sure facebook query was added
         #expect(testEndpoint.queryItems?["allowFacebookLimitedLogin"] == "true")
@@ -45,16 +45,25 @@ struct endpointTests {
         #expect(testEndpoint.body?["thirdPartyToken"] as? String == "fb-mock-token")
     }
     
-    @Test("Verifies thirdPartyLogin configures correctly for Apple/Google")
-    func testThirdPartyLoginOther() {
-        let testEndpoint: endpoint<thirdPartyAuthResponse> = .thirdPartyLogin(token: "apple-mock-token", isFacebook: false)
+    @Test("Verifies thirdPartyLogin configures correctly for Google")
+    func testThirdPartyLoginGoogle() {
+        let testEndpoint: endpoint<thirdPartyAuthResponse> = .thirdPartyLogin(token: "google-mock-token", vendor: .google)
         
         // For non-facebook make sure it's nil
         #expect(testEndpoint.queryItems == nil)
         
-        // For apple make sure it is 2
         let vendorId = testEndpoint.body?["thirdPartyVendor"] as? Int
         #expect(vendorId == 2)
+    }
+    
+    @Test("Verifies thirdPartyLogin configures correctly for Apple")
+    func testThirdPartyLoginApple() {
+        let testEndpoint: endpoint<thirdPartyAuthResponse> = .thirdPartyLogin(token: "apple-mock-code", vendor: .apple)
+        
+        #expect(testEndpoint.fullURLString == "https://grindr.mobi/v8/sessions/thirdparty")
+        #expect(testEndpoint.queryItems == nil)
+        #expect(testEndpoint.body?["thirdPartyVendor"] as? Int == 5)
+        #expect(testEndpoint.body?["thirdPartyToken"] as? String == "apple-mock-code")
     }
     
     @Test("Verifies getInbox completely removes nil values from the JSON body")

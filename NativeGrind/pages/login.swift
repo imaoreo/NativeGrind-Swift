@@ -225,6 +225,13 @@ struct loginView: View {
                 #endif
             }
 
+            NavigationLink(value: unprotectedRoute.advancedLogin) {
+                Label("Advanced Login", systemImage: "key")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+
             Spacer()
         }
         .padding(24)

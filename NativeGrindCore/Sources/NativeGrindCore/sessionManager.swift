@@ -75,9 +75,9 @@ public final class sessionManager: ObservableObject {
         }
     }
     
-    /// change the google login to a grindr auth token
-    private func _authenticateWithGoogle(accessToken: String) async throws{
-        let response = try await APIClient.shared.request(.thirdPartyLogin(token: accessToken, isFacebook: false))
+    /// change a google, facebook or apple login to a grindr auth token
+    private func _authenticateWithThirdParty(token: String, vendor: thirdPartyVendor) async throws {
+        let response = try await APIClient.shared.request(.thirdPartyLogin(token: token, vendor: vendor))
         
         guard let response = response else {
             throw authenticationError.invalidResponse
@@ -96,32 +96,19 @@ public final class sessionManager: ObservableObject {
     
     public func authenticateWithGoogle(accessToken: String) async {
         await handleAuth(provider: "Google Login", isNewLogin: true) {
-            try await _authenticateWithGoogle(accessToken: accessToken)
+            try await _authenticateWithThirdParty(token: accessToken, vendor: .google)
         }
-    }
-    
-    /// change the facebook login to a grindr auth token
-    private func _authenticateWithFacebook(accessToken: String) async throws {
-        let response = try await APIClient.shared.request(.thirdPartyLogin(token: accessToken, isFacebook: true))
-        
-        guard let response = response else {
-            throw authenticationError.invalidResponse
-        }
-        
-        let sessionId = response.authenticationResponse.sessionId
-        let authToken = response.authenticationResponse.authToken
-        let thirdPartyUserId = response.authenticationResponse.thirdPartyUserId
-
-        keychainManager.shared.saveToken(response.authenticationResponse.profileId, type: .profileId)
-        keychainManager.shared.saveToken(sessionId.rawValue, type: .sessionId)
-        keychainManager.shared.saveToken(authToken, type: .authToken)
-        keychainManager.shared.saveToken("false", type: .isEmail)
-        keychainManager.shared.saveToken(thirdPartyUserId, type: .data)
     }
     
     public func authenticateWithFacebook(accessToken: String) async {
         await handleAuth(provider: "Facebook Login", isNewLogin: true) {
-            try await _authenticateWithFacebook(accessToken: accessToken)
+            try await _authenticateWithThirdParty(token: accessToken, vendor: .facebook)
+        }
+    }
+    
+    public func authenticateWithApple(code: String) async {
+        await handleAuth(provider: "Apple Login", isNewLogin: true) {
+            try await _authenticateWithThirdParty(token: code, vendor: .apple)
         }
     }
     

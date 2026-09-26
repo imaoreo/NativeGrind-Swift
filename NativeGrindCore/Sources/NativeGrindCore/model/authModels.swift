@@ -5,6 +5,12 @@
 //  Created by Jay Brammeld on 15/06/2026.
 //
 
+public enum thirdPartyVendor: Int, Sendable {
+    case facebook = 1
+    case google = 2
+    case apple = 5
+}
+
 public struct thirdPartyAuthResponse: Codable, Sendable {
     public let authenticationResponse: thirdPartyAuthenticationResponse
     public let registered: Bool
