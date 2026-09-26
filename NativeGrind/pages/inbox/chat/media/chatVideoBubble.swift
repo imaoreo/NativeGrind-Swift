@@ -23,12 +23,13 @@ struct chatVideoBubble: View {
 
     @State private var thumbnail: Image? = nil
     @State private var isSaved = false
+    @State private var isBackedUp = false
     @State private var confirmViewOnce = false
 
     private var isLimited: Bool { message.isViewLimitedVideo }
 
     private var isUsedUp: Bool {
-        isLimited && !isSaved && (message.body?.viewsRemaining ?? 1) <= 0
+        isLimited && !isSaved && !isBackedUp && (message.body?.viewsRemaining ?? 1) <= 0
     }
 
     private var duration: String? {
@@ -95,6 +96,9 @@ struct chatVideoBubble: View {
             Text("It can only be watched a limited number of times. Once it opens it's saved on this device.")
         }
         .task(id: message.id) {
+            if let key = message.mediaCacheKey {
+                isBackedUp = await chatMediaController.shared.isBackedUp(hash: key)
+            }
             guard thumbnail == nil, let file = await savedOrLoadedVideo(), file.isFileURL else { return }
             isSaved = true
             thumbnail = await Self.firstFrame(of: file)
