@@ -105,7 +105,6 @@ public actor chatMediaController {
             return
         }
 
-        // Someone else may have already backed it up, a HEAD is cheaper than re-uploading
         if let (_, response) = try? await APIClient.shared.rawRequest(.getNativeServerChatMedia(mediaHash: hash, method: .head)),
            response.statusCode == 200 {
             knownOnServer.insert(hash)
@@ -163,7 +162,6 @@ public extension chatMessage {
         type == .video || type == .privateVideo || type == .nonExpiringVideo
     }
 
-    /// A video that can only be watched a set number of times, so it must never be downloaded without asking
     var isViewLimitedVideo: Bool {
         guard isVideo, let maxViews = body?.maxViews else { return false }
         return maxViews < Self.unlimitedViews
@@ -172,6 +170,12 @@ public extension chatMessage {
     var mediaCacheKey: String? {
         if let hash = body?.imageHash ?? body?.mediaHash, chatMediaController.isValidHash(hash) {
             return hash
+        }
+        if let urlStr = body?.url, let url = URL(string: urlStr) {
+            let hash = (url.lastPathComponent as NSString).deletingPathExtension
+            if chatMediaController.isValidHash(hash) {
+                return hash
+            }
         }
         if let mediaId = body?.mediaId {
             return "media-\(Int64(mediaId))"
