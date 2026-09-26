@@ -315,7 +315,6 @@ struct contentView: View {
                 // ==========================================
                 // UNPROTECTED FLOW
                 // ==========================================
-                #if INCLUDE_SERVER
                 TabView(selection: $router.selectedUnprotectedTab) {
                     
                     NavigationStack(path: router.path(for: .login)) {
@@ -329,6 +328,18 @@ struct contentView: View {
                     }
                     .tag(unprotectedRoute.login)
                     
+                    NavigationStack(path: router.path(for: .advancedLogin)) {
+                        unprotectedRoute.advancedLogin
+                            .navigationDestination(for: unprotectedRoute.self) { route in
+                                route
+                            }
+                    }
+                    .tabItem {
+                        Label("Advanced Login", systemImage: "key")
+                    }
+                    .tag(unprotectedRoute.advancedLogin)
+                    
+                    #if INCLUDE_SERVER
                     NavigationStack(path: router.path(for: .loginWQR)) {
                         unprotectedRoute.loginWQR
                             .navigationDestination(for: unprotectedRoute.self) { route in
@@ -336,18 +347,11 @@ struct contentView: View {
                             }
                     }
                     .tabItem {
-                        Label("QR Login", systemImage: "key")
+                        Label("QR Login", systemImage: "qrcode")
                     }
                     .tag(unprotectedRoute.loginWQR)
+                    #endif
                 }
-                #else
-                NavigationStack(path: router.path(for: .login)) {
-                    unprotectedRoute.login
-                        .navigationDestination(for: unprotectedRoute.self) { route in
-                            route
-                        }
-                }
-                #endif
             }
         }
         .environmentObject(router)
