@@ -53,36 +53,44 @@ final class navigationRouter: ObservableObject {
     @Published var selectedUnprotectedTab: unprotectedRoute = .login
     @Published var selectedProtectedTab: protectedRoute = .browse
     
-    @Published var unprotectedPath: [unprotectedRoute] = []
-    @Published var protectedPath: [protectedRoute] = []
-    
+    @Published private var unprotectedPaths: [unprotectedRoute: [unprotectedRoute]] = [:]
+    @Published private var protectedPaths: [protectedRoute: [protectedRoute]] = [:]
+
+    func path(for tab: unprotectedRoute) -> Binding<[unprotectedRoute]> {
+        Binding(get: { self.unprotectedPaths[tab] ?? [] }, set: { self.unprotectedPaths[tab] = $0 })
+    }
+
+    func path(for tab: protectedRoute) -> Binding<[protectedRoute]> {
+        Binding(get: { self.protectedPaths[tab] ?? [] }, set: { self.protectedPaths[tab] = $0 })
+    }
+
     func getCurrentUnprotected() -> unprotectedRoute? {
-        unprotectedPath.last
+        unprotectedPaths[selectedUnprotectedTab]?.last
     }
     
     func getCurrentProtected() -> protectedRoute? {
-        protectedPath.last
+        protectedPaths[selectedProtectedTab]?.last
     }
     
     func push(_ route: unprotectedRoute) {
-        unprotectedPath.append(route)
+        unprotectedPaths[selectedUnprotectedTab, default: []].append(route)
     }
     
     func push(_ route: protectedRoute) {
-        protectedPath.append(route)
+        protectedPaths[selectedProtectedTab, default: []].append(route)
     }
     
     func popUnprotected() {
-        _ = unprotectedPath.popLast()
+        _ = unprotectedPaths[selectedUnprotectedTab]?.popLast()
     }
     
     func popProtected() {
-        _ = protectedPath.popLast()
+        _ = protectedPaths[selectedProtectedTab]?.popLast()
     }
     
     func reset() {
-        unprotectedPath.removeAll()
-        protectedPath.removeAll()
+        unprotectedPaths.removeAll()
+        protectedPaths.removeAll()
         selectedUnprotectedTab = .login
         selectedProtectedTab = .browse
     }

@@ -172,7 +172,7 @@ struct contentView: View {
                 // ==========================================
                 TabView(selection: $router.selectedProtectedTab) {
                     
-                    NavigationStack(path: $router.protectedPath) {
+                    NavigationStack(path: router.path(for: .browse)) {
                         protectedRoute.browse
                             .navigationDestination(for: protectedRoute.self) { route in
                                 route
@@ -183,13 +183,13 @@ struct contentView: View {
                     }
                     .tag(protectedRoute.browse)
                     
-                    inboxTab(path: $router.protectedPath)
+                    inboxTab(path: router.path(for: .inbox))
                     .tabItem {
                         Label("Inbox", systemImage: "bubble.left.and.bubble.right")
                     }
                     .tag(protectedRoute.inbox)
 
-                    NavigationStack(path: $router.protectedPath) {
+                    NavigationStack(path: router.path(for: .interest)) {
                         protectedRoute.interest
                             .navigationDestination(for: protectedRoute.self) { route in
                                 route
@@ -201,7 +201,7 @@ struct contentView: View {
                     .tag(protectedRoute.interest)
                     
                     #if !os(macOS)
-                    NavigationStack(path: $router.protectedPath) {
+                    NavigationStack(path: router.path(for: .settings)) {
                         protectedRoute.settings
                             .navigationDestination(for: protectedRoute.self) { route in
                                 route
@@ -221,7 +221,7 @@ struct contentView: View {
                 // ==========================================
                 TabView(selection: $router.selectedUnprotectedTab) {
                     
-                    NavigationStack(path: $router.unprotectedPath) {
+                    NavigationStack(path: router.path(for: .login)) {
                         unprotectedRoute.login
                             .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
@@ -232,7 +232,7 @@ struct contentView: View {
                     }
                     .tag(unprotectedRoute.login)
                     
-                    NavigationStack(path: $router.unprotectedPath) {
+                    NavigationStack(path: router.path(for: .advancedLogin)) {
                         unprotectedRoute.advancedLogin
                             .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
@@ -244,7 +244,7 @@ struct contentView: View {
                     .tag(unprotectedRoute.advancedLogin)
                     
                     #if INCLUDE_SERVER
-                    NavigationStack(path: $router.unprotectedPath) {
+                    NavigationStack(path: router.path(for: .loginWQR)) {
                         unprotectedRoute.loginWQR
                             .navigationDestination(for: unprotectedRoute.self) { route in
                                 route
