@@ -4,8 +4,8 @@
     {
       "layers" : [
         {
-          "image-name" : "IMG_2940.png",
-          "name" : "IMG_2940"
+          "image-name" : "mask.png",
+          "name" : "mask"
         }
       ],
       "shadow" : {
