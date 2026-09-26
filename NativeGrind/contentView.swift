@@ -147,8 +147,7 @@ struct myApp: App {
     private var root: some View {
         #if DEBUG
         if demoMode.isEnabled {
-            app
-                .onAppear { selectDemoTab() }
+            demoRoot
         } else {
             standardRoot
         }
@@ -158,6 +157,25 @@ struct myApp: App {
     }
 
     #if DEBUG
+    @ViewBuilder
+    private var demoRoot: some View {
+        switch demoMode.startScreen {
+        case "location":
+            #if os(tvOS)
+            app
+            #else
+            locationView(onApply: {}, onCancel: {})
+            #endif
+        case "album":
+            albumView(target: albumTarget(albumId: demoMode.demoAlbumId, ownerProfileId: "2000"))
+        case "drawer":
+            chatMediaDrawer(store: chatStore(conversationId: "1000:2000", otherProfileId: 2000))
+        default:
+            app
+                .onAppear { selectDemoTab() }
+        }
+    }
+
     private func selectDemoTab() {
         switch demoMode.startTab {
         case "inbox": router.selectedProtectedTab = .inbox

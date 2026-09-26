@@ -16,11 +16,21 @@ public enum demoMode {
         ProcessInfo.processInfo.arguments.contains("-demo")
     }
 
-    public static var startTab: String? {
+    public static var startTab: String? { argument(after: "-demoTab") }
+
+    public static var startScreen: String? { argument(after: "-demoScreen") }
+
+    public static var forceSplit: Bool {
+        ProcessInfo.processInfo.arguments.contains("-demoSplit")
+    }
+
+    private static func argument(after flag: String) -> String? {
         let args = ProcessInfo.processInfo.arguments
-        guard let index = args.firstIndex(of: "-demoTab"), args.indices.contains(index + 1) else { return nil }
+        guard let index = args.firstIndex(of: flag), args.indices.contains(index + 1) else { return nil }
         return args[index + 1]
     }
+
+    public static let demoAlbumId = "9001"
 
     public static let ownProfileId = 1_000
     public static let geohash = "gcvwr3"
@@ -59,7 +69,8 @@ public enum demoMode {
         people.first { $0.id == id }
     }
 
-    static var now: Int64 { Int64(Date().timeIntervalSince1970 * 1000) }
+    // Fixed at launch so message IDs stay the same on every refresh instead of piling up as new messages
+    static let now: Int64 = Int64(Date().timeIntervalSince1970 * 1000)
 }
 
 public final class demoURLProtocol: URLProtocol {
@@ -82,7 +93,12 @@ enum demoResponses {
         let path = url.path
 
         if url.host?.contains("cdns.grindr.com") == true {
-            let id = Int(url.lastPathComponent.replacingOccurrences(of: "demo-", with: "")) ?? 0
+            let name = url.lastPathComponent
+            if name.hasPrefix("scene-") {
+                let seed = Int(name.replacingOccurrences(of: "scene-", with: "")) ?? 0
+                return (200, demoImages.scene(seed: seed), "image/png")
+            }
+            let id = Int(name.replacingOccurrences(of: "demo-", with: "")) ?? 0
             return (200, demoImages.avatar(hue: demoMode.find(id: id)?.hue ?? 0.6), "image/png")
         }
         if url.host?.contains("nativeserver") == true {
@@ -105,13 +121,75 @@ enum demoResponses {
             let conversationId = path.split(separator: "/").dropLast().last.map(String.init) ?? ""
             body = messages(conversationId: conversationId)
         } else if path.hasPrefix("/v2/albums/shares/") {
-            body = ["albums": []]
+            body = sharedAlbums(owner: Int(url.lastPathComponent) ?? 0)
+        } else if path == "/v2/albums/\(demoMode.demoAlbumId)" {
+            body = album()
+        } else if path == "/v1/albums" {
+            body = myAlbums()
+        } else if path == "/v4/chat/media/drawer" {
+            body = drawer()
         } else {
             body = [String: Any]()
         }
 
         let data = (try? JSONSerialization.data(withJSONObject: body)) ?? Data()
         return (200, data, "application/json")
+    }
+
+    // Album and drawer images load through AsyncImage's own session, so they're embedded rather than fetched
+    private static func sceneURL(_ seed: Int) -> String {
+        "data:image/png;base64,\(demoImages.scene(seed: seed).base64EncodedString())"
+    }
+
+    private static func albumContent(_ seed: Int, video: Bool = false) -> [String: Any] {
+        [
+            "contentId": 9100 + seed,
+            "contentType": video ? "video/mp4" : "image/jpeg",
+            "coverUrl": sceneURL(seed),
+            "thumbUrl": sceneURL(seed),
+            "url": sceneURL(seed),
+            "processing": false,
+        ]
+    }
+
+    private static func sharedAlbums(owner: Int) -> [String: Any] {
+        guard owner == 2000 else { return ["albums": []] }
+        return ["albums": [[
+            "albumId": Int(demoMode.demoAlbumId)!,
+            "profileId": owner,
+            "albumViewable": true,
+            "content": albumContent(1),
+            "contentCount": ["imageCount": 6, "videoCount": 0],
+        ]]]
+    }
+
+    private static func album() -> [String: Any] {
+        [
+            "albumId": Int(demoMode.demoAlbumId)!,
+            "profileId": 2000,
+            "albumViewable": true,
+            "content": (1...9).map { albumContent($0) },
+        ]
+    }
+
+    private static func myAlbums() -> [String: Any] {
+        ["albums": [
+            ["albumId": 9201, "albumName": "Holidays", "content": (10...13).map { albumContent($0) }, "sharedCount": 3],
+            ["albumId": 9202, "albumName": "Weekends", "content": (14...16).map { albumContent($0) }, "sharedCount": 1],
+        ]]
+    }
+
+    private static func drawer() -> [[String: Any]] {
+        (20...28).map { seed in
+            [
+                "id": 9300 + seed,
+                "url": sceneURL(seed),
+                "contentType": "image/jpeg",
+                "createdTs": demoMode.now - Int64(seed) * 3_600_000,
+                "used": seed % 3 == 0,
+                "takenOnGrindr": seed % 4 == 0,
+            ]
+        }
     }
 
     private static func grid() -> [String: Any] {
@@ -323,6 +401,40 @@ enum demoImages {
 
         let data = output as Data
         cache[hue] = data
+        return data
+    }
+
+    static func scene(seed: Int) -> Data {
+        let hue = CGFloat((seed * 37) % 100) / 100
+        let key = 10 + hue
+        lock.lock()
+        defer { lock.unlock() }
+        if let cached = cache[key] { return cached }
+
+        let size = 600
+        let space = CGColorSpaceCreateDeviceRGB()
+        guard let context = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return Data()
+        }
+
+        let sky = [color(hue: hue, saturation: 0.35, brightness: 0.98), color(hue: (hue + 0.05).truncatingRemainder(dividingBy: 1), saturation: 0.6, brightness: 0.85)]
+        if let gradient = CGGradient(colorsSpace: space, colors: sky as CFArray, locations: [0, 1]) {
+            context.drawLinearGradient(gradient, start: CGPoint(x: 0, y: size), end: CGPoint(x: 0, y: 0), options: [])
+        }
+        context.setFillColor(CGColor(red: 1, green: 0.97, blue: 0.85, alpha: 0.9))
+        context.fillEllipse(in: CGRect(x: 380, y: 360, width: 110, height: 110))
+        context.setFillColor(color(hue: (hue + 0.3).truncatingRemainder(dividingBy: 1), saturation: 0.45, brightness: 0.55))
+        context.fillEllipse(in: CGRect(x: -200, y: -380, width: 700, height: 600))
+        context.setFillColor(color(hue: (hue + 0.35).truncatingRemainder(dividingBy: 1), saturation: 0.55, brightness: 0.4))
+        context.fillEllipse(in: CGRect(x: 180, y: -420, width: 700, height: 580))
+
+        guard let image = context.makeImage() else { return Data() }
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, UTType.png.identifier as CFString, 1, nil) else { return Data() }
+        CGImageDestinationAddImage(destination, image, nil)
+        CGImageDestinationFinalize(destination)
+        let data = output as Data
+        cache[key] = data
         return data
     }
 

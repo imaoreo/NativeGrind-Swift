@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import NativeGrindCore
 
 /// Conversations and chat side by side on macOS and iPad landscape, a normal push stack everywhere else
 struct inboxTab: View {
     @Binding var path: [protectedRoute]
 
-    @State private var selection: inboxSelection? = nil
+    @State private var selection: inboxSelection? = Self.demoSelection
+
+    #if DEBUG
+    private static var forceSplit: Bool { demoMode.forceSplit }
+    private static var demoSelection: inboxSelection? {
+        demoMode.forceSplit ? inboxSelection(conversationId: "1000:2000", otherProfileId: 2000, title: "Alex") : nil
+    }
+    #else
+    private static let forceSplit = false
+    private static let demoSelection: inboxSelection? = nil
+    #endif
 
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -22,7 +33,7 @@ struct inboxTab: View {
         splitView
         #elseif os(iOS)
         GeometryReader { geometry in
-            if horizontalSizeClass == .regular && geometry.size.width > geometry.size.height {
+            if horizontalSizeClass == .regular && (geometry.size.width > geometry.size.height || Self.forceSplit) {
                 splitView
             } else {
                 stackView

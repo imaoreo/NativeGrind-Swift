@@ -10,6 +10,12 @@ public actor locationController {
     private var _currentGeohash: String? = nil
     
     public var currentGeohash: String? {
+        #if DEBUG
+        // Never the real saved location in demo mode, it would end up in screenshots
+        if demoMode.isEnabled {
+            return _currentGeohash ?? demoMode.geohash
+        }
+        #endif
         if let inMemory = _currentGeohash {
             return inMemory
         }
@@ -20,6 +26,9 @@ public actor locationController {
     }
     
     private init() {
+        #if DEBUG
+        if demoMode.isEnabled { return }
+        #endif
         if let local = UserDefaults.standard.string(forKey: "saved_geohash") {
             self._currentGeohash = local
         }
@@ -44,6 +53,12 @@ public actor locationController {
     private func save(_ geohash: String?) {
         let changed = geohash != currentGeohash
         self._currentGeohash = geohash
+        #if DEBUG
+        if demoMode.isEnabled {
+            if changed { NotificationCenter.default.post(name: .locationDidChange, object: nil) }
+            return
+        }
+        #endif
         if let geohash {
             UserDefaults.standard.set(geohash, forKey: "saved_geohash")
         } else {

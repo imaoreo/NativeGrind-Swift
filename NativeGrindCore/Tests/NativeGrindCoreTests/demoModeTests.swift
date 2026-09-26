@@ -41,6 +41,19 @@ struct demoModeTests {
 
         let chat = try decode(conversationMessagesResponse.self, "https://grindr.mobi/v5/chat/conversation/1000:2000/message")
         #expect(chat.messages.count == 3)
+
+        let shared = try decode(albumsSharedResponse.self, "https://grindr.mobi/v2/albums/shares/2000")
+        #expect(shared.albums.count == 1)
+        let album = try decode(albumDetails.self, "https://grindr.mobi/v2/albums/\(demoMode.demoAlbumId)")
+        #expect(album.content.count == 9)
+        let mine = try decode(myAlbumsResponse.self, "https://grindr.mobi/v1/albums")
+        #expect(mine.albums.count == 2)
+        let drawer = try decode([drawerMedia].self, "https://grindr.mobi/v4/chat/media/drawer")
+        #expect(drawer.count == 9)
+
+        let (sceneStatus, scene, _) = demoResponses.response(for: URL(string: "https://cdns.grindr.com/demo/scene-3")!)
+        #expect(sceneStatus == 200)
+        #expect(scene.starts(with: [0x89, 0x50, 0x4E, 0x47]))
     }
 
     @Test("Placeholder photos are real PNGs and nothing goes to NativeServer")
