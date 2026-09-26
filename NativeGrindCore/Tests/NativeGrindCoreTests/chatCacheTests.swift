@@ -120,31 +120,13 @@ struct chatCacheTests {
             """.utf8))
         }
 
-        #expect(try message(#"{ "imageHash": "a1b2c3d4e5f6", "mediaId": 42 }"#).mediaCacheKey == "vegek4S3hI5XlR7DLHNERZIzI1v6UZ1zlq40BgFKBvQ")
-        #expect(try message(#"{ "mediaId": 987654321, "url": null, "viewsRemaining": 1 }"#).mediaCacheKey == "beMSaWr3XWqqhnCJzvWsLlQjCTIQta3awhRVuUpQY9o")
-        #expect(try message(#"{ "imageHash": "../bad", "mediaId": 7 }"#).mediaCacheKey == "I8h_x2a8pLyyLApV5AN3NkI8DuYMDhdcagQwb5Fpxh0")
-        #expect(try message(#"{ "mediaHash": "v1d3ohash99", "mediaId": 5, "contentType": "video/mp4" }"#).mediaCacheKey == "XVqJQm1gcxZq4QqyHdq4ULH-JE2ds2QOe7p4-TYkjeo")
+        #expect(try message(#"{ "imageHash": "a1b2c3d4e5f6", "mediaId": 42 }"#).mediaCacheKey == "a1b2c3d4e5f6")
+        #expect(try message(#"{ "mediaId": 987654321, "url": null, "viewsRemaining": 1 }"#).mediaCacheKey == "media-987654321")
+        #expect(try message(#"{ "imageHash": "../bad", "mediaId": 7 }"#).mediaCacheKey == "media-7")
+        #expect(try message(#"{ "mediaHash": "v1d3ohash99", "mediaId": 5, "contentType": "video/mp4" }"#).mediaCacheKey == "v1d3ohash99")
         #expect(try message("null").mediaCacheKey == nil)
 
         #expect(chatMediaController.isValidHash("media-7") == false)
         #expect(chatMediaController.isValidHash("media-987654321"))
-    }
-
-    @Test("Hex and base64url forms of the same hash give the same key, so a video is found under one name everywhere")
-    func testHashNormalizing() throws {
-        let hex = "3dbd3027c9fda69936c6be361cd8357482689679eaacc107c76d35703f4e4589"
-        let base64url = "Pb0wJ8n9ppk2xr42HNg1dIJolnnqrMEHx201cD9ORYk"
-        #expect(chatMediaController.normalizeHash(hex) == base64url)
-        #expect(chatMediaController.normalizeHash(base64url) == base64url)
-        #expect(chatMediaController.cacheKey(from: try #require(URL(string: "https://cdn.example/919781182/\(hex)?Expires=1"))) == base64url)
-        #expect(chatMediaController.cacheKey(from: try #require(URL(string: "https://cdn.example/a/b.mp4"))) == nil)
-
-        func video(_ body: String) throws -> chatMessage {
-            try JSONDecoder().decode(chatMessage.self, from: Data("""
-            { "messageId": "1:a", "conversationId": "1:2", "senderId": 1, "timestamp": 1, "type": "Video", "body": \(body) }
-            """.utf8))
-        }
-        let opened = try video(#"{ "mediaId": 919781182, "url": "https://cdn.example/919781182/3dbd3027c9fda69936c6be361cd8357482689679eaacc107c76d35703f4e4589?Expires=1", "maxViews": 1, "viewsRemaining": 0 }"#)
-        #expect(opened.mediaCacheKey == base64url)
     }
 }

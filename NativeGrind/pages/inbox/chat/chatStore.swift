@@ -383,17 +383,10 @@ final class chatStore: ObservableObject {
     }
 
     func videoFile(for message: chatMessage) async -> URL? {
-        if let key = message.mediaCacheKey, let local = await chatMediaController.shared.localVideo(key: key) {
-            return local
+        guard let key = message.mediaCacheKey else {
+            return await mediaURL(for: message)
         }
-
-        let url = await mediaURL(for: message)
-
-        let latest = messages.first { $0.id == message.id } ?? message
-        guard let key = latest.mediaCacheKey ?? url.flatMap(chatMediaController.cacheKey(from:)) else {
-            return url
-        }
-        return await chatMediaController.shared.loadVideo(key: key, from: url)
+        return await chatMediaController.shared.loadVideo(key: key, from: await mediaURL(for: message))
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {
