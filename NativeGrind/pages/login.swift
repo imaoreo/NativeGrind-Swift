@@ -19,7 +19,6 @@ struct loginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    @EnvironmentObject private var router: navigationRouter
     @Environment(\.colorScheme) private var colorScheme
 
     private var containerWidth: CGFloat {
@@ -177,29 +176,6 @@ struct loginView: View {
             VStack(
                 spacing: 12
             ) {
-                Button(action: {
-                    router.selectedUnprotectedTab = .advancedLogin
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "applelogo")
-                            .font(.system(size: 20))
-                        Text("Sign in with Apple")
-                            .font(.headline)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(colorScheme == .dark ? Color(red: 218/255, green: 220/255, blue: 224/255) : Color.clear, lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-
                 #if !os(tvOS) && !os(visionOS)
                 Button(action: {
                     handleGoogleSignIn()
