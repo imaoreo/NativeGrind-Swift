@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CryptoKit    
 
 public actor chatMediaController {
     public static let shared = chatMediaController()
@@ -16,6 +17,38 @@ public actor chatMediaController {
 
     public static func isValidHash(_ hash: String) -> Bool {
         hash.wholeMatch(of: /^[A-Za-z0-9_-]{8,128}$/) != nil
+    }
+
+    public static func normalizeHash(_ hash: String) -> String {
+        if hash.count == 43 { return hash }
+        if hash.count == 64 {
+            var data = Data()
+            var startIndex = hash.startIndex
+            var isHex = true
+            while startIndex < hash.endIndex {
+                let endIndex = hash.index(startIndex, offsetBy: 2, limitedBy: hash.endIndex) ?? hash.endIndex
+                if let byte = UInt8(hash[startIndex..<endIndex], radix: 16) {
+                    data.append(byte)
+                } else {
+                    isHex = false
+                    break
+                }
+                startIndex = endIndex
+            }
+            if isHex {
+                return data.base64EncodedString()
+                    .replacingOccurrences(of: "+", with: "-")
+                    .replacingOccurrences(of: "/", with: "_")
+                    .replacingOccurrences(of: "=", with: "")
+            }
+        }
+        
+        let data = Data(hash.utf8)
+        let sha256 = CryptoKit.SHA256.hash(data: data)
+        return Data(sha256).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
     }
 
     public func localImage(hash: String) -> Data? {
@@ -37,7 +70,9 @@ public actor chatMediaController {
 
     public func localVideo(key: String) -> URL? {
         guard let file = localURL(for: key, fileExtension: "mp4"),
-              FileManager.default.fileExists(atPath: file.path) else { return nil }
+              FileManager.default.fileExists(atPath: file.path) else {
+            return nil
+        }
         return file
     }
 
@@ -53,7 +88,8 @@ public actor chatMediaController {
         let download = Task { await self.fetch(hash: key, from: url, to: file) != nil ? file : nil }
         videoDownloads[key] = download
         defer { videoDownloads[key] = nil }
-        return await download.value
+        let result = await download.value
+        return result
     }
 
     public func keep(_ data: Data, key: String, isVideo: Bool) async {
@@ -76,15 +112,20 @@ public actor chatMediaController {
         }
 
         return nil
-    }
+    } 
 
     public func download(_ url: URL) async -> Data? {
         guard let (data, response) = try? await URLSession.shared.data(from: url),
-              let http = response as? HTTPURLResponse,
-              (200...299).contains(http.statusCode),
-              !data.isEmpty else {
+              let http = response as? HTTPURLResponse else {
+            await errorManager.shared.warn("chatMediaController", "download failed (network error) for: \(url.absoluteString)")
             return nil
         }
+        
+        guard (200...299).contains(http.statusCode), !data.isEmpty else {
+            await errorManager.shared.warn("chatMediaController", "download failed (HTTP \(http.statusCode), size \(data.count)) for: \(url.absoluteString)")
+            return nil
+        }
+        
         return data
     }
 
@@ -93,6 +134,7 @@ public actor chatMediaController {
         guard let (data, response) = try? await APIClient.shared.rawRequest(.getNativeServerChatMedia(mediaHash: hash)),
               response.statusCode == 200,
               !data.isEmpty else {
+            await errorManager.shared.warn("chatMediaController", "downloadFromNativeServer failed or returned empty for hash: \(hash)")
             return nil
         }
         return data
@@ -120,12 +162,25 @@ public actor chatMediaController {
         let response = await wsController.shared.sendAndWait(
             request: .uploadChatMedia(mediaHash: hash, base64Data: data.base64EncodedString()),
             expectedEvent: .onChatMediaUploaded,
-            timeout: 10 + Double(data.count) / 1_000_000
+            timeout: 120
         )
         if response?.status != .success {
             knownOnServer.remove(hash)
             await errorManager.shared.warn("chatMediaController", "Chat media \(hash) backup failed, \(response?.message ?? "no response from NativeServer")")
         }
+    }
+
+    public func isBackedUp(hash: String) async -> Bool {
+        if knownOnServer.contains(hash) { 
+            return true 
+        }
+        guard appEnvironment.isServerEnabled else { return false }
+        if let (_, response) = try? await APIClient.shared.rawRequest(.getNativeServerChatMedia(mediaHash: hash, method: .head)) {
+            let exists = response.statusCode == 200
+            if exists { knownOnServer.insert(hash) }
+            return exists
+        }
+        return false
     }
 
     private var directory: URL? {
@@ -168,17 +223,18 @@ public extension chatMessage {
     }
 
     var mediaCacheKey: String? {
-        if let hash = body?.imageHash ?? body?.mediaHash, chatMediaController.isValidHash(hash) {
-            return hash
+        if let hash = body?.imageHash ?? body?.mediaHash {
+            let normalized = chatMediaController.normalizeHash(hash)
+            if chatMediaController.isValidHash(normalized) { return normalized }
         }
-        if let urlStr = body?.url, let url = URL(string: urlStr) {
+        if let urlStr = body?.url ?? body?.urlPath, let url = URL(string: urlStr) {
             let hash = (url.lastPathComponent as NSString).deletingPathExtension
-            if chatMediaController.isValidHash(hash) {
-                return hash
-            }
+            let normalized = chatMediaController.normalizeHash(hash)
+            if chatMediaController.isValidHash(normalized) { return normalized }
         }
         if let mediaId = body?.mediaId {
-            return "media-\(Int64(mediaId))"
+            let hash = "media-\(Int64(mediaId))"
+            return chatMediaController.normalizeHash(hash)
         }
         return nil
     }

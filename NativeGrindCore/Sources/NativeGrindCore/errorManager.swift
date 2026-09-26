@@ -61,7 +61,6 @@ public final class errorManager: ObservableObject {
         let newEntry = logEntry(level: level, prefix: prefix, message: message)
         self.logs.append(newEntry)
         
-        // Prints out to XCode
         let consoleString = "[\(level.rawValue)] \(prefix): \(message)"
         switch level {
             case .error: print("🔴 \(consoleString)")
@@ -69,7 +68,6 @@ public final class errorManager: ObservableObject {
             case .log:   print("🟢 \(consoleString)")
         }
         
-        // This controls what is shown on the UI
         if level == .error {
             self.activeToast = newEntry
             
@@ -98,7 +96,6 @@ public final class errorManager: ObservableObject {
         createEntry(level: .error, prefix: prefix, message: message)
     }
     
-    // This will be a dev button
     public func clearLogs() {
         self.logs.removeAll()
     }

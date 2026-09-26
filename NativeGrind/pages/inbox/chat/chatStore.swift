@@ -383,10 +383,20 @@ final class chatStore: ObservableObject {
     }
 
     func videoFile(for message: chatMessage) async -> URL? {
-        guard let key = message.mediaCacheKey else {
-            return await mediaURL(for: message)
+        guard let url = await mediaURL(for: message) else { return nil }
+        
+        let latest = messages.first { $0.id == message.id } ?? message
+        let key = latest.mediaCacheKey ?? {
+            let hash = (url.lastPathComponent as NSString).deletingPathExtension
+            let normalized = chatMediaController.normalizeHash(hash)
+            return chatMediaController.isValidHash(normalized) ? normalized : nil
+        }()
+        
+        guard let key else {
+            return url
         }
-        return await chatMediaController.shared.loadVideo(key: key, from: await mediaURL(for: message))
+        
+        return await chatMediaController.shared.loadVideo(key: key, from: url)
     }
 
     func mediaURL(for message: chatMessage) async -> URL? {
