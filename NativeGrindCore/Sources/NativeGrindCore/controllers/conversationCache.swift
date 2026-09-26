@@ -62,7 +62,11 @@ public actor conversationCache {
 
         var byId = Dictionary(older.messages.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
         for message in newer.messages {
-            byId[message.id] = message
+            var updated = message
+            if let old = byId[message.id] {
+                updated = updated.preservingMediaKeys(from: old)
+            }
+            byId[message.id] = updated
         }
 
         let merged = cachedConversation(

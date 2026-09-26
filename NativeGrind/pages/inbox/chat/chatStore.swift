@@ -74,7 +74,11 @@ final class chatStore: ObservableObject {
     private func merge(_ incoming: [chatMessage]) {
         var byId = Dictionary(messages.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
         for message in incoming {
-            byId[message.id] = message
+            var updated = message
+            if let older = byId[message.id] {
+                updated = updated.preservingMediaKeys(from: older)
+            }
+            byId[message.id] = updated
         }
         messages = byId.values.sorted { $0.timestamp < $1.timestamp }
         persist()
@@ -82,7 +86,7 @@ final class chatStore: ObservableObject {
 
     private func replace(_ message: chatMessage) {
         if let index = messages.firstIndex(where: { $0.id == message.id }) {
-            messages[index] = message
+            messages[index] = message.preservingMediaKeys(from: messages[index])
             persist()
         }
     }
@@ -374,6 +378,7 @@ final class chatStore: ObservableObject {
         guard let key = fresh.mediaCacheKey ?? message.mediaCacheKey else {
             return await chatMediaController.shared.download(url)
         }
+        
         return await chatMediaController.shared.loadImage(hash: key, from: url)
     }
 
