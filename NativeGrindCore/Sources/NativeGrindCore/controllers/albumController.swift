@@ -122,7 +122,8 @@ public actor albumController {
     }
 
     private func fetchBackup(albumId: String) async -> nsAlbumBackup? {
-        try? await APIClient.shared.request(.getNativeServerAlbum(albumId: albumId), shouldErrorMessage: false)
+        guard appEnvironment.isServerEnabled else { return nil }
+        return try? await APIClient.shared.request(.getNativeServerAlbum(albumId: albumId), shouldErrorMessage: false)
     }
 
     private func backUp(_ contents: [albumContent], albumId: String, ownerProfileId: String) async {

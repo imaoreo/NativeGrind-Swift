@@ -151,7 +151,7 @@ public actor profileController {
                 data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash), shouldErrorMessage: false)
             }
 
-            if data == nil {
+            if data == nil, appEnvironment.isServerEnabled {
                 data = try? await APIClient.shared.request(.getNativeServerProfileImage(mediaHash: mediaHash), shouldErrorMessage: false)
             }
             

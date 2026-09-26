@@ -55,6 +55,9 @@ final class appDelegate: NSObject, UIApplicationDelegate {
 @main
 struct myApp: App {
     @StateObject private var router = navigationRouter()
+    #if INCLUDE_SERVER
+    @StateObject private var legal = legalController.shared
+    #endif
     #if os(iOS)
     @UIApplicationDelegateAdaptor(appDelegate.self) private var _appDelegate
     #endif
@@ -75,8 +78,10 @@ struct myApp: App {
         
         Task { @MainActor in
             #if INCLUDE_SERVER
-                wsController.shared.connect(to: .nativeServer)
-                Task { await syncController.shared.start() }
+                // Nothing is sent to NativeServer until the current terms have been accepted
+                if !legalController.shared.needsAcceptance {
+                    Self.startNativeServer()
+                }
             #endif
             
             for await isAuthenticated in sessionManager.shared.$isAuthenticated.values {
@@ -89,36 +94,64 @@ struct myApp: App {
         }
     }
     
+    #if INCLUDE_SERVER
+    @MainActor private static var hasStartedNativeServer = false
+
+    @MainActor static func startNativeServer() {
+        guard !hasStartedNativeServer else { return }
+        hasStartedNativeServer = true
+        wsController.shared.connect(to: .nativeServer)
+        Task { await syncController.shared.start() }
+    }
+    #endif
+
+    private var app: some View {
+        contentView()
+            .withToastOverlay()
+            .environmentObject(router)
+            .onOpenURL { url in
+                #if INCLUDE_SERVER
+                if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
+                    let pathOrHost = url.host ?? url.path
+                    if pathOrHost == "login" || pathOrHost == "/login" {
+                        if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+                           let queryItems = components.queryItems,
+                           let code = queryItems.first(where: { $0.name == "code" })?.value {
+                            wsController.shared.send(request: .getPublicKey(code: code))
+                        }
+                    }
+                    return
+                }
+                #endif
+                
+                #if os(iOS)
+                if let scheme = url.scheme, scheme.lowercased() != "nativegrind" {
+                    _ = ApplicationDelegate.shared.application(
+                        UIApplication.shared,
+                        open: url,
+                        options: [:]
+                    )
+                }
+                #endif
+            }
+    }
+
     var body: some Scene {
         WindowGroup {
-            contentView()
-                .withToastOverlay()
-                .environmentObject(router)
-                .onOpenURL { url in
-                    #if INCLUDE_SERVER
-                    if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
-                        let pathOrHost = url.host ?? url.path
-                        if pathOrHost == "login" || pathOrHost == "/login" {
-                            if let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-                               let queryItems = components.queryItems,
-                               let code = queryItems.first(where: { $0.name == "code" })?.value {
-                                wsController.shared.send(request: .getPublicKey(code: code))
-                            }
-                        }
-                        return
+            #if INCLUDE_SERVER
+            Group {
+                if legal.needsAcceptance {
+                    legalAcceptanceView(legal: legal) {
+                        Self.startNativeServer()
                     }
-                    #endif
-                    
-                    #if os(iOS)
-                    if let scheme = url.scheme, scheme.lowercased() != "nativegrind" {
-                        _ = ApplicationDelegate.shared.application(
-                            UIApplication.shared,
-                            open: url,
-                            options: [:]
-                        )
-                    }
-                    #endif
+                } else {
+                    app
                 }
+            }
+            .task { await legal.refresh() }
+            #else
+            app
+            #endif
         }
         #if os(macOS)
         Settings {

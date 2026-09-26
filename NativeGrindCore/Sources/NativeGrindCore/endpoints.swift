@@ -456,6 +456,19 @@ public extension endpoint {
         )
     }
 
+    static func getLegalVersions() -> endpoint<legalVersions> {
+        return endpoint<legalVersions>(
+            path: "/public/legal",
+            method: .get,
+            queryItems: nil,
+            body: nil,
+            isAuthedRoute: false,
+            networkHandlers: [],
+            shouldRetryOn401: false,
+            baseURL: .nativeServer
+        )
+    }
+
     // Media
 
     static func getDeviceKeyChallenge() -> endpoint<deviceKeyChallengeResponse> {

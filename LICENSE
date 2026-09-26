@@ -1,5 +1,5 @@
 NATIVE-GRIND PERSONAL USE LICENCE (NON-COMMERCIAL)
-Version 1.1
+Version 1.2
 
 Copyright © 2026 Jay Brammeld
 All rights reserved.
@@ -11,6 +11,7 @@ TL;DR
 - Authorization Required: You cannot connect any custom client to the NativeServer API without explicit authorization from the developer, following the [Developer Authorization Policy](./AUTHORIZATION.md)
 - Transparency Allowed: You are encouraged to share and study the source code for learning and collaboration, provided you keep the original credits intact.
 - Risk Acknowledgment: The software is provided "as is" and without warranty; you accept all risks, including potential account bans from third-party services.
+- NativeServer Terms: The standard build is covered by this licence alone. Using NativeServer (NS builds) also requires accepting the Terms of Service and Privacy Policy at https://nativegrind.imaoreo.dev.
 - Legal Jurisdiction: Any disputes are governed by the laws and courts of Scotland.
 
 1. Definitions
@@ -63,7 +64,7 @@ copyright notices, or attribution text.
 All Commercial Use is prohibited unless you have prior written permission from
 the copyright holder.
 
-To request commercial rights, contact the copyright holder via the information provided in the repository's README.md file.
+To request commercial rights, contact the copyright holder at jay@imaoreo.dev.
 
 5. Restrictions
 
@@ -113,7 +114,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 10. Entire agreement
 
 This licence constitutes the entire agreement governing your use of the
-Software for Personal Use.
+Software for Personal Use, except that use of NativeServer is also governed
+by the documents in Section 14.
 
 11. Governing law
 
@@ -128,3 +130,15 @@ with this licence shall be subject to the exclusive jurisdiction of the Scottish
 13.  Grindr
    
 Grindr is a registered trademark of Grindr LLC. This project is an independent, unofficial client and is not affiliated with, authorised, sponsored, or endorsed by Grindr LLC in any way.
+
+14. NativeServer Terms of Service and Privacy Policy
+
+Builds of the Software that do not include NativeServer ("standard builds") are governed by this licence alone.
+
+Builds that include NativeServer ("NS builds") connect to the NativeServer service. Before using NativeServer you must accept:
+- the NativeServer Terms of Service: https://nativegrind.imaoreo.dev/terms/
+- the NativeServer Privacy Policy: https://nativegrind.imaoreo.dev/privacy/
+
+This licence continues to govern the Software itself in NS builds. Where this licence and the Terms of Service conflict about the NativeServer service, the Terms of Service take priority.
+
+Contact: jay@imaoreo.dev

@@ -20,7 +20,7 @@ If you are building a custom client or fork, You should be able to connect to th
 
 If your custom client is complete, secure, and you want it added to the approved clients list.
 
-* **How to apply:** Email the contact address in our `README.md`. Include your project name, scope, security architecture, and a link to your source code.
+* **How to apply:** Email jay@imaoreo.dev. Include your project name, scope, security architecture, and a link to your source code.
 * **Review:** Expect a 7-14 day review period. If approved, you will be added to our public registry.
 
 ---
