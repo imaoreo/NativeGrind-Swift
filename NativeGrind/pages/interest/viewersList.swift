@@ -21,7 +21,7 @@ struct viewersList: View {
         Group {
             if let response {
                 if response.profiles.isEmpty && response.previews.isEmpty {
-                    ContentUnavailableView("No Views Yet", systemImage: "eye", description: Text("People who view your profile show up here."))
+                    emptyStateView("No Views Yet", systemImage: "eye", description: Text("People who view your profile show up here."))
                 } else {
                     list(response)
                 }
@@ -29,7 +29,7 @@ struct viewersList: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ContentUnavailableView("Couldn't Load Views", systemImage: "eye.slash", description: Text("Pull to try again."))
+                emptyStateView("Couldn't Load Views", systemImage: "eye.slash", description: Text("Pull to try again."))
             }
         }
         .refreshable {

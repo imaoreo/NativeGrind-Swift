@@ -7,7 +7,7 @@ let package = Package(
     name: "NativeGrindCore",
     platforms: [
         .watchOS(.v10),
-        .iOS(.v17),
+        .iOS(.v16),
         .macOS(.v14),
         .tvOS(.v17),
         .visionOS(.v2)

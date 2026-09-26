@@ -46,7 +46,7 @@ struct chatSwipeToReply: ViewModifier {
                 including: isEnabled ? .all : .subviews
             )
             #if os(iOS)
-            .sensoryFeedback(.impact, trigger: offset >= threshold) { _, reached in reached }
+            .impactFeedback(trigger: offset >= threshold)
             #endif
         #endif
     }

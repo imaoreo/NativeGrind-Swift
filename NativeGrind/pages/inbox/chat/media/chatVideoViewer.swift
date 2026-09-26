@@ -25,7 +25,7 @@ struct chatVideoViewer: View {
             if let player {
                 VideoPlayer(player: player)
             } else if failed {
-                ContentUnavailableView("Couldn't Load Video", systemImage: "video.slash")
+                emptyStateView("Couldn't Load Video", systemImage: "video.slash")
                     .foregroundStyle(.white)
             } else {
                 ProgressView()

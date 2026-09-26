@@ -9,7 +9,7 @@ import SwiftUI
 import NativeGrindCore
 
 struct chatSharedMedia: View {
-    let store: chatStore
+    @ObservedObject var store: chatStore
 
     @Environment(\.dismiss) private var dismiss
 
@@ -107,7 +107,7 @@ struct chatSharedMedia: View {
     @ViewBuilder
     private var content: some View {
         if store.sharedMedia.isEmpty {
-            ContentUnavailableView("No Media Yet", systemImage: "photo.on.rectangle", description: Text("Photos and videos sent in this chat show up here."))
+            emptyStateView("No Media Yet", systemImage: "photo.on.rectangle", description: Text("Photos and videos sent in this chat show up here."))
         } else {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 2, pinnedViews: .sectionHeaders) {

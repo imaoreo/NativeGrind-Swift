@@ -82,7 +82,7 @@ struct albumView: View {
                 .padding(gridSpacing)
             }
         } else if hasLoaded {
-            ContentUnavailableView(
+            emptyStateView(
                 "Album Unavailable",
                 systemImage: "photo.on.rectangle.angled",
                 description: Text("It may have expired or been unshared, and there's no backup of it yet.")

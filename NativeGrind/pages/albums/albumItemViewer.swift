@@ -30,20 +30,7 @@ struct albumItemViewer: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 0) {
-                    ForEach(items) { item in
-                        albumPage(item: item, isCurrent: item.id == currentId, isZoomed: $isZoomed)
-                            .containerRelativeFrame([.horizontal, .vertical])
-                            .id(item.id)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $currentId)
-            .scrollIndicators(.hidden)
-            .scrollDisabled(isZoomed)
+            pager
         }
         .overlay(alignment: .top) {
             topBar
@@ -64,9 +51,46 @@ struct albumItemViewer: View {
             if direction == .right { move(by: 1) }
         }
         #endif
-        .onChange(of: currentId) { _, _ in
+        .onChangeCompat(of: currentId) { _, _ in
             isZoomed = false
         }
+    }
+
+    @ViewBuilder
+    private var pager: some View {
+        #if os(iOS)
+        if #available(iOS 17, *) {
+            scrollPager
+        } else {
+            TabView(selection: $currentId) {
+                ForEach(items) { item in
+                    albumPage(item: item, isCurrent: item.id == currentId, isZoomed: $isZoomed)
+                        .tag(Optional(item.id))
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+        }
+        #else
+        scrollPager
+        #endif
+    }
+
+    @available(iOS 17, *)
+    private var scrollPager: some View {
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(items) { item in
+                    albumPage(item: item, isCurrent: item.id == currentId, isZoomed: $isZoomed)
+                        .containerRelativeFrame([.horizontal, .vertical])
+                        .id(item.id)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $currentId)
+        .scrollIndicators(.hidden)
+        .scrollDisabled(isZoomed)
     }
 
     private var topBar: some View {
@@ -156,11 +180,11 @@ private struct albumPage: View {
                     photo(url)
                 }
             } else {
-                ContentUnavailableView("Not Available", systemImage: "photo")
+                emptyStateView("Not Available", systemImage: "photo")
                     .foregroundStyle(.white)
             }
         }
-        .onChange(of: isCurrent) { _, current in
+        .onChangeCompat(of: isCurrent) { _, current in
             if current {
                 player?.play()
             } else {
@@ -194,9 +218,7 @@ private struct albumPage: View {
                     .scaleEffect(scale)
                     #if !os(tvOS)
                     .gesture(
-                        MagnifyGesture()
-                            .onChanged { setScale(min(max(lastScale * $0.magnification, 1), 5)) }
-                            .onEnded { _ in lastScale = scale }
+                        pinchGesture { setScale(min(max(lastScale * $0, 1), 5)) } ended: { lastScale = scale }
                     )
                     .onTapGesture(count: 2) {
                         withAnimation(.spring(duration: 0.3)) {
@@ -206,7 +228,7 @@ private struct albumPage: View {
                     }
                     #endif
             case .failure:
-                ContentUnavailableView("Couldn't Load Photo", systemImage: "photo")
+                emptyStateView("Couldn't Load Photo", systemImage: "photo")
                     .foregroundStyle(.white)
             default:
                 ProgressView().tint(.white)

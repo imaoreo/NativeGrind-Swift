@@ -58,7 +58,7 @@ struct inboxTab: View {
                     // Fresh chat state per conversation
                     .id(selection.conversationId)
                 } else {
-                    ContentUnavailableView(
+                    emptyStateView(
                         "No Conversation Selected",
                         systemImage: "bubble.left.and.bubble.right",
                         description: Text("Pick a conversation from the list.")

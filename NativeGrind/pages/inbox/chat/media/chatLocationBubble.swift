@@ -16,20 +16,37 @@ struct chatLocationBubble: View {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
+    private var region: MKCoordinateRegion {
+        MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+    }
+
     var body: some View {
-        Map(initialPosition: .region(MKCoordinateRegion(
-            center: coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        ))) {
-            Marker("Location", coordinate: coordinate)
-        }
-        .allowsHitTesting(false)
+        map
+            .allowsHitTesting(false)
         .frame(width: 220, height: 150)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         #if !os(tvOS)
         .contentShape(RoundedRectangle(cornerRadius: 10))
         .onTapGesture(perform: openInMaps)
         #endif
+    }
+
+    @ViewBuilder
+    private var map: some View {
+        if #available(iOS 17, *) {
+            Map(initialPosition: .region(region)) {
+                Marker("Location", coordinate: coordinate)
+            }
+        } else {
+            Map(coordinateRegion: .constant(region), annotationItems: [pin(coordinate: coordinate)]) { pin in
+                MapMarker(coordinate: pin.coordinate)
+            }
+        }
+    }
+
+    private struct pin: Identifiable {
+        let id = 0
+        let coordinate: CLLocationCoordinate2D
     }
 
     #if !os(tvOS)

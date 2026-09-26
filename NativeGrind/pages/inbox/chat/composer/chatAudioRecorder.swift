@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+import Combine
 import AVFoundation
 import NativeGrindCore
 
 #if !os(tvOS)
 
 @MainActor
-@Observable
-final class chatAudioRecorder {
+final class chatAudioRecorder: ObservableObject {
     static let contentType = "audio/aac"
     static let maxDuration: TimeInterval = 60
 
-    private(set) var isRecording = false
-    private(set) var startedAt: Date? = nil
+    @Published private(set) var isRecording = false
+    @Published private(set) var startedAt: Date? = nil
 
     private var recorder: AVAudioRecorder? = nil
     private var fileURL: URL? = nil
@@ -102,7 +102,12 @@ final class chatAudioRecorder {
         #if os(macOS)
         return await AVCaptureDevice.requestAccess(for: .audio)
         #else
-        return await AVAudioApplication.requestRecordPermission()
+        if #available(iOS 17, *) {
+            return await AVAudioApplication.requestRecordPermission()
+        }
+        return await withCheckedContinuation { continuation in
+            AVAudioSession.sharedInstance().requestRecordPermission { continuation.resume(returning: $0) }
+        }
         #endif
     }
 }

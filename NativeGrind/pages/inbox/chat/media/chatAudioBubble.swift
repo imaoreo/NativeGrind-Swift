@@ -12,7 +12,7 @@ struct chatAudioBubble: View {
     let message: chatMessage
     let isMine: Bool
 
-    @Environment(chatAudioPlayer.self) private var player
+    @EnvironmentObject private var player: chatAudioPlayer
 
     private var isCurrent: Bool { player.isCurrent(message) }
 

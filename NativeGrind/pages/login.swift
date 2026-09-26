@@ -19,7 +19,7 @@ struct loginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    @Environment(navigationRouter.self) private var router
+    @EnvironmentObject private var router: navigationRouter
     @Environment(\.colorScheme) private var colorScheme
 
     private var containerWidth: CGFloat {

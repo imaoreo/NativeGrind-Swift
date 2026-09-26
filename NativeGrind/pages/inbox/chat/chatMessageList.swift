@@ -9,7 +9,7 @@ import SwiftUI
 import NativeGrindCore
 
 struct chatMessageList: View {
-    let store: chatStore
+    @ObservedObject var store: chatStore
     let canReply: Bool
     let otherName: String
 
@@ -77,8 +77,13 @@ struct chatMessageList: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
             }
-            .defaultScrollAnchor(.bottom)
-            .onChange(of: store.messages.last?.id) { oldId, newId in
+            .startsAtBottom()
+            .onAppear {
+                if let last = store.messages.last?.id {
+                    proxy.scrollTo(last, anchor: .bottom)
+                }
+            }
+            .onChangeCompat(of: store.messages.last?.id) { oldId, newId in
                 guard let newId else { return }
                 if oldId == nil {
                     proxy.scrollTo(newId, anchor: .bottom)
@@ -88,17 +93,17 @@ struct chatMessageList: View {
                     }
                 }
             }
-            .onChange(of: store.messages.first?.id) { _, _ in
+            .onChangeCompat(of: store.messages.first?.id) { _, _ in
                 guard let anchor = store.consumeOlderPageAnchor() else { return }
                 proxy.scrollTo(anchor, anchor: .top)
             }
-            .onChange(of: store.jumpTargetId) { _, _ in
+            .onChangeCompat(of: store.jumpTargetId) { _, _ in
                 guard let target = store.consumeJumpTarget() else { return }
                 withAnimation {
                     proxy.scrollTo(target, anchor: .center)
                 }
             }
-            .onChange(of: store.isOtherTyping) { _, typing in
+            .onChangeCompat(of: store.isOtherTyping) { _, typing in
                 guard typing else { return }
                 withAnimation {
                     proxy.scrollTo("typing", anchor: .bottom)

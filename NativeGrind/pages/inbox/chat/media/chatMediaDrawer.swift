@@ -12,7 +12,7 @@ import PhotosUI
 import NativeGrindCore
 
 struct chatMediaDrawer: View {
-    let store: chatStore
+    @ObservedObject var store: chatStore
 
     @Environment(\.dismiss) private var dismiss
 
@@ -76,7 +76,7 @@ struct chatMediaDrawer: View {
             }
             #if !os(tvOS)
             .photosPicker(isPresented: $showPhotoPicker, selection: $pickedItem, matching: .any(of: [.images, .videos]))
-            .onChange(of: pickedItem) { _, item in
+            .onChangeCompat(of: pickedItem) { _, item in
                 guard let item else { return }
                 pickedItem = nil
                 Task { await upload(await chatOutgoingMedia.load(from: item)) }
@@ -157,7 +157,7 @@ struct chatMediaDrawer: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .overlay {
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(.separator)
+                    .stroke(separatorStyle)
             }
             .padding()
 

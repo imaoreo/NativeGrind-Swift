@@ -54,7 +54,7 @@ final class appDelegate: NSObject, UIApplicationDelegate {
 
 @main
 struct myApp: App {
-    @State private var router = navigationRouter()
+    @StateObject private var router = navigationRouter()
     #if os(iOS)
     @UIApplicationDelegateAdaptor(appDelegate.self) private var _appDelegate
     #endif
@@ -93,7 +93,7 @@ struct myApp: App {
         WindowGroup {
             contentView()
                 .withToastOverlay()
-                .environment(router)
+                .environmentObject(router)
                 .onOpenURL { url in
                     #if INCLUDE_SERVER
                     if let scheme = url.scheme, scheme.lowercased() == "nativegrind" {
@@ -162,10 +162,9 @@ struct myApp: App {
 struct contentView: View {
     @StateObject private var _sessionManager = sessionManager.shared
     
-    @Environment(navigationRouter.self) private var router
+    @EnvironmentObject private var router: navigationRouter
     
     var body: some View {
-        @Bindable var router = router
         Group {
             if _sessionManager.isAuthenticated {
                 // ==========================================
@@ -259,7 +258,7 @@ struct contentView: View {
                 }
             }
         }
-        .environment(router)
+        .environmentObject(router)
     }
 }
 

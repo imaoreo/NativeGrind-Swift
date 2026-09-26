@@ -33,11 +33,11 @@ struct chatView: View {
     let title: String
     let presentation: chatPresentation
 
-    @State private var store: chatStore
+    @StateObject private var store: chatStore
     @State private var draft = ""
     @State private var showProfile: identifiableId? = nil
     @State private var confirmSendLocation = false
-    @State private var audioPlayer = chatAudioPlayer()
+    @StateObject private var audioPlayer = chatAudioPlayer()
     @State private var viewingPhoto: chatMessage? = nil
     @State private var openedAlbum: albumTarget? = nil
     @State private var viewingVideo: chatMessage? = nil
@@ -49,7 +49,7 @@ struct chatView: View {
     @State private var showFileImporter = false
     #endif
     #if !os(tvOS)
-    @State private var recorder = chatAudioRecorder()
+    @StateObject private var recorder = chatAudioRecorder()
     #endif
 
     @ObservedObject private var sockets = wsController.shared
@@ -58,7 +58,7 @@ struct chatView: View {
     init(conversationId: String, otherProfileId: Int, title: String, presentation: chatPresentation = .pushed) {
         self.title = title
         self.presentation = presentation
-        self._store = State(initialValue: chatStore(conversationId: conversationId, otherProfileId: otherProfileId))
+        self._store = StateObject(wrappedValue: chatStore(conversationId: conversationId, otherProfileId: otherProfileId))
     }
 
     private var canReply: Bool {
@@ -140,7 +140,7 @@ struct chatView: View {
         }
         #if !os(tvOS)
         .photosPicker(isPresented: $showMediaPicker, selection: $pickedItem, matching: .any(of: [.images, .videos]))
-        .onChange(of: pickedItem) { _, item in
+        .onChangeCompat(of: pickedItem) { _, item in
             guard let item else { return }
             pickedItem = nil
             Task { await prepare(item) }
@@ -164,7 +164,7 @@ struct chatView: View {
                 await store.refreshLatest()
             }
         }
-        .onChange(of: isSocketConnected) { _, connected in
+        .onChangeCompat(of: isSocketConnected) { _, connected in
             if connected {
                 Task { await store.refreshLatest() }
             }
@@ -172,18 +172,18 @@ struct chatView: View {
         .onReceive(sockets.publisher(for: .onChatMessage)) { store.receive($0) }
         .onReceive(sockets.publisher(for: .onConversationRead)) { store.receive($0) }
         .onReceive(sockets.publisher(for: .onTypingStatus)) { store.receive($0) }
-        .onChange(of: canReply) { _, canReply in
+        .onChangeCompat(of: canReply) { _, canReply in
             if !canReply {
                 store.cancelReply()
             }
         }
-        .onChange(of: draft) { oldValue, newValue in
+        .onChangeCompat(of: draft) { oldValue, newValue in
             let wasEmpty = oldValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             let isEmpty = newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             guard wasEmpty != isEmpty else { return }
             Task { await store.setTyping(!isEmpty) }
         }
-        .environment(audioPlayer)
+        .environmentObject(audioPlayer)
         .environment(\.openChatPhoto) { message in
             viewingPhoto = message
         }

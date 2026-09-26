@@ -10,7 +10,7 @@ import NativeGrindCore
 
 struct chatMessageMenu: View {
     let message: chatMessage
-    let store: chatStore
+    @ObservedObject var store: chatStore
     let canReply: Bool
 
     private var isMine: Bool { store.isMine(message) }

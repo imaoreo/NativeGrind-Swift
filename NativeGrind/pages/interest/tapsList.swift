@@ -17,7 +17,7 @@ struct tapsList: View {
         Group {
             if let taps {
                 if taps.isEmpty {
-                    ContentUnavailableView("No Taps Yet", systemImage: "flame", description: Text("Taps you receive show up here."))
+                    emptyStateView("No Taps Yet", systemImage: "flame", description: Text("Taps you receive show up here."))
                 } else {
                     list(taps)
                 }
@@ -25,7 +25,7 @@ struct tapsList: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ContentUnavailableView("Couldn't Load Taps", systemImage: "flame", description: Text("Pull to try again."))
+                emptyStateView("Couldn't Load Taps", systemImage: "flame", description: Text("Pull to try again."))
             }
         }
         .refreshable {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 enum unprotectedRoute: Hashable {
     case login
@@ -48,13 +49,12 @@ extension protectedRoute: View {
     }
 }
 
-@Observable
-final class navigationRouter {
-    var selectedUnprotectedTab: unprotectedRoute = .login
-    var selectedProtectedTab: protectedRoute = .browse
+final class navigationRouter: ObservableObject {
+    @Published var selectedUnprotectedTab: unprotectedRoute = .login
+    @Published var selectedProtectedTab: protectedRoute = .browse
     
-    var unprotectedPath: [unprotectedRoute] = []
-    var protectedPath: [protectedRoute] = []
+    @Published var unprotectedPath: [unprotectedRoute] = []
+    @Published var protectedPath: [protectedRoute] = []
     
     func getCurrentUnprotected() -> unprotectedRoute? {
         unprotectedPath.last

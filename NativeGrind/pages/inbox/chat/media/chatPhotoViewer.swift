@@ -72,7 +72,7 @@ struct chatPhotoViewer: View {
                 }
                 #endif
         } else if failed {
-            ContentUnavailableView("Couldn't Load Photo", systemImage: "photo")
+            emptyStateView("Couldn't Load Photo", systemImage: "photo")
                 .foregroundStyle(.white)
         } else {
             ProgressView()
@@ -117,16 +117,14 @@ struct chatPhotoViewer: View {
 
     #if !os(tvOS)
     private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                scale = min(max(lastScale * value.magnification, 1), maxScale)
+        pinchGesture { magnification in
+            scale = min(max(lastScale * magnification, 1), maxScale)
+        } ended: {
+            lastScale = scale
+            if scale <= 1 {
+                withAnimation(.spring(duration: 0.3)) { resetZoom() }
             }
-            .onEnded { _ in
-                lastScale = scale
-                if scale <= 1 {
-                    withAnimation(.spring(duration: 0.3)) { resetZoom() }
-                }
-            }
+        }
     }
 
     private var dragGesture: some Gesture {

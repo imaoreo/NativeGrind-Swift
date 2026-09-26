@@ -37,20 +37,7 @@ struct profilePhotoViewer: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 0) {
-                    ForEach(hashes, id: \.self) { hash in
-                        profilePhotoPage(mediaHash: hash, isCurrent: hash == currentHash, isZoomed: $isZoomed)
-                            .containerRelativeFrame([.horizontal, .vertical])
-                            .id(hash)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $currentHash)
-            .scrollIndicators(.hidden)
-            .scrollDisabled(isZoomed)
+            pager
         }
         .overlay(alignment: .top) {
             topBar
@@ -71,9 +58,46 @@ struct profilePhotoViewer: View {
             if direction == .right { move(by: 1) }
         }
         #endif
-        .onChange(of: currentHash) { _, _ in
+        .onChangeCompat(of: currentHash) { _, _ in
             isZoomed = false
         }
+    }
+
+    @ViewBuilder
+    private var pager: some View {
+        #if os(iOS)
+        if #available(iOS 17, *) {
+            scrollPager
+        } else {
+            TabView(selection: $currentHash) {
+                ForEach(hashes, id: \.self) { hash in
+                    profilePhotoPage(mediaHash: hash, isCurrent: hash == currentHash, isZoomed: $isZoomed)
+                        .tag(Optional(hash))
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+        }
+        #else
+        scrollPager
+        #endif
+    }
+
+    @available(iOS 17, *)
+    private var scrollPager: some View {
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(hashes, id: \.self) { hash in
+                    profilePhotoPage(mediaHash: hash, isCurrent: hash == currentHash, isZoomed: $isZoomed)
+                        .containerRelativeFrame([.horizontal, .vertical])
+                        .id(hash)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $currentHash)
+        .scrollIndicators(.hidden)
+        .scrollDisabled(isZoomed)
     }
 
     private var topBar: some View {
@@ -166,9 +190,7 @@ private struct profilePhotoPage: View {
                     .scaleEffect(scale)
                     #if !os(tvOS)
                     .gesture(
-                        MagnifyGesture()
-                            .onChanged { setScale(min(max(lastScale * $0.magnification, 1), 5)) }
-                            .onEnded { _ in lastScale = scale }
+                        pinchGesture { setScale(min(max(lastScale * $0, 1), 5)) } ended: { lastScale = scale }
                     )
                     .onTapGesture(count: 2) {
                         withAnimation(.spring(duration: 0.3)) {
@@ -179,7 +201,7 @@ private struct profilePhotoPage: View {
                     #endif
                     .accessibilityLabel("Profile photo")
             } else if failed {
-                ContentUnavailableView("Couldn't Load Photo", systemImage: "photo")
+                emptyStateView("Couldn't Load Photo", systemImage: "photo")
                     .foregroundStyle(.white)
             } else {
                 ProgressView().tint(.white)
@@ -194,7 +216,7 @@ private struct profilePhotoPage: View {
                 failed = true
             }
         }
-        .onChange(of: isCurrent) { _, current in
+        .onChangeCompat(of: isCurrent) { _, current in
             if !current {
                 scale = 1
                 lastScale = 1

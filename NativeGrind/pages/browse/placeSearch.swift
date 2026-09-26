@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+import Combine
 import MapKit
 
 #if !os(tvOS)
 @MainActor
-@Observable
-final class placeSearch: NSObject, MKLocalSearchCompleterDelegate {
-    var query = "" {
+final class placeSearch: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
+    @Published var query = "" {
         didSet { updateQuery() }
     }
-    private(set) var results: [MKLocalSearchCompletion] = []
-    private(set) var isResolving = false
+    @Published private(set) var results: [MKLocalSearchCompletion] = []
+    @Published private(set) var isResolving = false
 
-    @ObservationIgnored private let completer = MKLocalSearchCompleter()
+    private let completer = MKLocalSearchCompleter()
 
     override init() {
         super.init()

@@ -6,24 +6,24 @@
 //
 
 import SwiftUI
+import Combine
 import AVFoundation
 import NativeGrindCore
 
 @MainActor
-@Observable
-final class chatAudioPlayer {
-    private(set) var currentMessageId: String? = nil
-    private(set) var isPlaying = false
-    private(set) var isLoading = false
-    private(set) var elapsed: TimeInterval = 0
-    private(set) var duration: TimeInterval = 0
+final class chatAudioPlayer: ObservableObject {
+    @Published private(set) var currentMessageId: String? = nil
+    @Published private(set) var isPlaying = false
+    @Published private(set) var isLoading = false
+    @Published private(set) var elapsed: TimeInterval = 0
+    @Published private(set) var duration: TimeInterval = 0
 
-    @ObservationIgnored var resolveURL: (chatMessage) async -> URL? = { _ in nil }
+    var resolveURL: (chatMessage) async -> URL? = { _ in nil }
 
-    @ObservationIgnored private var player: AVPlayer? = nil
-    @ObservationIgnored private var timeObserver: Any? = nil
-    @ObservationIgnored private var endObserver: NSObjectProtocol? = nil
-    @ObservationIgnored private var statusObservation: NSKeyValueObservation? = nil
+    private var player: AVPlayer? = nil
+    private var timeObserver: Any? = nil
+    private var endObserver: NSObjectProtocol? = nil
+    private var statusObservation: NSKeyValueObservation? = nil
 
     var progress: Double {
         duration > 0 ? min(elapsed / duration, 1) : 0

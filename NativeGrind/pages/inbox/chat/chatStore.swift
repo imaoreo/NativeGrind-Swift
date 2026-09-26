@@ -6,31 +6,31 @@
 //
 
 import SwiftUI
+import Combine
 import CoreLocation
 import NativeGrindCore
 
 @MainActor
-@Observable
-final class chatStore {
+final class chatStore: ObservableObject {
     let conversationId: String
     let otherProfileId: Int
 
-    private(set) var messages: [chatMessage] = []
-    private(set) var lastReadTimestamp: Int64? = nil
-    private(set) var isLoading = false
-    private(set) var hasLoaded = false
-    private(set) var hasMoreOlder = true
-    private(set) var isSending = false
-    private(set) var isOtherTyping = false
-    private(set) var replyingTo: chatMessage? = nil
-    private(set) var otherProfile: conversationProfileMini? = nil
-    private(set) var jumpTargetId: String? = nil
-    private(set) var highlightedMessageId: String? = nil
+    @Published private(set) var messages: [chatMessage] = []
+    @Published private(set) var lastReadTimestamp: Int64? = nil
+    @Published private(set) var isLoading = false
+    @Published private(set) var hasLoaded = false
+    @Published private(set) var hasMoreOlder = true
+    @Published private(set) var isSending = false
+    @Published private(set) var isOtherTyping = false
+    @Published private(set) var replyingTo: chatMessage? = nil
+    @Published private(set) var otherProfile: conversationProfileMini? = nil
+    @Published private(set) var jumpTargetId: String? = nil
+    @Published private(set) var highlightedMessageId: String? = nil
 
-    private(set) var olderPageAnchorId: String? = nil
+    @Published private(set) var olderPageAnchorId: String? = nil
 
-    private(set) var isLoadingOlder = false
-    @ObservationIgnored private let locationManager = deviceLocationManager()
+    @Published private(set) var isLoadingOlder = false
+    private let locationManager = deviceLocationManager()
     private var lastMarkedReadId: String? = nil
 
     init(conversationId: String, otherProfileId: Int) {
