@@ -52,6 +52,7 @@ extension protectedRoute: View {
 final class navigationRouter: ObservableObject {
     @Published var selectedUnprotectedTab: unprotectedRoute = .login
     @Published var selectedProtectedTab: protectedRoute = .browse
+    @Published var showingSettings = false
     
     @Published private var unprotectedPaths: [unprotectedRoute: [unprotectedRoute]] = [:]
     @Published private var protectedPaths: [protectedRoute: [protectedRoute]] = [:]
@@ -93,5 +94,6 @@ final class navigationRouter: ObservableObject {
         protectedPaths.removeAll()
         selectedUnprotectedTab = .login
         selectedProtectedTab = .browse
+        showingSettings = false
     }
 }

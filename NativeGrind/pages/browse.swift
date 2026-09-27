@@ -125,6 +125,8 @@ struct browseView: View {
             #if !os(tvOS)
             .navigationTitle("Browse")
             .toolbar {
+                settingsToolbarButton()
+
                 ToolbarItem(placement: .primaryAction) {
                     HStack(spacing: 8) {
                         Button {

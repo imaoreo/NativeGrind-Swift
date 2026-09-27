@@ -9,7 +9,10 @@ import SwiftUI
 import NativeGrindCore
 
 struct settingsView: View {
+    var showsDoneButton = false
+
     @State private var showLogoutConfirm = false
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationStack {
@@ -55,6 +58,13 @@ struct settingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .toolbar {
+                if showsDoneButton {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                }
+            }
             .alert("Log Out", isPresented: $showLogoutConfirm) {
                 Button("Cancel", role: .cancel) {}
                 Button("Log Out", role: .destructive) {
@@ -66,6 +76,23 @@ struct settingsView: View {
                 Text("Are you sure you want to log out?")
             }
         }
+    }
+}
+
+struct settingsToolbarButton: ToolbarContent {
+    @EnvironmentObject private var router: navigationRouter
+
+    var body: some ToolbarContent {
+        #if os(iOS)
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                router.showingSettings = true
+            } label: {
+                Image(systemName: "gearshape")
+            }
+            .accessibilityLabel("Settings")
+        }
+        #endif
     }
 }
 

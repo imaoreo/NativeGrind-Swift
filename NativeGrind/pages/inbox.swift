@@ -99,6 +99,8 @@ struct inboxView: View {
         }
         #endif
         .toolbar {
+            settingsToolbarButton()
+
             if showsRefreshButton {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

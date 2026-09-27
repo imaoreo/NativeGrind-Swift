@@ -180,7 +180,12 @@ struct myApp: App {
         switch demoMode.startTab {
         case "inbox": router.selectedProtectedTab = .inbox
         case "interest": router.selectedProtectedTab = .interest
-        case "settings": router.selectedProtectedTab = .settings
+        case "settings":
+            #if os(tvOS)
+            router.selectedProtectedTab = .settings
+            #else
+            router.showingSettings = true
+            #endif
         default: router.selectedProtectedTab = .browse
         }
     }
@@ -296,7 +301,7 @@ struct contentView: View {
                     }
                     .tag(protectedRoute.interest)
                     
-                    #if !os(macOS)
+                    #if os(tvOS)
                     NavigationStack(path: router.path(for: .settings)) {
                         protectedRoute.settings
                             .navigationDestination(for: protectedRoute.self) { route in
@@ -309,7 +314,12 @@ struct contentView: View {
                     .tag(protectedRoute.settings)
                     #endif
                 }
-                .accentColor(.blue) // Changes the active tab highlight color
+                .accentColor(.blue)
+                #if os(iOS)
+                .sheet(isPresented: $router.showingSettings) {
+                    settingsView(showsDoneButton: true)
+                }
+                #endif
                 
             } else {
                 // ==========================================

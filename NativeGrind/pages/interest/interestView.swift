@@ -37,5 +37,8 @@ struct interestView: View {
             }
         }
         .navigationTitle("Interest")
+        .toolbar {
+            settingsToolbarButton()
+        }
     }
 }
