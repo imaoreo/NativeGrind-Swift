@@ -15,6 +15,14 @@ This project is split into separate modules to split up the UI, resuable logic a
 | **[WatchNativeGrind](./WatchNativeGrind)**   | Frontend      | The main watch SwiftUI application | UI/UX for watchOS.                                          |
 | **[NativeGrindCore](./NativeGrindCore)**     | Swift Package | Reusable application logic         | REST API client, Keychain secure storage, and types. |
 
+## Installing
+
+Add this source to AltStore, SideStore, FlareStore, Feather or any other sideloading app that supports AltStore sources:
+
+```
+https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/repo.json
+```
+
 ## Getting Started
 
 ### Prerequisites

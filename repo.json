@@ -1,0 +1,90 @@
+{
+  "name": "NativeGrind",
+  "identifier": "dev.imaoreo.nativegrind.source",
+  "subtitle": "An unofficial native Swift client",
+  "description": "Official source for NativeGrind, an unofficial native SwiftUI client.",
+  "iconURL": "https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/.github/assets/icon.png",
+  "website": "https://github.com/imaoreo/NativeGrind-Swift",
+  "sourceURL": "https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/repo.json",
+  "tintColor": "#F9CC30",
+  "featuredApps": [
+    "dev.imaoreo.NativeGrind"
+  ],
+  "apps": [
+    {
+      "name": "NativeGrind",
+      "bundleIdentifier": "dev.imaoreo.NativeGrind",
+      "developerName": "imaoreo",
+      "subtitle": "Unofficial native Swift client",
+      "localizedDescription": "NativeGrind is an unofficial native Swift client built from the ground up with SwiftUI, aiming to provide a fast, clean and secure native interface.\n\nGrindr is a registered trademark of Grindr LLC. This project is not affiliated with, authorized, sponsored or endorsed by Grindr LLC. Use of this application may violate Grindr's Terms of Service. Use at your own risk.",
+      "iconURL": "https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/.github/assets/icon.png",
+      "tintColor": "#F9CC30",
+      "category": "social",
+      "screenshots": [],
+      "versions": [
+        {
+          "version": "1.0",
+          "buildVersion": "1",
+          "date": "2026-09-27",
+          "localizedDescription": "Initial release.",
+          "downloadURL": "https://github.com/imaoreo/NativeGrind-Swift/releases/download/v1.0/NativeGrind.ipa",
+          "size": 11189724,
+          "minOSVersion": "16.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "keychain-access-groups"
+        ],
+        "privacy": {
+          "NSCameraUsageDescription": "We need your camera to take photos and videos to send in chats.",
+          "NSLocationWhenInUseUsageDescription": "We need your location to show users near you.",
+          "NSMicrophoneUsageDescription": "We need your microphone to record voice messages."
+        }
+      },
+      "version": "1.0",
+      "versionDate": "2026-09-27",
+      "versionDescription": "Initial release.",
+      "downloadURL": "https://github.com/imaoreo/NativeGrind-Swift/releases/download/v1.0/NativeGrind.ipa",
+      "size": 11189724
+    },
+    {
+      "name": "NativeGrind (NS)",
+      "bundleIdentifier": "dev.imaoreo.NativeGrind",
+      "developerName": "imaoreo",
+      "subtitle": "With NativeServer accounts, QR login and sync",
+      "localizedDescription": "NativeGrind is an unofficial native Swift client built from the ground up with SwiftUI, aiming to provide a fast, clean and secure native interface.\n\nThis build includes NativeServer: create a NativeServer account in Settings to use QR login and sync.\n\nGrindr is a registered trademark of Grindr LLC. This project is not affiliated with, authorized, sponsored or endorsed by Grindr LLC. Use of this application may violate Grindr's Terms of Service. Use at your own risk.",
+      "iconURL": "https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/.github/assets/icon.png",
+      "tintColor": "#F9CC30",
+      "category": "social",
+      "screenshots": [],
+      "versions": [
+        {
+          "version": "1.0",
+          "buildVersion": "1",
+          "date": "2026-09-27",
+          "localizedDescription": "Initial release.",
+          "downloadURL": "https://github.com/imaoreo/NativeGrind-Swift/releases/download/v1.0/NativeGrind-NS.ipa",
+          "size": 11198692,
+          "minOSVersion": "16.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "keychain-access-groups"
+        ],
+        "privacy": {
+          "NSCameraUsageDescription": "We need your camera to take photos and videos to send in chats.",
+          "NSLocationWhenInUseUsageDescription": "We need your location to show users near you.",
+          "NSMicrophoneUsageDescription": "We need your microphone to record voice messages."
+        }
+      },
+      "version": "1.0",
+      "versionDate": "2026-09-27",
+      "versionDescription": "Initial release.",
+      "downloadURL": "https://github.com/imaoreo/NativeGrind-Swift/releases/download/v1.0/NativeGrind-NS.ipa",
+      "size": 11198692
+    }
+  ],
+  "news": []
+}
