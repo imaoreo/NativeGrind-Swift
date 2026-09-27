@@ -120,6 +120,19 @@ public extension profile {
         }
         return hashes
     }
+
+    var lastOnlineDate: Date? {
+        guard let seen, seen > 0 else { return nil }
+        return Date(milliseconds: Int64(seen))
+    }
+
+    var isOnline: Bool {
+        guard var onlineUntil else { return false }
+        if onlineUntil.timeIntervalSince1970 > 100_000_000_000 {
+            onlineUntil = Date(timeIntervalSince1970: onlineUntil.timeIntervalSince1970 / 1000)
+        }
+        return onlineUntil > Date()
+    }
 }
 
 public struct profileMedia: Codable, Sendable {

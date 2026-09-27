@@ -196,6 +196,10 @@ struct profileDetailView: View {
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
                     }
+
+                    if let profile = fullProfile {
+                        lastOnlineLabel(profile: profile)
+                    }
                 }
                 .padding()
             }
@@ -270,6 +274,35 @@ struct profileDetailView: View {
                 .padding(.top, 16)
             }
         }
+
+    @ViewBuilder
+    private func lastOnlineLabel(profile: profile) -> some View {
+        if profile.isOnline {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 8, height: 8)
+                Text("Online now")
+            }
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+        } else if let lastOnline = lastOnlineDate(profile: profile) {
+            HStack(spacing: 4) {
+                Image(systemName: "clock")
+                Text("Last online \(lastOnline.formatted(.relative(presentation: .named)))")
+            }
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+        }
+    }
+
+    private func lastOnlineDate(profile: profile) -> Date? {
+        let gridLastOnline = profiles?
+            .first(where: { String($0.profileId) == profileId })?
+            .lastOnline
+            .flatMap { $0 > 0 ? Date(timeIntervalSince1970: TimeInterval($0) / 1000) : nil }
+        return [profile.lastOnlineDate, gridLastOnline].compactMap { $0 }.max()
+    }
 
     private func openPhotos(at index: Int) {
         guard let hashes = fullProfile?.photoHashes, !hashes.isEmpty else { return }
