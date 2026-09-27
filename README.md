@@ -58,6 +58,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 You may also read [Contributing Guide](./CONTRIBUTING.md)
 
+## Credits
+
+See [CREDITS.md](./CREDITS.md) for the people behind NativeGrind.
+
 ## Legal Disclaimer
 
 Grindr is a registered trademark of Grindr LLC. This project is an independent, unofficial client and is not affiliated with, authorized, sponsored, or endorsed by Grindr LLC in any way. Use of this application may violate Grindr's Terms of Service. **Use at your own risk.**
