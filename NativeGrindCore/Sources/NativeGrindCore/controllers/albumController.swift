@@ -61,11 +61,12 @@ public actor albumController {
         async let backup = fetchBackup(albumId: albumId)
 
         let (album, stored) = await (grindrAlbum ?? nil, backup)
+        let readable = nsAccess.canReadShared ? stored : nil
 
-        guard album != nil || stored != nil else { return nil }
+        guard album != nil || readable != nil else { return nil }
 
         let backupURLs = Dictionary(
-            (stored?.items ?? []).map { ($0.contentId, URL(string: baseURL.nativeServer.rawValue + $0.url)) },
+            (readable?.items ?? []).map { ($0.contentId, URL(string: baseURL.nativeServer.rawValue + $0.url)) },
             uniquingKeysWith: { first, _ in first }
         )
 
@@ -82,7 +83,7 @@ public actor albumController {
         }
 
         let onGrindr = Set(items.map(\.contentId))
-        for stored in stored?.items ?? [] where !onGrindr.contains(stored.contentId) {
+        for stored in readable?.items ?? [] where !onGrindr.contains(stored.contentId) {
             items.append(albumItem(
                 contentId: stored.contentId,
                 isVideo: stored.contentType.hasPrefix("video"),
@@ -94,7 +95,7 @@ public actor albumController {
             ))
         }
 
-        let owner = album?.profileId ?? stored?.ownerProfileId ?? ownerProfileId
+        let owner = album?.profileId ?? readable?.ownerProfileId ?? ownerProfileId
 
         if let album, let owner {
             let alreadyStored = Set(stored?.items.map(\.contentId) ?? [])
@@ -115,6 +116,7 @@ public actor albumController {
     private var knownBackups: [String: Bool] = [:]
 
     public func hasBackup(albumId: String) async -> Bool {
+        guard nsAccess.canReadShared else { return false }
         if let known = knownBackups[albumId] { return known }
         let exists = await fetchBackup(albumId: albumId) != nil
         knownBackups[albumId] = exists

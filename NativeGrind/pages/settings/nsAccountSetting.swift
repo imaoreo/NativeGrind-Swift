@@ -96,6 +96,16 @@ public struct nsAccountSettingView: View {
                 }
             }
 
+            Section(header: Text("Shared Data"), footer: Text(sharedDataFooter)) {
+                LabeledContent {
+                    Text(canReadShared ? "Unlocked" : "Locked")
+                        .foregroundColor(canReadShared ? .green : .orange)
+                        .fontWeight(.semibold)
+                } label: {
+                    Label("Shared Data", systemImage: canReadShared ? "lock.open.fill" : "lock.fill")
+                }
+            }
+
             if let key = accountKey, !key.isEmpty {
                 Section(header: Text("Link New Device")) {
                     HStack {
@@ -269,6 +279,20 @@ public struct nsAccountSettingView: View {
                 fetchDevices()
             }
         }
+    }
+
+    private var canReadShared: Bool {
+        accountKey?.isEmpty == false && nsAccess.hasContributed
+    }
+
+    private var sharedDataFooter: String {
+        if accountKey?.isEmpty != false {
+            return "Create or link an NS account to access shared profile photos, album and chat backups, and image lookups."
+        }
+        if !nsAccess.hasContributed {
+            return "Browse the grid to contribute. Shared data unlocks after a grid sync and stays unlocked for 7 days after your last one."
+        }
+        return "You've contributed recently. Keep browsing the grid to keep shared data unlocked."
     }
 
     private func createAccountAction() {

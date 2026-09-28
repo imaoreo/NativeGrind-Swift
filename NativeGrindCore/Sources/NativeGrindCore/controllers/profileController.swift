@@ -151,7 +151,7 @@ public actor profileController {
                 data = try await APIClient.shared.request(.getProfileImage(size: size, mediaHash: mediaHash), shouldErrorMessage: false)
             }
 
-            if data == nil, appEnvironment.isServerEnabled {
+            if data == nil, nsAccess.canReadShared {
                 data = try? await APIClient.shared.request(.getNativeServerProfileImage(mediaHash: mediaHash), shouldErrorMessage: false)
             }
             
@@ -209,6 +209,9 @@ public actor profileController {
                         request: .syncGrid(profiles: profiles, geohash: geohash),
                         expectedEvent: .onGridSynced
                     )
+                    if response?.status == .success {
+                        nsAccess.recordContribution()
+                    }
                     if let missing = response?.missingMediaHashes, !missing.isEmpty {
                         await proactiveSyncMissingMedias(missing)
                     }
@@ -227,7 +230,7 @@ public actor profileController {
     }
 
     public func getProfileIdByImage(mediaHash: String) async -> String? {
-        guard await wsController.shared.isServerAuthorized else {
+        guard nsAccess.canReadShared, await wsController.shared.isServerAuthorized else {
             return nil
         }
         let response = await wsController.shared.sendAndWait(

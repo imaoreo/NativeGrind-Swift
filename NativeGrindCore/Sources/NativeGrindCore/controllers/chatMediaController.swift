@@ -130,7 +130,7 @@ public actor chatMediaController {
     }
 
     private func downloadFromNativeServer(hash: String) async -> Data? {
-        guard appEnvironment.isServerEnabled else { return nil }
+        guard nsAccess.canReadShared else { return nil }
         guard let (data, response) = try? await APIClient.shared.rawRequest(.getNativeServerChatMedia(mediaHash: hash)),
               response.statusCode == 200,
               !data.isEmpty else {
