@@ -236,7 +236,7 @@ public final class wsController: ObservableObject {
     public func sendAndWait<Req: Codable & Sendable, Res: Decodable & Sendable>(
         request: wsRequest<Req>,
         expectedEvent: wsEvent<Res>,
-        timeout: TimeInterval = 60.0
+        timeout: TimeInterval = 90.0
     ) async -> Res? {
         
         let waiter = wsWaiter<Res>()
