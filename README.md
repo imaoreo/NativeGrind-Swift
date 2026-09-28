@@ -23,6 +23,11 @@ Add this source to AltStore, SideStore, FlareStore, Feather or any other sideloa
 https://raw.githubusercontent.com/imaoreo/NativeGrind-Swift/main/repo.json
 ```
 
+Don't have a sideloading app yet? You can get FlareStore using our [affiliate link](https://flarestore.vip/p/nativegrind).
+
+> [!NOTE]
+> We receive a commission if you buy FlareStore through this link.
+
 ## Getting Started
 
 ### Prerequisites
