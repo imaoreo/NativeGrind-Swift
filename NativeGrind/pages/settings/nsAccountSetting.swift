@@ -195,6 +195,13 @@ public struct nsAccountSettingView: View {
                 statusMessage = "Account creation failed: \(response.message)"
             }
         }
+        .onReceive(controller.publisher(for: .onDeviceAuth)) { response in
+            if response.status == .success, response.accountId == nil, accountKey != nil {
+                accountKey = nil
+                devices = []
+                statusMessage = "This device is no longer linked to an account"
+            }
+        }
         .onReceive(controller.publisher(for: .onDeviceList)) { response in
             if response.status == .success, let devList = response.devices {
                 devices = devList

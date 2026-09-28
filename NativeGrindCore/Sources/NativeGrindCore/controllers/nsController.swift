@@ -121,7 +121,13 @@ public final class nsAuthManager {
             .sink { payload in
                 Task {
                     if payload.status == .success {
-                        // syncController syncs as soon as this flips
+                        if payload.accountId == nil,
+                           keychainManager.shared.getToken(type: .accountKey) != nil {
+                            errorManager.shared.log("nsAuth", "Device is no longer associated with an account - clearing local account key")
+                            keychainManager.shared.deleteToken(type: .accountKey)
+                        }
+
+
                         await MainActor.run {
                             wsController.shared.isServerAuthorized = true
                         }
